@@ -23,6 +23,11 @@ For example, nginx will log to `/var/log/nginx/access.log` and
 
 See [A Simple Way To Dockerize Applications](http://jasonwilder.com/blog/2014/10/13/a-simple-way-to-dockerize-applications/)
 
+## Why fork?
+
+The original version lacks some features for which there are patches available,
+but they aren't merged for more than a year. We really need those features, so
+we decided to maintain a fork.
 
 ## Installation
 
