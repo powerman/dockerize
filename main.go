@@ -40,7 +40,6 @@ func (c *Context) Env() map[string]string {
 var (
 	buildVersion string
 	version      bool
-	poll         bool
 	wg           sync.WaitGroup
 
 	templatesFlag     sliceVar
@@ -209,7 +208,6 @@ Arguments:
 func main() {
 
 	flag.BoolVar(&version, "version", false, "show version")
-	flag.BoolVar(&poll, "poll", false, "enable polling")
 
 	flag.Var(&templatesFlag, "template", "Template (/template:/dest). Can be passed multiple times. Does also support directories")
 	flag.BoolVar(&noOverwriteFlag, "no-overwrite", false, "Do not overwrite destination file if it already exists.")
@@ -301,12 +299,12 @@ func main() {
 
 	for _, out := range stdoutTailFlag {
 		wg.Add(1)
-		go tailFile(ctx, out, poll, os.Stdout)
+		go tailFile(ctx, out, os.Stdout)
 	}
 
 	for _, err := range stderrTailFlag {
 		wg.Add(1)
-		go tailFile(ctx, err, poll, os.Stderr)
+		go tailFile(ctx, err, os.Stderr)
 	}
 
 	wg.Wait()

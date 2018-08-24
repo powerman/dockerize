@@ -26,10 +26,6 @@
 
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/hpcloud/tail"
-
-[[constraint]]
   version = "2.15.0"
   name = "github.com/Masterminds/sprig"
 
