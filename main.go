@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"log"
@@ -56,6 +57,7 @@ var (
 	waitTimeoutFlag   time.Duration
 	dependencyChan    chan struct{}
 	noOverwriteFlag   bool
+	skipTLSVerifyFlag bool
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -113,8 +115,12 @@ func waitForDependencies() {
 			case "http", "https":
 				wg.Add(1)
 				go func(u url.URL) {
+					transport := &http.Transport{
+						TLSClientConfig: &tls.Config{InsecureSkipVerify: skipTLSVerifyFlag},
+					}
 					client := &http.Client{
-						Timeout: waitTimeoutFlag,
+						Transport: transport,
+						Timeout:   waitTimeoutFlag,
 					}
 
 					defer wg.Done()
@@ -216,6 +222,7 @@ func main() {
 	flag.StringVar(&delimsFlag, "delims", "", `template tag delimiters. default "{{":"}}" `)
 	flag.Var(&headersFlag, "wait-http-header", "HTTP headers, colon separated. e.g \"Accept-Encoding: gzip\". Can be passed multiple times")
 	flag.Var(&waitFlag, "wait", "Host (tcp/tcp4/tcp6/http/https/unix/file) to wait for before this container starts. Can be passed multiple times. e.g. tcp://db:5432")
+	flag.BoolVar(&skipTLSVerifyFlag, "skip-tls-verify", false, "Skip tls verification for https wait requests")
 	flag.DurationVar(&waitTimeoutFlag, "timeout", 10*time.Second, "Host wait timeout")
 	flag.DurationVar(&waitRetryInterval, "wait-retry-interval", defaultWaitRetryInterval, "Duration to wait before retrying")
 
