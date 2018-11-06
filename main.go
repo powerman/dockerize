@@ -192,19 +192,19 @@ func waitForDependencies() {
 					}
 
 					namespace := "default"
-					var job_name string
-					host_info := strings.Split(u.Host, ":")
-					if len(host_info) > 2 {
+					var jobName string
+					hostInfo := strings.Split(u.Host, ":")
+					if len(hostInfo) > 2 {
 						panic("Bad job name")
-					} else if len(host_info) == 2 {
-						namespace = host_info[0]
-						job_name = host_info[1]
+					} else if len(hostInfo) == 2 {
+						namespace = hostInfo[0]
+						jobName = hostInfo[1]
 					} else {
-						job_name = u.Host
+						jobName = u.Host
 					}
 
 					for range ticker.C {
-						job, err := clientset.BatchV1().Jobs(namespace).Get(job_name, metav1.GetOptions{})
+						job, err := clientset.BatchV1().Jobs(namespace).Get(jobName, metav1.GetOptions{})
 						if errors.IsNotFound(err) {
 							log.Printf("Job not found. Sleeping %s", waitRetryInterval)
 							continue
