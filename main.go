@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -46,7 +47,6 @@ func (c *Context) Env() map[string]string {
 var (
 	buildVersion string
 	version      bool
-	poll         bool
 	wg           sync.WaitGroup
 
 	templatesFlag     sliceVar
@@ -65,6 +65,7 @@ var (
 	noOverwriteFlag   bool
 	kubeConfigFlag    string
 	remoteClusterFlag bool
+	skipTLSVerifyFlag bool
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -129,8 +130,12 @@ func waitForDependencies() {
 			case "http", "https":
 				wg.Add(1)
 				go func(u url.URL) {
+					transport := &http.Transport{
+						TLSClientConfig: &tls.Config{InsecureSkipVerify: skipTLSVerifyFlag},
+					}
 					client := &http.Client{
-						Timeout: waitTimeoutFlag,
+						Transport: transport,
+						Timeout:   waitTimeoutFlag,
 					}
 
 					defer wg.Done()
@@ -287,7 +292,6 @@ Arguments:
 func main() {
 
 	flag.BoolVar(&version, "version", false, "show version")
-	flag.BoolVar(&poll, "poll", false, "enable polling")
 
 	flag.Var(&templatesFlag, "template", "Template (/template:/dest). Can be passed multiple times. Does also support directories")
 	flag.BoolVar(&noOverwriteFlag, "no-overwrite", false, "Do not overwrite destination file if it already exists.")
@@ -298,6 +302,7 @@ func main() {
 	flag.StringVar(&delimsFlag, "delims", "", `template tag delimiters. default "{{":"}}" `)
 	flag.Var(&headersFlag, "wait-http-header", "HTTP headers, colon separated. e.g \"Accept-Encoding: gzip\". Can be passed multiple times")
 	flag.Var(&waitFlag, "wait", "Host (tcp/tcp4/tcp6/http/https/unix/file) to wait for before this container starts. Can be passed multiple times. e.g. tcp://db:5432")
+	flag.BoolVar(&skipTLSVerifyFlag, "skip-tls-verify", false, "Skip tls verification for https wait requests")
 	flag.DurationVar(&waitTimeoutFlag, "timeout", 10*time.Second, "Host wait timeout")
 	flag.DurationVar(&waitRetryInterval, "wait-retry-interval", defaultWaitRetryInterval, "Duration to wait before retrying")
 
@@ -381,12 +386,12 @@ func main() {
 
 	for _, out := range stdoutTailFlag {
 		wg.Add(1)
-		go tailFile(ctx, out, poll, os.Stdout)
+		go tailFile(ctx, out, os.Stdout)
 	}
 
 	for _, err := range stderrTailFlag {
 		wg.Add(1)
-		go tailFile(ctx, err, poll, os.Stderr)
+		go tailFile(ctx, err, os.Stderr)
 	}
 
 	wg.Wait()
