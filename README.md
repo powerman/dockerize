@@ -69,7 +69,7 @@ $ dockerize -template template1.tmpl
 
 ```
 
-Template may also be a directory. In this case all files within this directory are processed as template and stored with the same name in the destination directory.
+Template may also be a directory. In this case all files within this directory are recursively processed as template and stored with the same name in the destination directory.
 If the destination directory is omitted, the output is sent to `STDOUT`. The files in the source directory are processed in sorted order (as returned by `ioutil.ReadDir`).
 
 ```
@@ -87,13 +87,6 @@ You can tail multiple files to `STDOUT` and `STDERR` by passing the options mult
 
 ```
 $ dockerize -stdout info.log -stdout perf.log
-
-```
-
-If `inotify` does not work in you container, you use `-poll` to poll for file changes instead.
-
-```
-$ dockerize -stdout info.log -stdout perf.log -poll
 
 ```
 
@@ -132,7 +125,7 @@ See [this issue](https://github.com/docker/compose/issues/374#issuecomment-12631
 ### Skip SSL cert verification for https connections
 
 ```
-$ dockerize -validate-cert=false -wait https://web:80
+$ dockerize -skip-tls-verify -wait https://web:80
 ```
 
 ### Injecting env vars from INI file
@@ -156,21 +149,24 @@ variables within a template with `.Env`.
 {{ .Env.PATH }} is my path
 ```
 
-There are a few built in functions as well:
+In template you can use a lot of [functions provided by
+Sprig](http://masterminds.github.io/sprig/) plus a few built in functions as well:
 
-  * `default $var $default` - Returns a default value for one that does not exist. `{{ default .Env.VERSION "0.1.2" }}`
-  * `contains $map $key` - Returns true if a string is within another string
   * `exists $path` - Determines if a file path exists or not. `{{ exists "/etc/default/myapp" }}`
-  * `split $string $sep` - Splits a string into an array using a separator string. Alias for [`strings.Split`][go.string.Split]. `{{ split .Env.PATH ":" }}`
-  * `replace $string $old $new $count` - Replaces all occurrences of a string within another string. Alias for [`strings.Replace`][go.string.Replace]. `{{ replace .Env.PATH ":" }}`
-  * `parseUrl $url` - Parses a URL into it's [protocol, scheme, host, etc. parts][go.url.URL]. Alias for [`url.Parse`][go.url.Parse]
-  * `atoi $value` - Parses a string $value into an int. `{{ if (gt (atoi .Env.NUM_THREADS) 1) }}`
-  * `add $arg1 $arg` - Performs integer addition. `{{ add (atoi .Env.SHARD_NUM) -1 }}`
+  * `parseUrl $url` - Parses a URL into it's [protocol, scheme, host, etc. parts](https://golang.org/pkg/net/url/#URL). Alias for [`url.Parse`](https://golang.org/pkg/net/url/#Parse)
   * `isTrue $value` - Parses a string $value to a boolean value. `{{ if isTrue .Env.ENABLED }}`
-  * `lower $value` - Lowercase a string.
-  * `upper $value` - Uppercase a string.
   * `jsonQuery $json $query` - Returns the result of a selection query against a json document.
-  * `loop` - Create for loops.
+
+**WARNING! Incompatibility with [original dockerize
+v0.6.1](https://github.com/jwilder/dockerize)!** These template functions
+was changed because of adding Sprig functions, so carefully review your
+templates before upgrading:
+
+* `default` - order of params has changed.
+* `contains` - now it works on string instead of map, use `hasKey` instead.
+* `split` - now it split into map instead of list, use `splitList` instead.
+* `replace` - order and amount of params has changed.
+* `loop` - removed, use `untilStep` instead.
 
 ### jsonQuery
 
@@ -195,29 +191,3 @@ With the following JSON in `.Env.SERVICES`
 ```
 
 the template expression `jsonQuery .Env.SERVICES "services.[1].port"` returns `9000`.
-
-### loop
-
-`loop` allows for creating for loop within a template.  It takes 1 to 3 arguments.
-
-```
-# Loop from 0...10
-{{ range loop 10 }}
-i = {{ . }}
-{{ end }}
-
-# Loop from 5...10
-{{ range $i := loop 5 10 }}
-i = {{ $i }}
-{{ end }}
-
-# Loop from 5...10 by 2
-{{ range $i := loop 5 10 2 }}
-i = {{ $i }}
-{{ end }}
-```
-
-[go.string.Split]: https://golang.org/pkg/strings/#Split
-[go.string.Replace]: https://golang.org/pkg/strings/#Replace
-[go.url.Parse]: https://golang.org/pkg/net/url/#Parse
-[go.url.URL]: https://golang.org/pkg/net/url/#URL
