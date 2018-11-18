@@ -203,7 +203,7 @@ Arguments:
              -wait tcp://web:8000 nginx
 	`)
 
-	println(`For more information, see https://github.com/jwilder/dockerize`)
+	println(`For more information, see https://github.com/powerman/dockerize`)
 }
 
 func main() {
