@@ -109,7 +109,7 @@ Http headers can be specified for http/https protocols.
 $ dockerize -wait http://web:80 -wait-http-header "Authorization:Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
 ```
 
-## Waiting for other dependencies
+### Waiting for other dependencies
 
 It is common when using tools like [Docker Compose](https://docs.docker.com/compose/) to depend on services in other linked containers, however oftentimes relying on [links](https://docs.docker.com/compose/compose-file/#links) is not enough - whilst the container itself may have _started_, the _service(s)_ within it may not yet be ready - resulting in shell script hacks to work around race conditions.
 
@@ -128,6 +128,24 @@ $ dockerize -wait tcp://db:5432 -wait http://web:80 -timeout 10s
 ```
 
 See [this issue](https://github.com/docker/compose/issues/374#issuecomment-126312313) for a deeper discussion, and why support isn't and won't be available in the Docker ecosystem itself.
+
+### Skip SSL cert verification for https connections
+
+```
+$ dockerize -validate-cert=false -wait https://web:80
+```
+
+### Injecting env vars from INI file
+
+You can load defaults for missing env vars from INI file.
+Multiline flag allows parsing multiline INI entries.
+File with header must contain single string with `Header: value`.
+
+```
+$ dockerize -env /path/to/file.ini -env-section SectionName -multiline …
+$ dockerize -env http://localhost:80/file.ini \
+    -env-header "Header: value" -env-header /path/to/file/with/header …
+```
 
 ## Using Templates
 
@@ -198,11 +216,6 @@ i = {{ $i }}
 i = {{ $i }}
 {{ end }}
 ```
-
-## License
-
-MIT
-
 
 [go.string.Split]: https://golang.org/pkg/strings/#Split
 [go.string.Replace]: https://golang.org/pkg/strings/#Replace
