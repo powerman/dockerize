@@ -1,68 +1,56 @@
 package main
 
 import (
-	"fmt"
+	"io"
 	"log"
 	"os"
-	"time"
 
-	"github.com/hpcloud/tail"
 	"golang.org/x/net/context"
+
+	"github.com/powerman/dockerize/pkg/tail"
 )
 
-func tailFile(ctx context.Context, file string, poll bool, dest *os.File) {
+const (
+	stdioBufSize = 4096
+)
+
+// here is some syntaxic sugar inspired by the Tomas Senart's video,
+// it allows me to inline the Reader interface
+type readerFunc func(p []byte) (n int, err error)
+
+func (rf readerFunc) Read(p []byte) (n int, err error) { return rf(p) }
+
+func tailFile(ctx context.Context, file string, dest *os.File) {
 	defer wg.Done()
 
-	var isPipe bool
-	var errCount int = 0
-	const maxErr = 30
-	const sleepDur = 2 * time.Second
-
-	s, err := os.Stat(file)
+	t, err := tail.NewTail(file)
 	if err != nil {
-		log.Printf("Warning: unable to stat %s: %s", file, err)
-		isPipe = false
-	} else {
-		isPipe = s.Mode()&os.ModeNamedPipe != 0
+		log.Printf("cannot tail file %s: %s", file, err)
+		return
 	}
 
-	t, err := tail.TailFile(file, tail.Config{
-		Follow: true,
-		ReOpen: true,
-		Poll:   poll,
-		Logger: tail.DiscardingLogger,
-		Pipe:   isPipe,
-	})
-	if err != nil {
-		log.Fatalf("unable to tail %s: %s", file, err)
-	}
+	for true {
+		// Copy will call the Reader and Writer interface multiple time, in order
+		// to copy by chunk (avoiding loading the whole file in memory).
+		// I insert the ability to cancel before read time as it is the earliest
+		// possible in the call process.
+		buf := make([]byte, stdioBufSize)
+		_, err = io.CopyBuffer(dest, readerFunc(func(p []byte) (int, error) {
+			// golang non-blocking channel: https://gobyexample.com/non-blocking-channel-operations
+			select {
 
-	defer func() {
-		t.Stop()
-		t.Cleanup()
-	}()
-
-	// main loop
-	for {
-		select {
-		// if the channel is done, then exit the loop
-		case <-ctx.Done():
-			return
-		// get the next log line and echo it out
-		case line := <-t.Lines:
-			if line.Err != nil || (line == nil && t.Err() != nil) {
-				log.Printf("Warning: unable to tail %s: %s", file, t.Err())
-				errCount++
-				if errCount > maxErr {
-					log.Fatalf("Logged %d consecutive errors while tailing. Exiting", errCount)
-				}
-				time.Sleep(sleepDur)
-				continue
-			} else if line == nil {
-				return
+			// if context has been canceled
+			case <-ctx.Done():
+				// stop process and propagate "context canceled" error
+				return 0, ctx.Err()
+			default:
+				// otherwise just run default io.Reader implementation
+				return t.Read(p)
 			}
-			fmt.Fprintln(dest, line.Text)
-			errCount = 0 // Zero the error count
+		}), buf)
+		if err != nil {
+			log.Printf("error while tailing file %s: %s", file, err)
+			return
 		}
 	}
 }

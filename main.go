@@ -48,14 +48,12 @@ func (c *Context) Env() map[string]string {
 var (
 	buildVersion string
 	version      bool
-	poll         bool
 	wg           sync.WaitGroup
 
 	envFlag           string
 	multiline         bool
 	envSection        string
 	envHdrFlag        sliceVar
-	validateCert      bool
 	templatesFlag     sliceVar
 	templateDirsFlag  sliceVar
 	stdoutTailFlag    sliceVar
@@ -70,6 +68,7 @@ var (
 	waitTimeoutFlag   time.Duration
 	dependencyChan    chan struct{}
 	noOverwriteFlag   bool
+	skipTLSVerifyFlag bool
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -127,15 +126,12 @@ func waitForDependencies() {
 			case "http", "https":
 				wg.Add(1)
 				go func(u url.URL) {
-					var tr = http.DefaultTransport
-					if !validateCert {
-						tr = &http.Transport{
-							TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-						}
+					transport := &http.Transport{
+						TLSClientConfig: &tls.Config{InsecureSkipVerify: skipTLSVerifyFlag},
 					}
 					client := &http.Client{
+						Transport: transport,
 						Timeout:   waitTimeoutFlag,
-						Transport: tr,
 					}
 
 					defer wg.Done()
@@ -235,18 +231,15 @@ func getINI(envFlag string, envHdrFlag []string) (iniFile []byte, err error) {
 		var req *http.Request
 		var hdr string
 		var client *http.Client
-		var tr = http.DefaultTransport
 		// Define redirect handler to disallow redirects
 		var redir = func(req *http.Request, via []*http.Request) error {
 			return errors.New("Redirects disallowed")
 		}
 
-		if !validateCert {
-			tr = &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			}
+		transport := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: skipTLSVerifyFlag},
 		}
-		client = &http.Client{Transport: tr, CheckRedirect: redir}
+		client = &http.Client{Transport: transport, CheckRedirect: redir}
 		req, err = http.NewRequest("GET", envFlag, nil)
 		if err != nil {
 			// Weird problem with declaring client, bail
@@ -288,12 +281,10 @@ func getINI(envFlag string, envHdrFlag []string) (iniFile []byte, err error) {
 func main() {
 
 	flag.BoolVar(&version, "version", false, "show version")
-	flag.BoolVar(&poll, "poll", false, "enable polling")
 	flag.StringVar(&envFlag, "env", "", "Optional path to INI file for injecting env vars. Does not overwrite existing env vars")
 	flag.BoolVar(&multiline, "multiline", false, "enable parsing multiline INI entries in INI environment file")
 	flag.StringVar(&envSection, "env-section", "", "Optional section of INI file to use for loading env vars. Defaults to \"\"")
 	flag.Var(&envHdrFlag, "env-header", "Optional string or path to secrets file for http headers passed if -env is a URL")
-	flag.BoolVar(&validateCert, "validate-cert", true, "Verify SSL certs for https connections")
 	flag.Var(&templatesFlag, "template", "Template (/template:/dest). Can be passed multiple times. Does also support directories")
 	flag.BoolVar(&noOverwriteFlag, "no-overwrite", false, "Do not overwrite destination file if it already exists.")
 	flag.Var(&stdoutTailFlag, "stdout", "Tails a file to stdout. Can be passed multiple times")
@@ -301,6 +292,7 @@ func main() {
 	flag.StringVar(&delimsFlag, "delims", "", `template tag delimiters. default "{{":"}}" `)
 	flag.Var(&headersFlag, "wait-http-header", "HTTP headers, colon separated. e.g \"Accept-Encoding: gzip\". Can be passed multiple times")
 	flag.Var(&waitFlag, "wait", "Host (tcp/tcp4/tcp6/http/https/unix/file) to wait for before this container starts. Can be passed multiple times. e.g. tcp://db:5432")
+	flag.BoolVar(&skipTLSVerifyFlag, "skip-tls-verify", false, "Skip tls verification for https wait requests")
 	flag.DurationVar(&waitTimeoutFlag, "timeout", 10*time.Second, "Host wait timeout")
 	flag.DurationVar(&waitRetryInterval, "wait-retry-interval", defaultWaitRetryInterval, "Duration to wait before retrying")
 
@@ -403,12 +395,12 @@ func main() {
 
 	for _, out := range stdoutTailFlag {
 		wg.Add(1)
-		go tailFile(ctx, out, poll, os.Stdout)
+		go tailFile(ctx, out, os.Stdout)
 	}
 
 	for _, err := range stderrTailFlag {
 		wg.Add(1)
-		go tailFile(ctx, err, poll, os.Stderr)
+		go tailFile(ctx, err, os.Stderr)
 	}
 
 	wg.Wait()
