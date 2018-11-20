@@ -7,7 +7,7 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/presslabs/dockerize/pkg/tail"
+	"github.com/powerman/dockerize/pkg/tail"
 )
 
 const (

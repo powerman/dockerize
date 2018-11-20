@@ -26,7 +26,7 @@ func exists(path string) (bool, error) {
 	return false, err
 }
 
-func parseUrl(rawurl string) *url.URL {
+func parseURL(rawurl string) *url.URL {
 	u, err := url.Parse(rawurl)
 	if err != nil {
 		log.Fatalf("unable to parse url %s: %s", rawurl, err)
@@ -57,7 +57,7 @@ func jsonQuery(jsonObj string, query string) (interface{}, error) {
 func generateFile(templatePath, destPath string) bool {
 	tmpl := template.New(filepath.Base(templatePath)).Funcs(sprig.TxtFuncMap()).Funcs(template.FuncMap{
 		"exists":    exists,
-		"parseUrl":  parseUrl,
+		"parseUrl":  parseURL,
 		"isTrue":    isTrue,
 		"jsonQuery": jsonQuery,
 	})

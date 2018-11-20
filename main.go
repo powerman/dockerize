@@ -2,8 +2,10 @@ package main
 
 import (
 	"crypto/tls"
+	"errors"
 	"flag"
 	"fmt"
+  "io/ioutil"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -20,6 +22,7 @@ import (
 	"time"
 
 	"golang.org/x/net/context"
+	"gopkg.in/ini.v1"
 )
 
 const defaultWaitRetryInterval = time.Second
@@ -27,14 +30,18 @@ const defaultWaitRetryInterval = time.Second
 type sliceVar []string
 type hostFlagsVar []string
 
+// Context is the type passed into the template renderer
 type Context struct {
 }
 
-type HttpHeader struct {
+// HTTPHeader this is an optional header passed on http checks
+type HTTPHeader struct {
 	name  string
 	value string
 }
 
+// Env is bound to the template rendering Context and returns the
+// environment variables passed to the program
 func (c *Context) Env() map[string]string {
 	env := make(map[string]string)
 	for _, i := range os.Environ() {
@@ -49,6 +56,10 @@ var (
 	version      bool
 	wg           sync.WaitGroup
 
+	envFlag           string
+	multiline         bool
+	envSection        string
+	envHdrFlag        sliceVar
 	templatesFlag     sliceVar
 	templateDirsFlag  sliceVar
 	stdoutTailFlag    sliceVar
@@ -56,7 +67,7 @@ var (
 	headersFlag       sliceVar
 	delimsFlag        string
 	delims            []string
-	headers           []HttpHeader
+	headers           []HTTPHeader
 	urls              []url.URL
 	waitFlag          hostFlagsVar
 	waitRetryInterval time.Duration
@@ -286,13 +297,72 @@ Arguments:
              -wait tcp://web:8000 nginx
 	`)
 
-	println(`For more information, see https://github.com/jwilder/dockerize`)
+	println(`For more information, see https://github.com/powerman/dockerize`)
+}
+
+func getINI(envFlag string, envHdrFlag []string) (iniFile []byte, err error) {
+
+	// See if envFlag parses like an absolute URL, if so use http, otherwise treat as filename
+	url, urlERR := url.ParseRequestURI(envFlag)
+	if urlERR == nil && url.IsAbs() {
+		var resp *http.Response
+		var req *http.Request
+		var hdr string
+		var client *http.Client
+		// Define redirect handler to disallow redirects
+		var redir = func(req *http.Request, via []*http.Request) error {
+			return errors.New("Redirects disallowed")
+		}
+
+		transport := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: skipTLSVerifyFlag},
+		}
+		client = &http.Client{Transport: transport, CheckRedirect: redir}
+		req, err = http.NewRequest("GET", envFlag, nil)
+		if err != nil {
+			// Weird problem with declaring client, bail
+			return
+		}
+		// Handle headers for request - are they headers or filepaths?
+		for _, h := range envHdrFlag {
+			if strings.Contains(h, ":") {
+				// This will break if path includes colon - don't use colons in path!
+				hdr = h
+			} else { // Treat this is a path to a secrets file containing header
+				var hdrFile []byte
+				hdrFile, err = ioutil.ReadFile(h)
+				if err != nil { // Could not read file, error out
+					return
+				}
+				hdr = string(hdrFile)
+			}
+			parts := strings.Split(hdr, ":")
+			if len(parts) != 2 {
+				log.Fatalf("Bad env-headers argument: %s. expected \"headerName: headerValue\"", hdr)
+			}
+			req.Header.Add(strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1]))
+		}
+		resp, err = client.Do(req)
+		if err == nil && resp.StatusCode == 200 {
+			defer resp.Body.Close()
+			iniFile, err = ioutil.ReadAll(resp.Body)
+		} else if err == nil { // Request completed with unexpected HTTP status code, bail
+			err = errors.New(resp.Status)
+			return
+		}
+	} else {
+		iniFile, err = ioutil.ReadFile(envFlag)
+	}
+	return
 }
 
 func main() {
 
 	flag.BoolVar(&version, "version", false, "show version")
-
+	flag.StringVar(&envFlag, "env", "", "Optional path to INI file for injecting env vars. Does not overwrite existing env vars")
+	flag.BoolVar(&multiline, "multiline", false, "enable parsing multiline INI entries in INI environment file")
+	flag.StringVar(&envSection, "env-section", "", "Optional section of INI file to use for loading env vars. Defaults to \"\"")
+	flag.Var(&envHdrFlag, "env-header", "Optional string or path to secrets file for http headers passed if -env is a URL")
 	flag.Var(&templatesFlag, "template", "Template (/template:/dest). Can be passed multiple times. Does also support directories")
 	flag.BoolVar(&noOverwriteFlag, "no-overwrite", false, "Do not overwrite destination file if it already exists.")
 	flag.StringVar(&kubeConfigFlag, "kube-config", "", "Use a remote cluster, and authenticate with a config file.")
@@ -317,6 +387,25 @@ func main() {
 	if flag.NArg() == 0 && flag.NFlag() == 0 {
 		usage()
 		os.Exit(1)
+	}
+
+	if envFlag != "" {
+		iniFile, err := getINI(envFlag, envHdrFlag)
+		if err != nil {
+			log.Fatalf("unreadable INI file %s: %s", envFlag, err)
+		}
+		cfg, err := ini.LoadSources(ini.LoadOptions{AllowPythonMultilineValues: multiline}, iniFile)
+		if err != nil {
+			log.Fatalf("error parsing contents of %s as INI format: %s", envFlag, err)
+		}
+		envHash := cfg.Section(envSection).KeysHash()
+
+		for k, v := range envHash {
+			if _, ok := os.LookupEnv(k); !ok {
+				// log.Printf("Setting %s to %s", k, v)
+				os.Setenv(k, v)
+			}
+		}
 	}
 
 	if delimsFlag != "" {
@@ -346,7 +435,7 @@ func main() {
 			if len(parts) != 2 {
 				log.Fatalf(errMsg, headersFlag)
 			}
-			headers = append(headers, HttpHeader{name: strings.TrimSpace(parts[0]), value: strings.TrimSpace(parts[1])})
+			headers = append(headers, HTTPHeader{name: strings.TrimSpace(parts[0]), value: strings.TrimSpace(parts[1])})
 		} else {
 			log.Fatalf(errMsg, headersFlag)
 		}
