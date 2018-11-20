@@ -5,12 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-  "io/ioutil"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -23,6 +18,11 @@ import (
 
 	"golang.org/x/net/context"
 	"gopkg.in/ini.v1"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 const defaultWaitRetryInterval = time.Second
@@ -221,10 +221,10 @@ func waitForDependencies() {
 
 					for range ticker.C {
 						job, err := clientset.BatchV1().Jobs(namespace).Get(jobName, metav1.GetOptions{})
-						if errors.IsNotFound(err) {
+						if kerr.IsNotFound(err) {
 							log.Printf("Job not found. Sleeping %s", waitRetryInterval)
 							continue
-						} else if statusError, isStatus := err.(*errors.StatusError); isStatus {
+						} else if statusError, isStatus := err.(*kerr.StatusError); isStatus {
 							log.Printf("Error getting job %v. Sleeping %s", statusError.ErrStatus.Message, waitRetryInterval)
 							continue
 						} else if err != nil {
