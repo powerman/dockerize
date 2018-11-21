@@ -71,7 +71,8 @@ func generateFile(templatePath, destPath string) bool {
 	}
 
 	// Don't overwrite destination file if it exists and no-overwrite flag passed
-	if _, err := os.Stat(destPath); err == nil && noOverwriteFlag {
+	_, err = os.Stat(destPath)
+	if err == nil && noOverwriteFlag {
 		return false
 	}
 
@@ -118,13 +119,16 @@ func generateDir(templateDir, destDir string) bool {
 	}
 
 	for _, file := range files {
-		if file.IsDir() {
+		switch {
+		case file.IsDir():
 			nextDestination := filepath.Join(destDir, file.Name())
-			os.Mkdir(nextDestination, file.Mode())
+			if err := os.Mkdir(nextDestination, file.Mode()); err != nil {
+				log.Fatalf("failed to create directory: %s, error: %s", nextDestination, err)
+			}
 			generateDir(filepath.Join(templateDir, file.Name()), nextDestination)
-		} else if destDir == "" {
+		case destDir == "":
 			generateFile(filepath.Join(templateDir, file.Name()), "")
-		} else {
+		default:
 			generateFile(filepath.Join(templateDir, file.Name()), filepath.Join(destDir, file.Name()))
 		}
 	}

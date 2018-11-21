@@ -29,7 +29,7 @@ func tailFile(ctx context.Context, file string, dest *os.File) {
 		return
 	}
 
-	for true {
+	for {
 		// Copy will call the Reader and Writer interface multiple time, in order
 		// to copy by chunk (avoiding loading the whole file in memory).
 		// I insert the ability to cancel before read time as it is the earliest

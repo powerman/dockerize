@@ -25,6 +25,7 @@ import (
 	"time"
 )
 
+// Tail is an io.ReadCloser with "tail -F" behaviour.
 type Tail struct {
 	reader     *bufio.Reader
 	readerErr  error
@@ -41,22 +42,13 @@ const (
 
 // NewTail starts opens the given file and watches it for deletion/rotation
 func NewTail(filename string) (*Tail, error) {
-	t, err := newTail(filename)
-	if err != nil {
-		return nil, err
-	}
-	go t.watchLoop()
-	return t, nil
-}
-
-// newTail creates a Tail object.
-func newTail(filename string) (*Tail, error) {
 	t := &Tail{
 		filename: filename,
 	}
 	// Initialize readerErr as io.EOF, so that the reader can work properly
 	// during initialization.
 	t.readerErr = io.EOF
+	go t.watchLoop()
 	return t, nil
 }
 
@@ -108,9 +100,7 @@ func (t *Tail) attemptOpen() error {
 		if interval >= maxRetryInterval {
 			break
 		}
-		select {
-		case <-time.After(interval):
-		}
+		time.Sleep(interval)
 	}
 	t.readerErr = lastErr
 	return lastErr
@@ -134,24 +124,22 @@ func (t *Tail) watchFile() error {
 	defer t.file.Close()
 
 	for {
-		select {
-		case <-time.After(2 * time.Second):
-			stat, err := os.Stat(t.filename)
-			if err != nil && !os.IsNotExist(err) {
-				log.Printf("Cannot stat file %s: %v", t.filename, err)
-			}
+		time.Sleep(2 * time.Second)
+		stat, err := os.Stat(t.filename)
+		if err != nil && !os.IsNotExist(err) {
+			log.Printf("Cannot stat file %s: %v", t.filename, err)
+		}
 
-			if err == nil {
-				tstat := t.stat.Sys().(*syscall.Stat_t)
-				st := stat.Sys().(*syscall.Stat_t)
+		if err == nil {
+			tstat := t.stat.Sys().(*syscall.Stat_t)
+			st := stat.Sys().(*syscall.Stat_t)
 
-				if tstat.Dev != st.Dev || tstat.Ino != st.Ino {
-					log.Printf("Log file %s moved/deleted", t.filename)
-					t.readerLock.Lock()
-					defer t.readerLock.Unlock()
-					t.readerErr = io.EOF
-					return nil
-				}
+			if tstat.Dev != st.Dev || tstat.Ino != st.Ino {
+				log.Printf("Log file %s moved/deleted", t.filename)
+				t.readerLock.Lock()
+				defer t.readerLock.Unlock()
+				t.readerErr = io.EOF
+				return nil
 			}
 		}
 	}

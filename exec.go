@@ -27,7 +27,7 @@ func runCmd(ctx context.Context, cancel context.CancelFunc, cmd string, args ...
 
 	// Setup signaling
 	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
+	signal.Notify(sigs, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
 
 	wg.Add(1)
 	go func() {
@@ -53,15 +53,14 @@ func runCmd(ctx context.Context, cancel context.CancelFunc, cmd string, args ...
 		// OPTIMIZE: This could be cleaner
 		os.Exit(err.(*exec.ExitError).Sys().(syscall.WaitStatus).ExitStatus())
 	}
-
 }
 
 func signalProcessWithTimeout(process *exec.Cmd, sig os.Signal) {
 	done := make(chan struct{})
 
 	go func() {
-		process.Process.Signal(sig) // pretty sure this doesn't do anything. It seems like the signal is automatically sent to the command?
-		process.Wait()
+		_ = process.Process.Signal(sig) // pretty sure this doesn't do anything. It seems like the signal is automatically sent to the command?
+		_ = process.Wait()
 		close(done)
 	}()
 	select {
@@ -69,6 +68,6 @@ func signalProcessWithTimeout(process *exec.Cmd, sig os.Signal) {
 		return
 	case <-time.After(10 * time.Second):
 		log.Println("Killing command due to timeout.")
-		process.Process.Kill()
+		_ = process.Process.Kill()
 	}
 }

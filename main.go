@@ -26,8 +26,7 @@ type sliceVar []string
 type hostFlagsVar []string
 
 // Context is the type passed into the template renderer
-type Context struct {
-}
+type Context struct{}
 
 // HTTPHeader this is an optional header passed on http checks
 type HTTPHeader struct {
@@ -56,7 +55,6 @@ var (
 	envSection        string
 	envHdrFlag        sliceVar
 	templatesFlag     sliceVar
-	templateDirsFlag  sliceVar
 	stdoutTailFlag    sliceVar
 	stderrTailFlag    sliceVar
 	headersFlag       sliceVar
@@ -68,7 +66,6 @@ var (
 	waitFlag          hostFlagsVar
 	waitRetryInterval time.Duration
 	waitTimeoutFlag   time.Duration
-	dependencyChan    chan struct{}
 	noOverwriteFlag   bool
 	skipTLSVerifyFlag bool
 	skipRedirectFlag  bool
@@ -95,7 +92,7 @@ func (s *sliceVar) String() string {
 	return strings.Join(*s, ",")
 }
 
-func waitForDependencies() {
+func waitForDependencies() { // nolint:gocyclo
 	dependencyChan := make(chan struct{})
 
 	go func() {
@@ -111,14 +108,15 @@ func waitForDependencies() {
 					defer ticker.Stop()
 					var err error
 					for range ticker.C {
-						if _, err = os.Stat(u.Path); err == nil {
+						_, err = os.Stat(u.Path)
+						switch {
+						case err == nil:
 							log.Printf("File %s had been generated\n", u.String())
 							return
-						} else if os.IsNotExist(err) {
+						case os.IsNotExist(err):
 							continue
-						} else {
+						default:
 							log.Printf("Problem with check file %s exist: %v. Sleeping %s\n", u.String(), err.Error(), waitRetryInterval)
-
 						}
 					}
 				}(u)
@@ -157,10 +155,11 @@ func waitForDependencies() {
 						}
 
 						resp, err := client.Do(req)
-						if err != nil {
+						switch {
+						case err != nil:
 							log.Printf("Problem with request: %s. Sleeping %s\n", err.Error(), waitRetryInterval)
 							time.Sleep(waitRetryInterval)
-						} else if len(statusCodesFlag) > 0 {
+						case len(statusCodesFlag) > 0:
 							for _, code := range statusCodesFlag {
 								if code == strconv.Itoa(resp.StatusCode) {
 									log.Printf("Received %d from %s\n", resp.StatusCode, u.String())
@@ -169,10 +168,10 @@ func waitForDependencies() {
 							}
 							log.Printf("Received %d from %s. Sleeping %s\n", resp.StatusCode, u.String(), waitRetryInterval)
 							time.Sleep(waitRetryInterval)
-						} else if err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 {
+						case err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300:
 							log.Printf("Received %d from %s\n", resp.StatusCode, u.String())
 							return
-						} else {
+						default:
 							log.Printf("Received %d from %s. Sleeping %s\n", resp.StatusCode, u.String(), waitRetryInterval)
 							time.Sleep(waitRetryInterval)
 						}
@@ -192,7 +191,6 @@ func waitForDependencies() {
 	case <-time.After(waitTimeoutFlag):
 		log.Fatalf("Timeout after %s waiting on dependencies to become available: %v", waitTimeoutFlag, waitFlag)
 	}
-
 }
 
 func waitForSocket(scheme, addr string, timeout time.Duration) {
@@ -200,7 +198,7 @@ func waitForSocket(scheme, addr string, timeout time.Duration) {
 	go func() {
 		defer wg.Done()
 		for {
-			conn, err := net.DialTimeout(scheme, addr, waitTimeoutFlag)
+			conn, err := net.DialTimeout(scheme, addr, timeout)
 			if err != nil {
 				log.Printf("Problem with dial: %v. Sleeping %s\n", err.Error(), waitRetryInterval)
 				time.Sleep(waitRetryInterval)
@@ -241,7 +239,6 @@ Arguments:
 }
 
 func getINI(envFlag string, envHdrFlag []string) (iniFile []byte, err error) {
-
 	// See if envFlag parses like an absolute URL, if so use http, otherwise treat as filename
 	url, urlERR := url.ParseRequestURI(envFlag)
 	if urlERR == nil && url.IsAbs() {
@@ -251,7 +248,7 @@ func getINI(envFlag string, envHdrFlag []string) (iniFile []byte, err error) {
 		var client *http.Client
 		// Define redirect handler to disallow redirects
 		var redir = func(req *http.Request, via []*http.Request) error {
-			return errors.New("Redirects disallowed")
+			return errors.New("redirects disallowed")
 		}
 
 		transport := &http.Transport{
@@ -261,7 +258,7 @@ func getINI(envFlag string, envHdrFlag []string) (iniFile []byte, err error) {
 		req, err = http.NewRequest("GET", envFlag, nil)
 		if err != nil {
 			// Weird problem with declaring client, bail
-			return
+			return iniFile, err
 		}
 		// Handle headers for request - are they headers or filepaths?
 		for _, h := range envHdrFlag {
@@ -272,7 +269,7 @@ func getINI(envFlag string, envHdrFlag []string) (iniFile []byte, err error) {
 				var hdrFile []byte
 				hdrFile, err = ioutil.ReadFile(h)
 				if err != nil { // Could not read file, error out
-					return
+					return iniFile, err
 				}
 				hdr = string(hdrFile)
 			}
@@ -288,16 +285,15 @@ func getINI(envFlag string, envHdrFlag []string) (iniFile []byte, err error) {
 			iniFile, err = ioutil.ReadAll(resp.Body)
 		} else if err == nil { // Request completed with unexpected HTTP status code, bail
 			err = errors.New(resp.Status)
-			return
+			return iniFile, err
 		}
 	} else {
 		iniFile, err = ioutil.ReadFile(envFlag)
 	}
-	return
+	return iniFile, err
 }
 
-func main() {
-
+func main() { // nolint:gocyclo
 	flag.BoolVar(&version, "version", false, "show version")
 	flag.StringVar(&envFlag, "env", "", "Optional path to INI file for injecting env vars. Does not overwrite existing env vars")
 	flag.BoolVar(&multiline, "multiline", false, "enable parsing multiline INI entries in INI environment file")
@@ -379,7 +375,6 @@ func main() {
 		} else {
 			log.Fatalf(errMsg, headersFlag)
 		}
-
 	}
 
 	for _, t := range templatesFlag {
