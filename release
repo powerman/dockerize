@@ -17,6 +17,7 @@ linux-x86_64            linux   amd64
 linux-386               linux   386
 linux-armel             linux   arm     5
 linux-armhf             linux   arm     6
+linux-arm64             linux   arm64
 darwin-x86_64           darwin  amd64
 DIST
 
