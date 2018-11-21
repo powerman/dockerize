@@ -2,6 +2,12 @@
 
 Utility to simplify running applications in docker containers.
 
+**About this fork:** This fork is supposed to become a community-maintained replacement for
+[not maintained](https://github.com/jwilder/dockerize/issues/120)
+[original repo](https://github.com/jwilder/dockerize). Everyone who has
+contributed to the project may become a collaborator - just ask for it
+in PR comments after your PR has being merged.
+
 dockerize is a utility to simplify running applications in docker containers.  It allows you to:
 * generate application configuration files at container startup time from templates and container environment variables
 * Tail multiple log files to stdout and/or stderr
