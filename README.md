@@ -1,4 +1,4 @@
-# dockerize ![version v0.7.0](https://img.shields.io/badge/version-v0.7.0-brightgreen.svg) ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+# dockerize ![version v0.8.0](https://img.shields.io/badge/version-v0.8.0-brightgreen.svg) ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
 Utility to simplify running applications in docker containers.
 
@@ -28,7 +28,7 @@ See [A Simple Way To Dockerize Applications](http://jasonwilder.com/blog/2014/10
 Download the latest version in your container:
 
 ```sh
-curl -sfL https://github.com/powerman/dockerize/releases/download/v0.7.0/dockerize-`uname -s`-`uname -m` | install /dev/stdin /usr/local/bin/dockerize
+curl -sfL https://github.com/powerman/dockerize/releases/download/v0.8.0/dockerize-`uname -s`-`uname -m` | install /dev/stdin /usr/local/bin/dockerize
 ```
 
 ### Docker Base Image
