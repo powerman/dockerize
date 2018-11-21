@@ -96,10 +96,23 @@ If your file uses `{{` and `}}` as part of it's syntax, you can change the templ
 $ dockerize -delims "<%:%>"
 ```
 
-Http headers can be specified for http/https protocols.
+HTTP headers can be specified for http/https protocols.
 
 ```
 $ dockerize -wait http://web:80 -wait-http-header "Authorization:Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
+```
+
+Required HTTP status codes can be specified, otherwise any 2xx status will
+be accepted.
+
+```
+$ dockerize -wait http://web:80 -wait-http-status-code 302 -wait-http-status-code 200
+```
+
+HTTP redirects can be ignored:
+
+```
+$ dockerize -wait http://web:80 -wait-http-skip-redirect
 ```
 
 ### Waiting for other dependencies
