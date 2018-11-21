@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -59,6 +60,7 @@ var (
 	stdoutTailFlag    sliceVar
 	stderrTailFlag    sliceVar
 	headersFlag       sliceVar
+	statusCodesFlag   sliceVar
 	delimsFlag        string
 	delims            []string
 	headers           []HTTPHeader
@@ -69,6 +71,7 @@ var (
 	dependencyChan    chan struct{}
 	noOverwriteFlag   bool
 	skipTLSVerifyFlag bool
+	skipRedirectFlag  bool
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -134,6 +137,12 @@ func waitForDependencies() {
 						Timeout:   waitTimeoutFlag,
 					}
 
+					if skipRedirectFlag {
+						client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+							return http.ErrUseLastResponse
+						}
+					}
+
 					defer wg.Done()
 					for {
 						req, err := http.NewRequest("GET", u.String(), nil)
@@ -150,6 +159,15 @@ func waitForDependencies() {
 						resp, err := client.Do(req)
 						if err != nil {
 							log.Printf("Problem with request: %s. Sleeping %s\n", err.Error(), waitRetryInterval)
+							time.Sleep(waitRetryInterval)
+						} else if len(statusCodesFlag) > 0 {
+							for _, code := range statusCodesFlag {
+								if code == strconv.Itoa(resp.StatusCode) {
+									log.Printf("Received %d from %s\n", resp.StatusCode, u.String())
+									return
+								}
+							}
+							log.Printf("Received %d from %s. Sleeping %s\n", resp.StatusCode, u.String(), waitRetryInterval)
 							time.Sleep(waitRetryInterval)
 						} else if err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 {
 							log.Printf("Received %d from %s\n", resp.StatusCode, u.String())
@@ -291,6 +309,8 @@ func main() {
 	flag.Var(&stderrTailFlag, "stderr", "Tails a file to stderr. Can be passed multiple times")
 	flag.StringVar(&delimsFlag, "delims", "", `template tag delimiters. default "{{":"}}" `)
 	flag.Var(&headersFlag, "wait-http-header", "HTTP headers, colon separated. e.g \"Accept-Encoding: gzip\". Can be passed multiple times")
+	flag.Var(&statusCodesFlag, "wait-http-status-code", "HTTP code to wait for e.g. \"-wait-http-status-code 302  -wait-http-status-code 200\". Can be passed multiple times. (If not specified -wait returns on 200 >= x < 300) ")
+	flag.BoolVar(&skipRedirectFlag, "wait-http-skip-redirect", false, "Skip HTTP redirects")
 	flag.Var(&waitFlag, "wait", "Host (tcp/tcp4/tcp6/http/https/unix/file) to wait for before this container starts. Can be passed multiple times. e.g. tcp://db:5432")
 	flag.BoolVar(&skipTLSVerifyFlag, "skip-tls-verify", false, "Skip tls verification for https wait requests")
 	flag.DurationVar(&waitTimeoutFlag, "timeout", 10*time.Second, "Host wait timeout")
