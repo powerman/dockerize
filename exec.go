@@ -1,14 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 	"os/exec"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"golang.org/x/net/context"
 )
 
 func runCmd(ctx context.Context, cancel context.CancelFunc, cmd string, args ...string) {

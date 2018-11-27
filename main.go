@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"errors"
 	"flag"
@@ -16,7 +17,6 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/net/context"
 	"gopkg.in/ini.v1"
 )
 

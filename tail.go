@@ -1,10 +1,9 @@
 package main
 
 import (
+	"context"
 	"io"
 	"log"
-
-	"golang.org/x/net/context"
 
 	"github.com/powerman/tail"
 )
