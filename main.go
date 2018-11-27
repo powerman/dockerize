@@ -22,8 +22,9 @@ import (
 
 const defaultWaitRetryInterval = time.Second
 
+var buildVersion = "unknown" // nolint:gochecknoglobals
+
 type sliceVar []string
-type hostFlagsVar []string
 
 // Context is the type passed into the template renderer
 type Context struct{}
@@ -45,44 +46,6 @@ func (c *Context) Env() map[string]string {
 	return env
 }
 
-var (
-	buildVersion string
-	version      bool
-	wg           sync.WaitGroup
-
-	envFlag           string
-	multiline         bool
-	envSection        string
-	envHdrFlag        sliceVar
-	templatesFlag     sliceVar
-	stdoutTailFlag    sliceVar
-	stderrTailFlag    sliceVar
-	headersFlag       sliceVar
-	statusCodesFlag   sliceVar
-	delimsFlag        string
-	delims            []string
-	headers           []HTTPHeader
-	urls              []url.URL
-	waitFlag          hostFlagsVar
-	waitRetryInterval time.Duration
-	waitTimeoutFlag   time.Duration
-	noOverwriteFlag   bool
-	skipTLSVerifyFlag bool
-	skipRedirectFlag  bool
-
-	ctx    context.Context
-	cancel context.CancelFunc
-)
-
-func (i *hostFlagsVar) String() string {
-	return fmt.Sprint(*i)
-}
-
-func (i *hostFlagsVar) Set(value string) error {
-	*i = append(*i, value)
-	return nil
-}
-
 func (s *sliceVar) Set(value string) error {
 	*s = append(*s, value)
 	return nil
@@ -92,7 +55,16 @@ func (s *sliceVar) String() string {
 	return strings.Join(*s, ",")
 }
 
-func waitForDependencies() { // nolint:gocyclo
+func waitForDependencies( // nolint:gocyclo
+	urls []*url.URL,
+	headers []HTTPHeader,
+	skipTLSVerify bool,
+	skipRedirect bool,
+	statusCodes []string,
+	timeout time.Duration,
+	delay time.Duration,
+) {
+	wg := &sync.WaitGroup{}
 	dependencyChan := make(chan struct{})
 
 	go func() {
@@ -102,9 +74,9 @@ func waitForDependencies() { // nolint:gocyclo
 			switch u.Scheme {
 			case "file":
 				wg.Add(1)
-				go func(u url.URL) {
+				go func(u *url.URL) {
 					defer wg.Done()
-					ticker := time.NewTicker(waitRetryInterval)
+					ticker := time.NewTicker(delay)
 					defer ticker.Stop()
 					var err error
 					for range ticker.C {
@@ -116,26 +88,28 @@ func waitForDependencies() { // nolint:gocyclo
 						case os.IsNotExist(err):
 							continue
 						default:
-							log.Printf("Problem with check file %s exist: %v. Sleeping %s\n", u.String(), err.Error(), waitRetryInterval)
+							log.Printf("Problem with check file %s exist: %v. Sleeping %s\n", u.String(), err.Error(), delay)
 						}
 					}
 				}(u)
 			case "tcp", "tcp4", "tcp6":
-				waitForSocket(u.Scheme, u.Host, waitTimeoutFlag)
+				wg.Add(1)
+				go waitForSocket(wg, u.Scheme, u.Host, timeout, delay)
 			case "unix":
-				waitForSocket(u.Scheme, u.Path, waitTimeoutFlag)
+				wg.Add(1)
+				go waitForSocket(wg, u.Scheme, u.Path, timeout, delay)
 			case "http", "https":
 				wg.Add(1)
-				go func(u url.URL) {
+				go func(u *url.URL) {
 					transport := &http.Transport{
-						TLSClientConfig: &tls.Config{InsecureSkipVerify: skipTLSVerifyFlag},
+						TLSClientConfig: &tls.Config{InsecureSkipVerify: skipTLSVerify},
 					}
 					client := &http.Client{
 						Transport: transport,
-						Timeout:   waitTimeoutFlag,
+						Timeout:   timeout,
 					}
 
-					if skipRedirectFlag {
+					if skipRedirect {
 						client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 							return http.ErrUseLastResponse
 						}
@@ -145,8 +119,8 @@ func waitForDependencies() { // nolint:gocyclo
 					for {
 						req, err := http.NewRequest("GET", u.String(), nil)
 						if err != nil {
-							log.Printf("Problem with dial: %v. Sleeping %s\n", err.Error(), waitRetryInterval)
-							time.Sleep(waitRetryInterval)
+							log.Printf("Problem with dial: %v. Sleeping %s\n", err.Error(), delay)
+							time.Sleep(delay)
 						}
 						if len(headers) > 0 {
 							for _, header := range headers {
@@ -157,23 +131,23 @@ func waitForDependencies() { // nolint:gocyclo
 						resp, err := client.Do(req)
 						switch {
 						case err != nil:
-							log.Printf("Problem with request: %s. Sleeping %s\n", err.Error(), waitRetryInterval)
-							time.Sleep(waitRetryInterval)
-						case len(statusCodesFlag) > 0:
-							for _, code := range statusCodesFlag {
+							log.Printf("Problem with request: %s. Sleeping %s\n", err.Error(), delay)
+							time.Sleep(delay)
+						case len(statusCodes) > 0:
+							for _, code := range statusCodes {
 								if code == strconv.Itoa(resp.StatusCode) {
 									log.Printf("Received %d from %s\n", resp.StatusCode, u.String())
 									return
 								}
 							}
-							log.Printf("Received %d from %s. Sleeping %s\n", resp.StatusCode, u.String(), waitRetryInterval)
-							time.Sleep(waitRetryInterval)
+							log.Printf("Received %d from %s. Sleeping %s\n", resp.StatusCode, u.String(), delay)
+							time.Sleep(delay)
 						case err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300:
 							log.Printf("Received %d from %s\n", resp.StatusCode, u.String())
 							return
 						default:
-							log.Printf("Received %d from %s. Sleeping %s\n", resp.StatusCode, u.String(), waitRetryInterval)
-							time.Sleep(waitRetryInterval)
+							log.Printf("Received %d from %s. Sleeping %s\n", resp.StatusCode, u.String(), delay)
+							time.Sleep(delay)
 						}
 					}
 				}(u)
@@ -188,27 +162,25 @@ func waitForDependencies() { // nolint:gocyclo
 	select {
 	case <-dependencyChan:
 		break
-	case <-time.After(waitTimeoutFlag):
-		log.Fatalf("Timeout after %s waiting on dependencies to become available: %v", waitTimeoutFlag, waitFlag)
+	case <-time.After(timeout):
+		// TODO include only timed out dependencies, not all of them
+		log.Fatalf("Timeout after %s waiting on dependencies to become available: %v", timeout, urls)
 	}
 }
 
-func waitForSocket(scheme, addr string, timeout time.Duration) {
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for {
-			conn, err := net.DialTimeout(scheme, addr, timeout)
-			if err != nil {
-				log.Printf("Problem with dial: %v. Sleeping %s\n", err.Error(), waitRetryInterval)
-				time.Sleep(waitRetryInterval)
-			}
-			if conn != nil {
-				log.Printf("Connected to %s://%s\n", scheme, addr)
-				return
-			}
+func waitForSocket(wg *sync.WaitGroup, scheme, addr string, timeout, delay time.Duration) {
+	defer wg.Done()
+	for {
+		conn, err := net.DialTimeout(scheme, addr, timeout)
+		if err != nil {
+			log.Printf("Problem with dial: %v. Sleeping %s\n", err.Error(), delay)
+			time.Sleep(delay)
 		}
-	}()
+		if conn != nil {
+			log.Printf("Connected to %s://%s\n", scheme, addr)
+			return
+		}
+	}
 }
 
 func usage() {
@@ -238,9 +210,9 @@ Arguments:
 	println(`For more information, see https://github.com/powerman/dockerize`)
 }
 
-func getINI(envFlag string, envHdrFlag []string) (iniFile []byte, err error) {
+func getINI(env string, envHdr []string, skipTLSVerify bool) (iniFile []byte, err error) {
 	// See if envFlag parses like an absolute URL, if so use http, otherwise treat as filename
-	url, urlERR := url.ParseRequestURI(envFlag)
+	url, urlERR := url.ParseRequestURI(env)
 	if urlERR == nil && url.IsAbs() {
 		var resp *http.Response
 		var req *http.Request
@@ -252,16 +224,16 @@ func getINI(envFlag string, envHdrFlag []string) (iniFile []byte, err error) {
 		}
 
 		transport := &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: skipTLSVerifyFlag},
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: skipTLSVerify},
 		}
 		client = &http.Client{Transport: transport, CheckRedirect: redir}
-		req, err = http.NewRequest("GET", envFlag, nil)
+		req, err = http.NewRequest("GET", env, nil)
 		if err != nil {
 			// Weird problem with declaring client, bail
 			return iniFile, err
 		}
 		// Handle headers for request - are they headers or filepaths?
-		for _, h := range envHdrFlag {
+		for _, h := range envHdr {
 			if strings.Contains(h, ":") {
 				// This will break if path includes colon - don't use colons in path!
 				hdr = h
@@ -288,34 +260,54 @@ func getINI(envFlag string, envHdrFlag []string) (iniFile []byte, err error) {
 			return iniFile, err
 		}
 	} else {
-		iniFile, err = ioutil.ReadFile(envFlag)
+		iniFile, err = ioutil.ReadFile(env)
 	}
 	return iniFile, err
 }
 
 func main() { // nolint:gocyclo
-	flag.BoolVar(&version, "version", false, "show version")
-	flag.StringVar(&envFlag, "env", "", "Optional path to INI file for injecting env vars. Does not overwrite existing env vars")
-	flag.BoolVar(&multiline, "multiline", false, "enable parsing multiline INI entries in INI environment file")
-	flag.StringVar(&envSection, "env-section", "", "Optional section of INI file to use for loading env vars. Defaults to \"\"")
-	flag.Var(&envHdrFlag, "env-header", "Optional string or path to secrets file for http headers passed if -env is a URL")
-	flag.Var(&templatesFlag, "template", "Template (/template:/dest). Can be passed multiple times. Does also support directories")
-	flag.BoolVar(&noOverwriteFlag, "no-overwrite", false, "Do not overwrite destination file if it already exists.")
-	flag.Var(&stdoutTailFlag, "stdout", "Tails a file to stdout. Can be passed multiple times")
-	flag.Var(&stderrTailFlag, "stderr", "Tails a file to stderr. Can be passed multiple times")
-	flag.StringVar(&delimsFlag, "delims", "", `template tag delimiters. default "{{":"}}" `)
-	flag.Var(&headersFlag, "wait-http-header", "HTTP headers, colon separated. e.g \"Accept-Encoding: gzip\". Can be passed multiple times")
-	flag.Var(&statusCodesFlag, "wait-http-status-code", "HTTP code to wait for e.g. \"-wait-http-status-code 302  -wait-http-status-code 200\". Can be passed multiple times. (If not specified -wait returns on 200 >= x < 300) ")
-	flag.BoolVar(&skipRedirectFlag, "wait-http-skip-redirect", false, "Skip HTTP redirects")
-	flag.Var(&waitFlag, "wait", "Host (tcp/tcp4/tcp6/http/https/unix/file) to wait for before this container starts. Can be passed multiple times. e.g. tcp://db:5432")
-	flag.BoolVar(&skipTLSVerifyFlag, "skip-tls-verify", false, "Skip tls verification for https wait requests")
-	flag.DurationVar(&waitTimeoutFlag, "timeout", 10*time.Second, "Host wait timeout")
-	flag.DurationVar(&waitRetryInterval, "wait-retry-interval", defaultWaitRetryInterval, "Duration to wait before retrying")
+	var cfg struct { // nolint:maligned
+		version           bool
+		env               string
+		multiline         bool
+		envSection        string
+		envHdr            sliceVar
+		templates         sliceVar
+		noOverwrite       bool
+		stdoutTail        sliceVar
+		stderrTail        sliceVar
+		delims            string
+		headers           sliceVar
+		statusCodes       sliceVar
+		skipRedirect      bool
+		wait              sliceVar
+		skipTLSVerify     bool
+		waitTimeout       time.Duration
+		waitRetryInterval time.Duration
+	}
+
+	flag.BoolVar(&cfg.version, "version", false, "show version")
+	flag.StringVar(&cfg.env, "env", "", "Optional path to INI file for injecting env vars. Does not overwrite existing env vars")
+	flag.BoolVar(&cfg.multiline, "multiline", false, "enable parsing multiline INI entries in INI environment file")
+	flag.StringVar(&cfg.envSection, "env-section", "", "Optional section of INI file to use for loading env vars. Defaults to \"\"")
+	flag.Var(&cfg.envHdr, "env-header", "Optional string or path to secrets file for http headers passed if -env is a URL")
+	flag.Var(&cfg.templates, "template", "Template (/template:/dest). Can be passed multiple times. Does also support directories")
+	flag.BoolVar(&cfg.noOverwrite, "no-overwrite", false, "Do not overwrite destination file if it already exists.")
+	flag.Var(&cfg.stdoutTail, "stdout", "Tails a file to stdout. Can be passed multiple times")
+	flag.Var(&cfg.stderrTail, "stderr", "Tails a file to stderr. Can be passed multiple times")
+	flag.StringVar(&cfg.delims, "delims", "", `template tag delimiters. default "{{":"}}" `)
+	flag.Var(&cfg.headers, "wait-http-header", "HTTP headers, colon separated. e.g \"Accept-Encoding: gzip\". Can be passed multiple times")
+	flag.Var(&cfg.statusCodes, "wait-http-status-code", "HTTP code to wait for e.g. \"-wait-http-status-code 302  -wait-http-status-code 200\". Can be passed multiple times. (If not specified -wait returns on 200 >= x < 300) ")
+	flag.BoolVar(&cfg.skipRedirect, "wait-http-skip-redirect", false, "Skip HTTP redirects")
+	flag.Var(&cfg.wait, "wait", "Host (tcp/tcp4/tcp6/http/https/unix/file) to wait for before this container starts. Can be passed multiple times. e.g. tcp://db:5432")
+	flag.BoolVar(&cfg.skipTLSVerify, "skip-tls-verify", false, "Skip tls verification for https wait requests")
+	flag.DurationVar(&cfg.waitTimeout, "timeout", 10*time.Second, "Host wait timeout")
+	flag.DurationVar(&cfg.waitRetryInterval, "wait-retry-interval", defaultWaitRetryInterval, "Duration to wait before retrying")
 
 	flag.Usage = usage
 	flag.Parse()
 
-	if version {
+	if cfg.version {
 		fmt.Println(buildVersion)
 		return
 	}
@@ -325,16 +317,16 @@ func main() { // nolint:gocyclo
 		os.Exit(1)
 	}
 
-	if envFlag != "" {
-		iniFile, err := getINI(envFlag, envHdrFlag)
+	if cfg.env != "" {
+		iniFile, err := getINI(cfg.env, cfg.envHdr, cfg.skipTLSVerify)
 		if err != nil {
-			log.Fatalf("unreadable INI file %s: %s", envFlag, err)
+			log.Fatalf("unreadable INI file %s: %s", cfg.env, err)
 		}
-		cfg, err := ini.LoadSources(ini.LoadOptions{AllowPythonMultilineValues: multiline}, iniFile)
+		config, err := ini.LoadSources(ini.LoadOptions{AllowPythonMultilineValues: cfg.multiline}, iniFile)
 		if err != nil {
-			log.Fatalf("error parsing contents of %s as INI format: %s", envFlag, err)
+			log.Fatalf("error parsing contents of %s as INI format: %s", cfg.env, err)
 		}
-		envHash := cfg.Section(envSection).KeysHash()
+		envHash := config.Section(cfg.envSection).KeysHash()
 
 		for k, v := range envHash {
 			if _, ok := os.LookupEnv(k); !ok {
@@ -344,24 +336,27 @@ func main() { // nolint:gocyclo
 		}
 	}
 
-	if delimsFlag != "" {
-		delims = strings.Split(delimsFlag, ":")
+	var delims []string
+	if cfg.delims != "" {
+		delims = strings.Split(cfg.delims, ":")
 		if len(delims) != 2 {
-			log.Fatalf("bad delimiters argument: %s. expected \"left:right\"", delimsFlag)
+			log.Fatalf("bad delimiters argument: %s. expected \"left:right\"", cfg.delims)
 		}
 	}
 
-	for _, host := range waitFlag {
+	urls := make([]*url.URL, len(cfg.wait))
+	for i, host := range cfg.wait {
 		u, err := url.Parse(host)
 		if err != nil {
 			log.Fatalf("bad hostname provided: %s. %s", host, err.Error())
 		}
-		urls = append(urls, *u)
+		urls[i] = u
 	}
 
-	for _, h := range headersFlag {
+	var headers []HTTPHeader
+	for _, h := range cfg.headers {
 		//validate headers need -wait options
-		if len(waitFlag) == 0 {
+		if len(cfg.wait) == 0 {
 			log.Fatalf("-wait-http-header \"%s\" provided with no -wait option", h)
 		}
 
@@ -369,15 +364,15 @@ func main() { // nolint:gocyclo
 		if strings.Contains(h, ":") {
 			parts := strings.Split(h, ":")
 			if len(parts) != 2 {
-				log.Fatalf(errMsg, headersFlag)
+				log.Fatalf(errMsg, cfg.headers)
 			}
 			headers = append(headers, HTTPHeader{name: strings.TrimSpace(parts[0]), value: strings.TrimSpace(parts[1])})
 		} else {
-			log.Fatalf(errMsg, headersFlag)
+			log.Fatalf(errMsg, cfg.headers)
 		}
 	}
 
-	for _, t := range templatesFlag {
+	for _, t := range cfg.templates {
 		template, dest := t, ""
 		if strings.Contains(t, ":") {
 			parts := strings.Split(t, ":")
@@ -392,30 +387,33 @@ func main() { // nolint:gocyclo
 			log.Fatalf("unable to stat %s, error: %s", template, err)
 		}
 		if fi.IsDir() {
-			generateDir(template, dest)
+			generateDir(delims, cfg.noOverwrite, template, dest)
 		} else {
-			generateFile(template, dest)
+			generateFile(delims, cfg.noOverwrite, template, dest)
 		}
 	}
 
-	waitForDependencies()
+	waitForDependencies(urls, headers, cfg.skipTLSVerify, cfg.skipRedirect,
+		cfg.statusCodes, cfg.waitTimeout, cfg.waitRetryInterval)
 
-	// Setup context
-	ctx, cancel = context.WithCancel(context.Background())
+	ctx := context.Background()
+	wg := &sync.WaitGroup{}
 
 	if flag.NArg() > 0 {
 		wg.Add(1)
-		go runCmd(ctx, cancel, flag.Arg(0), flag.Args()[1:]...)
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithCancel(ctx)
+		go runCmd(ctx, wg, cancel, flag.Arg(0), flag.Args()[1:]...)
 	}
 
-	for _, out := range stdoutTailFlag {
+	for _, path := range cfg.stdoutTail {
 		wg.Add(1)
-		go tailFile(ctx, out, os.Stdout)
+		go tailFile(ctx, wg, path, os.Stdout)
 	}
 
-	for _, err := range stderrTailFlag {
+	for _, path := range cfg.stderrTail {
 		wg.Add(1)
-		go tailFile(ctx, err, os.Stderr)
+		go tailFile(ctx, wg, path, os.Stderr)
 	}
 
 	wg.Wait()

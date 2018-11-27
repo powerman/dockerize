@@ -6,11 +6,12 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 )
 
-func runCmd(ctx context.Context, cancel context.CancelFunc, cmd string, args ...string) {
+func runCmd(ctx context.Context, wg *sync.WaitGroup, cancel context.CancelFunc, cmd string, args ...string) {
 	defer wg.Done()
 
 	process := exec.Command(cmd, args...)

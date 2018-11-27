@@ -54,7 +54,7 @@ func jsonQuery(jsonObj string, query string) (interface{}, error) {
 	return res, nil
 }
 
-func generateFile(templatePath, destPath string) bool {
+func generateFile(delims []string, noOverwrite bool, templatePath, destPath string) bool {
 	tmpl := template.New(filepath.Base(templatePath)).Funcs(sprig.TxtFuncMap()).Funcs(template.FuncMap{
 		"exists":    exists,
 		"parseUrl":  parseURL,
@@ -72,7 +72,7 @@ func generateFile(templatePath, destPath string) bool {
 
 	// Don't overwrite destination file if it exists and no-overwrite flag passed
 	_, err = os.Stat(destPath)
-	if err == nil && noOverwriteFlag {
+	if err == nil && noOverwrite {
 		return false
 	}
 
@@ -102,7 +102,7 @@ func generateFile(templatePath, destPath string) bool {
 	return true
 }
 
-func generateDir(templateDir, destDir string) bool {
+func generateDir(delims []string, noOverwrite bool, templateDir, destDir string) bool {
 	if destDir != "" {
 		fiDest, err := os.Stat(destDir)
 		if err != nil {
@@ -125,11 +125,11 @@ func generateDir(templateDir, destDir string) bool {
 			if err := os.Mkdir(nextDestination, file.Mode()); err != nil {
 				log.Fatalf("failed to create directory: %s, error: %s", nextDestination, err)
 			}
-			generateDir(filepath.Join(templateDir, file.Name()), nextDestination)
+			generateDir(delims, noOverwrite, filepath.Join(templateDir, file.Name()), nextDestination)
 		case destDir == "":
-			generateFile(filepath.Join(templateDir, file.Name()), "")
+			generateFile(delims, noOverwrite, filepath.Join(templateDir, file.Name()), "")
 		default:
-			generateFile(filepath.Join(templateDir, file.Name()), filepath.Join(destDir, file.Name()))
+			generateFile(delims, noOverwrite, filepath.Join(templateDir, file.Name()), filepath.Join(destDir, file.Name()))
 		}
 	}
 
