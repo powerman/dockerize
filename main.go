@@ -131,24 +131,20 @@ func main() { // nolint:gocyclo
 
 	waitForDependencies(cfg.wait, cfg.waitURLs)
 
-	ctx := context.Background()
 	wg := &sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel() // happy linter
+
+	for _, path := range cfg.tailStdout {
+		tailFile(ctx, wg, path, os.Stdout)
+	}
+	for _, path := range cfg.tailStderr {
+		tailFile(ctx, wg, path, os.Stderr)
+	}
 
 	if flag.NArg() > 0 {
 		wg.Add(1)
-		var cancel context.CancelFunc
-		ctx, cancel = context.WithCancel(ctx)
 		go runCmd(ctx, wg, cancel, flag.Arg(0), flag.Args()[1:]...)
-	}
-
-	for _, path := range cfg.tailStdout {
-		wg.Add(1)
-		go tailFile(ctx, wg, path, os.Stdout)
-	}
-
-	for _, path := range cfg.tailStderr {
-		wg.Add(1)
-		go tailFile(ctx, wg, path, os.Stderr)
 	}
 
 	wg.Wait()
