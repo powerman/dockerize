@@ -10,8 +10,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"gopkg.in/ini.v1"
 )
 
 var buildVersion = "unknown" // nolint:gochecknoglobals
@@ -30,7 +28,7 @@ func main() { // nolint:gocyclo
 
 	flag.BoolVar(&cfg.version, "version", false, "print version and exit")
 	flag.StringVar(&cfg.ini.source, "env", "", "path or URL to INI file with default values for unset env vars")
-	flag.BoolVar(&cfg.ini.multiline, "multiline", false, "allow Python-like multi-line values in INI file")
+	flag.BoolVar(&cfg.ini.options.AllowPythonMultilineValues, "multiline", false, "allow Python-like multi-line values in INI file")
 	flag.StringVar(&cfg.ini.section, "env-section", "", "section name in INI file")
 	flag.Var(&cfg.ini.headers, "env-header", "`name:value` or path to file containing name:value for HTTP header to send\n(if -env is an URL)\ncan be passed multiple times")
 	flag.Var(&cfg.templatePaths, "template", "template `src:dst` file or dir paths, :dst part is optional\ncan be passed multiple times")
@@ -96,21 +94,13 @@ func main() { // nolint:gocyclo
 		fatalFlagValue("require -wait/-env with HTTP url", "skip-tls-verify", cfg.wait.skipTLSVerify)
 	}
 
-	if cfg.ini.source != "" {
-		iniData, err := getINI(cfg.ini)
-		if err != nil {
-			log.Fatalf("unreadable INI file %s: %s", cfg.ini.source, err)
-		}
-		config, err := ini.LoadSources(ini.LoadOptions{AllowPythonMultilineValues: cfg.ini.multiline}, iniData)
-		if err != nil {
-			log.Fatalf("error parsing contents of %s as INI format: %s", cfg.ini.source, err)
-		}
-		envHash := config.Section(cfg.ini.section).KeysHash()
-
-		for k, v := range envHash {
-			if _, ok := os.LookupEnv(k); !ok {
-				os.Setenv(k, v)
-			}
+	defaultEnv, err := loadINISection(cfg.ini)
+	if err != nil {
+		log.Fatal("failed to load default env from INI:", err)
+	}
+	for k, v := range defaultEnv {
+		if _, ok := os.LookupEnv(k); !ok {
+			os.Setenv(k, v)
 		}
 	}
 

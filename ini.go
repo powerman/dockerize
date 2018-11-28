@@ -3,54 +3,71 @@ package main
 import (
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
+	ini "gopkg.in/ini.v1"
 )
 
 type iniConfig struct { // nolint:maligned
 	source        string // URL or file path
-	multiline     bool
+	options       ini.LoadOptions
 	section       string
 	headers       httpHeadersFlag
 	skipTLSVerify bool
 }
 
-func getINI(cfg iniConfig) (data []byte, err error) {
-	// See if envFlag parses like an absolute URL, if so use http, otherwise treat as filename
-	url, urlERR := url.ParseRequestURI(cfg.source)
-	if urlERR == nil && url.IsAbs() {
-		var resp *http.Response
-		var req *http.Request
-		var client *http.Client
-		// Define redirect handler to disallow redirects
-		var redir = func(req *http.Request, via []*http.Request) error {
-			return errors.New("redirects disallowed")
-		}
+func loadINISection(cfg iniConfig) (map[string]string, error) {
+	if cfg.source == "" {
+		return nil, nil
+	}
 
-		transport := &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.skipTLSVerify},
-		}
-		client = &http.Client{Transport: transport, CheckRedirect: redir}
-		req, err = http.NewRequest("GET", cfg.source, nil)
-		if err != nil {
-			// Weird problem with declaring client, bail
-			return data, err
-		}
-		// Handle headers for request - are they headers or filepaths?
-		for _, h := range cfg.headers {
-			req.Header.Add(h.name, h.value)
-		}
-		resp, err = client.Do(req)
-		if err == nil && resp.StatusCode == 200 {
-			defer resp.Body.Close()
-			data, err = ioutil.ReadAll(resp.Body)
-		} else if err == nil { // Request completed with unexpected HTTP status code, bail
-			err = errors.New(resp.Status)
-			return data, err
-		}
+	var data []byte
+	u, err := url.Parse(cfg.source)
+	if err == nil && u.IsAbs() {
+		data, err = fetchINI(cfg)
 	} else {
 		data, err = ioutil.ReadFile(cfg.source)
 	}
-	return data, err
+	if err != nil {
+		return nil, err
+	}
+
+	file, err := ini.LoadSources(cfg.options, data)
+	if err != nil {
+		return nil, err
+	}
+	return file.Section(cfg.section).KeysHash(), nil
+}
+
+func fetchINI(cfg iniConfig) (data []byte, err error) {
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.skipTLSVerify},
+		},
+		CheckRedirect: func(*http.Request, []*http.Request) error {
+			return errors.New("redirects disallowed")
+		},
+	}
+
+	req, err := http.NewRequest("GET", cfg.source, nil)
+	if err != nil {
+		return nil, err
+	}
+	for _, h := range cfg.headers {
+		req.Header.Add(h.name, h.value)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("bad HTTP status: %d", resp.StatusCode)
+	}
+	return ioutil.ReadAll(resp.Body)
 }
