@@ -103,6 +103,7 @@ $ dockerize -delims "<%:%>"
 ```
 
 HTTP headers can be specified for http/https protocols.
+If header is specified as a file path then file must contain single string with `Header: value`.
 
 ```
 $ dockerize -wait http://web:80 -wait-http-header "Authorization:Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="

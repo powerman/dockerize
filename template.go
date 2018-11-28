@@ -15,6 +15,25 @@ import (
 	"github.com/jwilder/gojq"
 )
 
+type templateConfig struct {
+	noOverwrite bool
+	delims      delimsFlag
+}
+
+// Context is the type passed into the template renderer
+type Context struct{}
+
+// Env is bound to the template rendering Context and returns the
+// environment variables passed to the program
+func (c *Context) Env() map[string]string {
+	env := make(map[string]string)
+	for _, i := range os.Environ() {
+		sep := strings.Index(i, "=")
+		env[i[0:sep]] = i[sep+1:]
+	}
+	return env
+}
+
 func exists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
@@ -54,7 +73,7 @@ func jsonQuery(jsonObj string, query string) (interface{}, error) {
 	return res, nil
 }
 
-func generateFile(delims []string, noOverwrite bool, templatePath, destPath string) bool {
+func generateFile(cfg templateConfig, templatePath, destPath string) bool {
 	tmpl := template.New(filepath.Base(templatePath)).Funcs(sprig.TxtFuncMap()).Funcs(template.FuncMap{
 		"exists":    exists,
 		"parseUrl":  parseURL,
@@ -62,8 +81,8 @@ func generateFile(delims []string, noOverwrite bool, templatePath, destPath stri
 		"jsonQuery": jsonQuery,
 	})
 
-	if len(delims) > 0 {
-		tmpl = tmpl.Delims(delims[0], delims[1])
+	if cfg.delims[0] != "" {
+		tmpl = tmpl.Delims(cfg.delims[0], cfg.delims[1])
 	}
 	tmpl, err := tmpl.ParseFiles(templatePath)
 	if err != nil {
@@ -72,7 +91,7 @@ func generateFile(delims []string, noOverwrite bool, templatePath, destPath stri
 
 	// Don't overwrite destination file if it exists and no-overwrite flag passed
 	_, err = os.Stat(destPath)
-	if err == nil && noOverwrite {
+	if err == nil && cfg.noOverwrite {
 		return false
 	}
 
@@ -102,7 +121,7 @@ func generateFile(delims []string, noOverwrite bool, templatePath, destPath stri
 	return true
 }
 
-func generateDir(delims []string, noOverwrite bool, templateDir, destDir string) bool {
+func generateDir(cfg templateConfig, templateDir, destDir string) bool {
 	if destDir != "" {
 		fiDest, err := os.Stat(destDir)
 		if err != nil {
@@ -125,11 +144,11 @@ func generateDir(delims []string, noOverwrite bool, templateDir, destDir string)
 			if err := os.Mkdir(nextDestination, file.Mode()); err != nil {
 				log.Fatalf("failed to create directory: %s, error: %s", nextDestination, err)
 			}
-			generateDir(delims, noOverwrite, filepath.Join(templateDir, file.Name()), nextDestination)
+			generateDir(cfg, filepath.Join(templateDir, file.Name()), nextDestination)
 		case destDir == "":
-			generateFile(delims, noOverwrite, filepath.Join(templateDir, file.Name()), "")
+			generateFile(cfg, filepath.Join(templateDir, file.Name()), "")
 		default:
-			generateFile(delims, noOverwrite, filepath.Join(templateDir, file.Name()), filepath.Join(destDir, file.Name()))
+			generateFile(cfg, filepath.Join(templateDir, file.Name()), filepath.Join(destDir, file.Name()))
 		}
 	}
 

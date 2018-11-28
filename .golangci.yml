@@ -14,7 +14,7 @@ linters-settings:
         threshold: 150
     goconst:
         min-len: 3
-        min-occurrences: 3
+        min-occurrences: 4
     unused:
         check-exported: false
     unparam:
@@ -70,5 +70,5 @@ issues:
         - "G104: Errors unhandled"
         - "G204: Subprocess launched with variable"
         - "G304: Potential file inclusion via variable"
-        - "G402: TLS `InsecureSkipVerify` set true"
+        - "G402: .*InsecureSkipVerify.* true"
         - "Error return value of `(os\\.(Un)?Setenv|.*\\.Close)` is not checked"
