@@ -46,7 +46,11 @@ func main() { // nolint:gocyclo
 
 	flag.Usage = usage
 	flag.Parse()
+
 	cfg.ini.skipTLSVerify = cfg.wait.skipTLSVerify
+	if cfg.template.delims[0] == "" {
+		cfg.template.delims = [2]string{"{{", "}}"}
+	}
 
 	var iniURL, iniHTTP, templatePathBad, waitBadScheme, waitHTTP bool
 	if u, err := url.Parse(cfg.ini.source); err == nil && u.IsAbs() {
@@ -98,25 +102,13 @@ func main() { // nolint:gocyclo
 	if err != nil {
 		log.Fatal("failed to load default env from INI:", err)
 	}
-	for k, v := range defaultEnv {
-		if _, ok := os.LookupEnv(k); !ok {
-			os.Setenv(k, v)
-		}
-	}
 
-	for _, t := range cfg.templatePaths {
-		parts := strings.Split(t, ":")
-		template, dest := parts[0], parts[1]
+	setDefaultEnv(defaultEnv)
 
-		fi, err := os.Stat(template)
-		if err != nil {
-			log.Fatalf("unable to stat %s, error: %s", template, err)
-		}
-		if fi.IsDir() {
-			generateDir(cfg.template, template, dest)
-		} else {
-			generateFile(cfg.template, template, dest)
-		}
+	cfg.template.data.Env = getEnv()
+	err = processTemplatePaths(cfg.template, cfg.templatePaths)
+	if err != nil {
+		log.Fatal("failed to process templates:", err)
 	}
 
 	waitForDependencies(cfg.wait, cfg.waitURLs)

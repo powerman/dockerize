@@ -1,8 +1,8 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
-	"log"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -18,139 +18,170 @@ import (
 type templateConfig struct {
 	noOverwrite bool
 	delims      delimsFlag
-}
-
-// Context is the type passed into the template renderer
-type Context struct{}
-
-// Env is bound to the template rendering Context and returns the
-// environment variables passed to the program
-func (c *Context) Env() map[string]string {
-	env := make(map[string]string)
-	for _, i := range os.Environ() {
-		sep := strings.Index(i, "=")
-		env[i[0:sep]] = i[sep+1:]
+	data        struct {
+		Env map[string]string
 	}
-	return env
 }
 
 func exists(path string) (bool, error) {
 	_, err := os.Stat(path)
-	if err == nil {
+	switch {
+	case err == nil:
 		return true, nil
-	}
-	if os.IsNotExist(err) {
+	case os.IsNotExist(err):
 		return false, nil
+	default:
+		return false, err
 	}
-	return false, err
-}
-
-func parseURL(rawurl string) *url.URL {
-	u, err := url.Parse(rawurl)
-	if err != nil {
-		log.Fatalf("unable to parse url %s: %s", rawurl, err)
-	}
-	return u
 }
 
 func isTrue(s string) bool {
-	b, err := strconv.ParseBool(strings.ToLower(s))
-	if err == nil {
-		return b
-	}
-	return false
+	b, _ := strconv.ParseBool(strings.ToLower(s))
+	return b
 }
 
 func jsonQuery(jsonObj string, query string) (interface{}, error) {
 	parser, err := gojq.NewStringQuery(jsonObj)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	res, err := parser.Query(query)
-	if err != nil {
-		return "", err
-	}
-	return res, nil
+	return parser.Query(query)
 }
 
-func generateFile(cfg templateConfig, templatePath, destPath string) bool {
-	tmpl := template.New(filepath.Base(templatePath)).Funcs(sprig.TxtFuncMap()).Funcs(template.FuncMap{
-		"exists":    exists,
-		"parseUrl":  parseURL,
-		"isTrue":    isTrue,
-		"jsonQuery": jsonQuery,
-	})
-
-	if cfg.delims[0] != "" {
-		tmpl = tmpl.Delims(cfg.delims[0], cfg.delims[1])
-	}
-	tmpl, err := tmpl.ParseFiles(templatePath)
-	if err != nil {
-		log.Fatalf("unable to parse template: %s", err)
-	}
-
-	// Don't overwrite destination file if it exists and no-overwrite flag passed
-	_, err = os.Stat(destPath)
-	if err == nil && cfg.noOverwrite {
-		return false
-	}
-
-	dest := os.Stdout
-	if destPath != "" {
-		dest, err = os.Create(destPath)
-		if err != nil {
-			log.Fatalf("unable to create %s", err)
+func processTemplatePaths(cfg templateConfig, paths []string) error {
+	for _, srcdst := range paths {
+		var src, dst string
+		switch parts := strings.SplitN(srcdst, ":", 2); len(parts) {
+		case 1:
+			src = parts[0]
+		case 2:
+			src, dst = parts[0], parts[1]
 		}
-		defer dest.Close()
-	}
 
-	err = tmpl.ExecuteTemplate(dest, filepath.Base(templatePath), &Context{})
-	if err != nil {
-		log.Fatalf("template error: %s\n", err)
-	}
-
-	if fi, err := os.Stat(destPath); err == nil {
-		if err := dest.Chmod(fi.Mode()); err != nil {
-			log.Fatalf("unable to chmod temp file: %s\n", err)
-		}
-		if err := dest.Chown(int(fi.Sys().(*syscall.Stat_t).Uid), int(fi.Sys().(*syscall.Stat_t).Gid)); err != nil {
-			log.Fatalf("unable to chown temp file: %s\n", err)
-		}
-	}
-
-	return true
-}
-
-func generateDir(cfg templateConfig, templateDir, destDir string) bool {
-	if destDir != "" {
-		fiDest, err := os.Stat(destDir)
-		if err != nil {
-			log.Fatalf("unable to stat %s, error: %s", destDir, err)
-		}
-		if !fiDest.IsDir() {
-			log.Fatalf("if template is a directory, dest must also be a directory (or stdout)")
-		}
-	}
-
-	files, err := ioutil.ReadDir(templateDir)
-	if err != nil {
-		log.Fatalf("bad directory: %s, error: %s", templateDir, err)
-	}
-
-	for _, file := range files {
-		switch {
-		case file.IsDir():
-			nextDestination := filepath.Join(destDir, file.Name())
-			if err := os.Mkdir(nextDestination, file.Mode()); err != nil {
-				log.Fatalf("failed to create directory: %s, error: %s", nextDestination, err)
+		fi, err := os.Stat(src)
+		if err == nil {
+			if fi.IsDir() {
+				err = processTemplateDir(cfg, src, dst)
+			} else {
+				err = processTemplate(cfg, src, dst)
 			}
-			generateDir(cfg, filepath.Join(templateDir, file.Name()), nextDestination)
-		case destDir == "":
-			generateFile(cfg, filepath.Join(templateDir, file.Name()), "")
-		default:
-			generateFile(cfg, filepath.Join(templateDir, file.Name()), filepath.Join(destDir, file.Name()))
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func processTemplate(cfg templateConfig, src, dst string) error {
+	tmpl, err := template.New(filepath.Base(src)).
+		Funcs(sprig.TxtFuncMap()).
+		Funcs(template.FuncMap{
+			"exists":    exists,
+			"parseUrl":  url.Parse,
+			"isTrue":    isTrue,
+			"jsonQuery": jsonQuery,
+		}).
+		Delims(cfg.delims[0], cfg.delims[1]).
+		ParseFiles(src)
+	if err != nil {
+		return err
+	}
+
+	file := os.Stdout
+	if dst != "" {
+		file, err = createDestFile(src, dst, cfg.noOverwrite)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+	}
+
+	return tmpl.Execute(file, cfg.data)
+}
+
+func processTemplateDir(cfg templateConfig, src, dst string) error {
+	if dst != "" {
+		err := ensureDestDir(src, dst)
+		if err != nil {
+			return err
 		}
 	}
 
-	return true
+	entries, err := ioutil.ReadDir(src)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		nextSrc := filepath.Join(src, entry.Name())
+		nextDst := filepath.Join(dst, entry.Name())
+		if dst == "" {
+			nextDst = ""
+		}
+		if entry.IsDir() {
+			err = processTemplateDir(cfg, nextSrc, nextDst)
+		} else {
+			err = processTemplate(cfg, nextSrc, nextDst)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func createDestFile(src, dst string, noOverwrite bool) (*os.File, error) {
+	like, err := os.Stat(src)
+	if err != nil {
+		return nil, err
+	}
+	likeSys, ok := like.Sys().(*syscall.Stat_t)
+
+	openFlags := os.O_RDWR | os.O_CREATE | os.O_TRUNC
+	if noOverwrite {
+		openFlags = os.O_RDWR | os.O_CREATE | os.O_EXCL
+	}
+
+	file, err := os.OpenFile(dst, openFlags, like.Mode().Perm())
+	if err != nil {
+		return nil, err
+	}
+	if ok {
+		err = file.Chown(int(likeSys.Uid), int(likeSys.Gid))
+		if err != nil && !os.IsPermission(err) {
+			file.Close()
+			return nil, err
+		}
+	}
+	return file, nil
+}
+
+func ensureDestDir(src, dst string) error {
+	like, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+	if !like.IsDir() {
+		return fmt.Errorf("not a directory: %s", src)
+	}
+	likeSys, ok := like.Sys().(*syscall.Stat_t)
+
+	fi, err := os.Stat(dst)
+	switch {
+	case err == nil && fi.IsDir():
+		return nil
+	case err == nil:
+		return fmt.Errorf("not a directory: %s", dst)
+	case !os.IsNotExist(err):
+		return err
+	}
+
+	err = os.Mkdir(dst, like.Mode())
+	if err == nil && ok {
+		err = os.Chown(dst, int(likeSys.Uid), int(likeSys.Gid))
+		if os.IsPermission(err) {
+			err = nil
+		}
+	}
+	return err
 }
