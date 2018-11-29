@@ -1,73 +1,45 @@
 package main
 
 import (
-	"context"
-	"log"
 	"os"
 	"os/exec"
 	"os/signal"
-	"sync"
 	"syscall"
-	"time"
 )
 
-func runCmd(ctx context.Context, wg *sync.WaitGroup, cancel context.CancelFunc, cmd string, args ...string) {
-	defer wg.Done()
+func runCmd(name string, args ...string) (int, error) {
+	cmd := exec.Command(name, args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	setSysProcAttr(cmd)
 
-	process := exec.Command(cmd, args...)
-	process.Stdin = os.Stdin
-	process.Stdout = os.Stdout
-	process.Stderr = os.Stderr
-
-	// start the process
-	err := process.Start()
+	err := cmd.Start()
 	if err != nil {
-		log.Fatalf("Error starting command: `%s` - %s\n", cmd, err)
+		return 0, err
 	}
 
-	// Setup signaling
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
-
-	wg.Add(1)
+	sigc := make(chan os.Signal, 8)
+	signal.Notify(sigc,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGQUIT,
+		syscall.SIGABRT,
+		syscall.SIGUSR1,
+		syscall.SIGUSR2,
+		syscall.SIGALRM,
+		syscall.SIGTERM,
+	)
 	go func() {
-		defer wg.Done()
-
-		select {
-		case sig := <-sigs:
-			log.Printf("Received signal: %s\n", sig)
-			signalProcessWithTimeout(process, sig)
-			cancel()
-		case <-ctx.Done():
-			// exit when context is done
+		for sig := range sigc {
+			_ = cmd.Process.Signal(sig) // pretty sure this doesn't do anything. It seems like the signal is automatically sent to the command?
 		}
 	}()
 
-	err = process.Wait()
-	cancel()
+	_ = cmd.Wait()
 
-	if err == nil {
-		log.Println("Command finished successfully.")
-	} else {
-		log.Printf("Command exited with error: %s\n", err)
-		// OPTIMIZE: This could be cleaner
-		os.Exit(err.(*exec.ExitError).Sys().(syscall.WaitStatus).ExitStatus())
-	}
-}
+	signal.Stop(sigc)
+	close(sigc)
 
-func signalProcessWithTimeout(process *exec.Cmd, sig os.Signal) {
-	done := make(chan struct{})
-
-	go func() {
-		_ = process.Process.Signal(sig) // pretty sure this doesn't do anything. It seems like the signal is automatically sent to the command?
-		_ = process.Wait()
-		close(done)
-	}()
-	select {
-	case <-done:
-		return
-	case <-time.After(10 * time.Second):
-		log.Println("Killing command due to timeout.")
-		_ = process.Process.Kill()
-	}
+	return cmd.ProcessState.Sys().(syscall.WaitStatus).ExitStatus(), nil
 }

@@ -1,14 +1,12 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"log"
 	"net/url"
 	"os"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -116,23 +114,23 @@ func main() { // nolint:gocyclo
 		log.Fatalf("Failed to wait: %s.", err)
 	}
 
-	wg := &sync.WaitGroup{}
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel() // happy linter
-
 	for _, path := range cfg.tailStdout {
-		tailFile(ctx, wg, path, os.Stdout)
+		tailFile(path, os.Stdout)
 	}
 	for _, path := range cfg.tailStderr {
-		tailFile(ctx, wg, path, os.Stderr)
+		tailFile(path, os.Stderr)
 	}
 
-	if flag.NArg() > 0 {
-		wg.Add(1)
-		go runCmd(ctx, wg, cancel, flag.Arg(0), flag.Args()[1:]...)
+	switch {
+	case flag.NArg() > 0:
+		code, err := runCmd(flag.Arg(0), flag.Args()[1:]...)
+		if err != nil {
+			log.Fatalf("Failed to run command: %s.", err)
+		}
+		os.Exit(code)
+	case len(cfg.tailStdout)+len(cfg.tailStderr) > 0:
+		select {}
 	}
-
-	wg.Wait()
 }
 
 func usage() {
