@@ -1,20 +1,22 @@
 package main
 
 import (
-	"context"
+	"bytes"
+	"fmt"
+	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/powerman/check"
 	"github.com/powerman/gotest/testexec"
 )
 
-var ctx = context.Background() // nolint:gochecknoglobals
-
 func TestFlagHelp(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
-	out, err := testexec.Func(ctx, t, main, "-h").CombinedOutput()
+	out, err := testexec.Func(testCtx, t, main, "-h").CombinedOutput()
 	t.Match(err, "exit status 124")
 	t.Match(out, "Usage:")
 }
@@ -22,7 +24,7 @@ func TestFlagHelp(tt *testing.T) {
 func TestFlagVersion(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
-	out, err := testexec.Func(ctx, t, main, "-version").CombinedOutput()
+	out, err := testexec.Func(testCtx, t, main, "-version").CombinedOutput()
 	t.Nil(err)
 	t.Match(out, ver)
 }
@@ -125,7 +127,7 @@ func TestFlag(tt *testing.T) {
 			t := check.T(tt)
 			t.Parallel()
 			flags := append(v.flags, "-version")
-			out, err := testexec.Func(ctx, t, main, flags...).CombinedOutput()
+			out, err := testexec.Func(testCtx, t, main, flags...).CombinedOutput()
 			if v.want == "" {
 				t.Nil(err)
 				t.Match(out, ver)
@@ -140,7 +142,7 @@ func TestFlag(tt *testing.T) {
 func TestFailedINI(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
-	out, err := testexec.Func(ctx, t, main, "-env", "nosuch.ini").CombinedOutput()
+	out, err := testexec.Func(testCtx, t, main, "-env", "nosuch.ini").CombinedOutput()
 	t.Match(err, "exit status 123")
 	t.Match(out, `nosuch.ini: no such file`)
 }
@@ -148,7 +150,7 @@ func TestFailedINI(tt *testing.T) {
 func TestFailedTemplate(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
-	out, err := testexec.Func(ctx, t, main, "-template", "nosuch.tmpl").CombinedOutput()
+	out, err := testexec.Func(testCtx, t, main, "-template", "nosuch.tmpl").CombinedOutput()
 	t.Match(err, "exit status 123")
 	t.Match(out, `nosuch.tmpl: no such file`)
 }
@@ -156,7 +158,7 @@ func TestFailedTemplate(tt *testing.T) {
 func TestFailedWait(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
-	out, err := testexec.Func(ctx, t, main, "-wait", "file:///nosuch", "-timeout", "0.1s").CombinedOutput()
+	out, err := testexec.Func(testCtx, t, main, "-wait", "file:///nosuch", "-timeout", "0.1s").CombinedOutput()
 	t.Match(err, "exit status 123")
 	t.Match(out, `/nosuch: no such file`)
 }
@@ -164,7 +166,46 @@ func TestFailedWait(tt *testing.T) {
 func TestNothing(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
-	out, err := testexec.Func(ctx, t, main).CombinedOutput()
+	out, err := testexec.Func(testCtx, t, main).CombinedOutput()
 	t.Nil(err)
 	t.Match(out, `^$`)
+}
+
+func TestTail(tt *testing.T) {
+	t := checkT(tt)
+	t.Parallel()
+
+	var logf [4]*os.File
+	var logn [4]string
+	if os.Getenv("GO_WANT_HELPER_PROCESS") == "" { // don't do this again in subprocess
+		for i := range logf {
+			logf[i] = t.NoErrFile(ioutil.TempFile("", "gotest"))
+			logn[i] = logf[i].Name()
+			defer os.Remove(logn[i]) // nolint:errcheck
+			defer logf[i].Close()
+		}
+	}
+
+	cmd := testexec.Func(testCtx, t, main,
+		"-stdout", logn[0], "-stdout", logn[1],
+		"-stderr", logn[2], "-stderr", logn[3],
+	)
+	cmd.Stdout = &bytes.Buffer{}
+	cmd.Stderr = &bytes.Buffer{}
+	t.Nil(cmd.Start())
+
+	time.Sleep(testSecond)
+	for i := range logf {
+		t.NoErr(logf[i].Write([]byte(fmt.Sprintf("log%d\n", i))))
+	}
+	time.Sleep(testSecond)
+
+	t.Nil(cmd.Process.Kill())
+	t.Match(cmd.Wait(), `signal: killed`)
+	stdout := cmd.Stdout.(*bytes.Buffer).String()
+	stderr := cmd.Stderr.(*bytes.Buffer).String()
+	t.Match(stdout, `(?m)^log0$`)
+	t.Match(stdout, `(?m)^log1$`)
+	t.Match(stderr, `(?m)^log2$`)
+	t.Match(stderr, `(?m)^log3$`)
 }
