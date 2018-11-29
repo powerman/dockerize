@@ -62,7 +62,13 @@ func (f *httpHeadersFlag) Set(value string) error {
 		return errors.New("must be a name:value")
 	}
 	nv := strings.SplitN(value, ":", 2)
-	*f = append(*f, httpHeader{name: strings.TrimSpace(nv[0]), value: strings.TrimSpace(nv[1])})
+	for i := range nv {
+		nv[i] = strings.TrimSpace(nv[i])
+		if nv[i] == "" {
+			return errors.New("must be a name:value")
+		}
+	}
+	*f = append(*f, httpHeader{name: nv[0], value: nv[1]})
 	return nil
 }
 
@@ -114,7 +120,7 @@ func (f delimsFlag) String() string {
 
 // fatalFlagValue report invalid flag values in same way as flag.Parse().
 func fatalFlagValue(msg, name string, val interface{}) {
-	fmt.Fprintf(os.Stderr, "invalid value %#v for flag -%s: %s\n", val, name, msg)
+	fmt.Fprintf(os.Stderr, "invalid value %q for flag -%s: %s\n", val, name, msg)
 	flag.Usage()
 	os.Exit(2)
 }

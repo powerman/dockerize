@@ -6,14 +6,17 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"path"
+	"runtime"
 	"strings"
 	"time"
 )
 
-var buildVersion = "unknown" // nolint:gochecknoglobals
-
-func main() { // nolint:gocyclo
-	var cfg struct {
+// Read-only globals for use only within init() and main().
+var ( // nolint:gochecknoglobals
+	app = strings.TrimSuffix(path.Base(os.Args[0]), ".test")
+	ver = "unknown" // set by ./release
+	cfg struct {
 		version       bool
 		ini           iniConfig
 		templatePaths stringsFlag // file or file:file or dir or dir:dir
@@ -23,7 +26,10 @@ func main() { // nolint:gocyclo
 		tailStdout    stringsFlag
 		tailStderr    stringsFlag
 	}
+)
 
+// One-time initialization shared with tests.
+func init() { // nolint:gochecknoinits
 	flag.BoolVar(&cfg.version, "version", false, "print version and exit")
 	flag.StringVar(&cfg.ini.source, "env", "", "path or URL to INI file with default values for unset env vars")
 	flag.BoolVar(&cfg.ini.options.AllowPythonMultilineValues, "multiline", false, "allow Python-like multi-line values in INI file")
@@ -32,22 +38,22 @@ func main() { // nolint:gocyclo
 	flag.Var(&cfg.templatePaths, "template", "template `src:dst` file or dir paths, :dst part is optional\ncan be passed multiple times")
 	flag.BoolVar(&cfg.template.noOverwrite, "no-overwrite", false, "do not overwrite existing destination file from template")
 	flag.Var(&cfg.template.delims, "delims", "action delimiters in templates")
-	flag.Var(&cfg.tailStdout, "stdout", "file `path` to tail to stdout\ncan be passed multiple times")
-	flag.Var(&cfg.tailStderr, "stderr", "file `path` to tail to stderr\ncan be passed multiple times")
-	flag.Var(&cfg.waitURLs, "wait", "wait for `url` (tcp/tcp4/tcp6/http/https/unix/file)\ncan be passed multiple times")
+	flag.Var(&cfg.waitURLs, "wait", "wait for `url` (file/tcp/tcp4/tcp6/unix/http/https)\ncan be passed multiple times")
 	flag.Var(&cfg.wait.headers, "wait-http-header", "`name:value` for HTTP header to send\n(if -wait use HTTP)\ncan be passed multiple times")
 	flag.BoolVar(&cfg.wait.skipTLSVerify, "skip-tls-verify", false, "skip TLS verification for HTTPS -wait and -env urls")
 	flag.BoolVar(&cfg.wait.skipRedirect, "wait-http-skip-redirect", false, "do not follow HTTP redirects\n(if -wait use HTTP)")
 	flag.Var(&cfg.wait.statusCodes, "wait-http-status-code", "HTTP status `code` to wait for (2xx by default)\ncan be passed multiple times")
 	flag.DurationVar(&cfg.wait.timeout, "timeout", 10*time.Second, "timeout for -wait")
 	flag.DurationVar(&cfg.wait.delay, "wait-retry-interval", time.Second, "delay before retrying failed -wait")
+	flag.Var(&cfg.tailStdout, "stdout", "file `path` to tail to stdout\ncan be passed multiple times")
+	flag.Var(&cfg.tailStderr, "stderr", "file `path` to tail to stderr\ncan be passed multiple times")
 
 	flag.Usage = usage
-	flag.Parse()
+}
 
-	cfg.ini.skipTLSVerify = cfg.wait.skipTLSVerify
-	if cfg.template.delims[0] == "" {
-		cfg.template.delims = [2]string{"{{", "}}"}
+func main() { // nolint:gocyclo
+	if !flag.Parsed() { // flags may be already parsed by tests
+		flag.Parse()
 	}
 
 	var iniURL, iniHTTP, templatePathBad, waitBadScheme, waitHTTP bool
@@ -56,21 +62,19 @@ func main() { // nolint:gocyclo
 		iniHTTP = u.Scheme == "http" || u.Scheme == "https"
 	}
 	for _, path := range cfg.templatePaths {
-		templatePathBad = templatePathBad || strings.Count(path, ":") > 1
+		parts := strings.Split(path, ":")
+		templatePathBad = templatePathBad || path == "" || parts[0] == "" || len(parts) > 2
 	}
 	for _, u := range cfg.waitURLs {
 		switch u.Scheme {
+		case "file", "tcp", "tcp4", "tcp6", "unix":
 		case "http", "https":
 			waitHTTP = true
-		case "tcp", "tcp4", "tcp6", "unix", "file":
 		default:
 			waitBadScheme = true
 		}
 	}
 	switch {
-	case cfg.version:
-		fmt.Println(buildVersion)
-		os.Exit(0)
 	case flag.NArg() == 0 && flag.NFlag() == 0:
 		flag.Usage()
 		os.Exit(2)
@@ -85,7 +89,7 @@ func main() { // nolint:gocyclo
 	case cfg.template.delims[0] != "" && len(cfg.templatePaths) == 0:
 		fatalFlagValue("require -template", "delims", cfg.template.delims)
 	case waitBadScheme:
-		fatalFlagValue("scheme must be http/https/tcp/tcp4/tcp6/unix/file", "wait", cfg.waitURLs)
+		fatalFlagValue("scheme must be file/tcp/tcp4/tcp6/unix/http/https", "wait", cfg.waitURLs)
 	case len(cfg.wait.headers) > 0 && !waitHTTP:
 		fatalFlagValue("require -wait with HTTP url", "wait-http-header", cfg.wait.headers)
 	case len(cfg.wait.statusCodes) > 0 && !waitHTTP:
@@ -94,6 +98,14 @@ func main() { // nolint:gocyclo
 		fatalFlagValue("require -wait with HTTP url", "wait-http-skip-redirect", cfg.wait.skipRedirect)
 	case cfg.wait.skipTLSVerify && !iniHTTP && !waitHTTP:
 		fatalFlagValue("require -wait/-env with HTTP url", "skip-tls-verify", cfg.wait.skipTLSVerify)
+	case cfg.version:
+		fmt.Println(app, ver, runtime.Version())
+		os.Exit(0)
+	}
+
+	cfg.ini.skipTLSVerify = cfg.wait.skipTLSVerify
+	if cfg.template.delims[0] == "" {
+		cfg.template.delims = [2]string{"{{", "}}"}
 	}
 
 	defaultEnv, err := loadINISection(cfg.ini)
