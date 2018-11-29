@@ -15,7 +15,7 @@ func TestFlagHelp(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
 	out, err := testexec.Func(ctx, t, main, "-h").CombinedOutput()
-	t.Match(err, "exit status 2")
+	t.Match(err, "exit status 124")
 	t.Match(out, "Usage:")
 }
 
@@ -130,9 +130,41 @@ func TestFlag(tt *testing.T) {
 				t.Nil(err)
 				t.Match(out, ver)
 			} else {
-				t.Match(err, "exit status 2")
+				t.Match(err, "exit status 124")
 				t.Match(out, `invalid value .* `+v.flags[0]+`:.*`+v.want)
 			}
 		})
 	}
+}
+
+func TestFailedINI(tt *testing.T) {
+	t := check.T(tt)
+	t.Parallel()
+	out, err := testexec.Func(ctx, t, main, "-env", "nosuch.ini").CombinedOutput()
+	t.Match(err, "exit status 123")
+	t.Match(out, `nosuch.ini: no such file`)
+}
+
+func TestFailedTemplate(tt *testing.T) {
+	t := check.T(tt)
+	t.Parallel()
+	out, err := testexec.Func(ctx, t, main, "-template", "nosuch.tmpl").CombinedOutput()
+	t.Match(err, "exit status 123")
+	t.Match(out, `nosuch.tmpl: no such file`)
+}
+
+func TestFailedWait(tt *testing.T) {
+	t := check.T(tt)
+	t.Parallel()
+	out, err := testexec.Func(ctx, t, main, "-wait", "file:///nosuch", "-timeout", "0.1s").CombinedOutput()
+	t.Match(err, "exit status 123")
+	t.Match(out, `/nosuch: no such file`)
+}
+
+func TestNothing(tt *testing.T) {
+	t := check.T(tt)
+	t.Parallel()
+	out, err := testexec.Func(ctx, t, main).CombinedOutput()
+	t.Nil(err)
+	t.Match(out, `^$`)
 }

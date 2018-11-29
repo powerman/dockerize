@@ -110,7 +110,8 @@ func main() { // nolint:gocyclo
 
 	defaultEnv, err := loadINISection(cfg.ini)
 	if err != nil {
-		log.Fatalf("Failed to load INI: %s.", err)
+		log.Printf("Failed to load INI: %s.", err)
+		os.Exit(123)
 	}
 
 	setDefaultEnv(defaultEnv)
@@ -118,12 +119,14 @@ func main() { // nolint:gocyclo
 	cfg.template.data.Env = getEnv()
 	err = processTemplatePaths(cfg.template, cfg.templatePaths)
 	if err != nil {
-		log.Fatalf("Failed to process templates: %s.", err)
+		log.Printf("Failed to process templates: %s.", err)
+		os.Exit(123)
 	}
 
 	err = waitForURLs(cfg.wait, cfg.waitURLs)
 	if err != nil {
-		log.Fatalf("Failed to wait: %s.", err)
+		log.Printf("Failed to wait: %s.", err)
+		os.Exit(123)
 	}
 
 	for _, path := range cfg.tailStdout {
@@ -137,7 +140,8 @@ func main() { // nolint:gocyclo
 	case flag.NArg() > 0:
 		code, err := runCmd(flag.Arg(0), flag.Args()[1:]...)
 		if err != nil {
-			log.Fatalf("Failed to run command: %s.", err)
+			log.Printf("Failed to run command: %s.", err)
+			os.Exit(123)
 		}
 		os.Exit(code)
 	case len(cfg.tailStdout)+len(cfg.tailStderr) > 0:
@@ -164,4 +168,5 @@ Options:`)
              nginx -g 'daemon off;'
 	`)
 	fmt.Println(`For more information, see https://github.com/powerman/dockerize`)
+	os.Exit(124)
 }
