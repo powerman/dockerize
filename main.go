@@ -100,7 +100,7 @@ func main() { // nolint:gocyclo
 
 	defaultEnv, err := loadINISection(cfg.ini)
 	if err != nil {
-		log.Fatal("failed to load default env from INI:", err)
+		log.Fatalf("Failed to load INI: %s.", err)
 	}
 
 	setDefaultEnv(defaultEnv)
@@ -108,10 +108,13 @@ func main() { // nolint:gocyclo
 	cfg.template.data.Env = getEnv()
 	err = processTemplatePaths(cfg.template, cfg.templatePaths)
 	if err != nil {
-		log.Fatal("failed to process templates:", err)
+		log.Fatalf("Failed to process templates: %s.", err)
 	}
 
-	waitForDependencies(cfg.wait, cfg.waitURLs)
+	err = waitForURLs(cfg.wait, cfg.waitURLs)
+	if err != nil {
+		log.Fatalf("Failed to wait: %s.", err)
+	}
 
 	wg := &sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())
