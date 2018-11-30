@@ -40,7 +40,7 @@ curl -sfL $(curl -s https://api.github.com/repos/powerman/dockerize/releases/lat
 Download specific version in your container:
 
 ```sh
-curl -sfL https://github.com/powerman/dockerize/releases/download/v0.9.0/dockerize-`uname -s`-`uname -m` | install /dev/stdin /usr/local/bin/dockerize
+curl -sfL https://github.com/powerman/dockerize/releases/download/v0.9.1/dockerize-`uname -s`-`uname -m` | install /dev/stdin /usr/local/bin/dockerize
 ```
 
 ### Docker Base Image
