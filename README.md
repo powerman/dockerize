@@ -1,4 +1,4 @@
-# dockerize ![version v0.8.0](https://img.shields.io/badge/version-v0.8.0-brightgreen.svg) ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+# dockerize [![GitHub release](https://img.shields.io/github/release/powerman/dockerize.svg)](https://github.com/powerman/dockerize/releases/latest) [![CI Build Status](https://circleci.com/gh/powerman/dockerize.svg?style=svg)](https://circleci.com/gh/powerman/dockerize) [![Docker Build Status](https://img.shields.io/docker/build/powerman/dockerize.svg)](https://hub.docker.com/r/powerman/dockerize/) [![Go Report Card](https://goreportcard.com/badge/github.com/powerman/dockerize)](https://goreportcard.com/report/github.com/powerman/dockerize) [![Coverage Status](https://coveralls.io/repos/github/powerman/dockerize/badge.svg?branch=master)](https://coveralls.io/github/powerman/dockerize?branch=master)
 
 Utility to simplify running applications in docker containers.
 
@@ -34,7 +34,13 @@ See [A Simple Way To Dockerize Applications](http://jasonwilder.com/blog/2014/10
 Download the latest version in your container:
 
 ```sh
-curl -sfL https://github.com/powerman/dockerize/releases/download/v0.8.0/dockerize-`uname -s`-`uname -m` | install /dev/stdin /usr/local/bin/dockerize
+curl -sfL $(curl -s https://api.github.com/repos/powerman/dockerize/releases/latest | grep -i /dockerize-$(uname -s)-$(uname -m)\" | cut -d\" -f4) | install /dev/stdin /usr/local/bin/dockerize
+```
+
+Download specific version in your container:
+
+```sh
+curl -sfL https://github.com/powerman/dockerize/releases/download/v0.9.0/dockerize-`uname -s`-`uname -m` | install /dev/stdin /usr/local/bin/dockerize
 ```
 
 ### Docker Base Image
