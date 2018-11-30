@@ -4,7 +4,7 @@ RUN apk -U add openssl git
 ADD . /src
 WORKDIR /src
 
-RUN CGO_ENABLED=0 go install -ldflags "-X 'main.buildVersion=$(git describe --match='v*' --exact-match)'"
+RUN CGO_ENABLED=0 go install -ldflags "-X 'main.ver=$(git describe --match='v*' --exact-match)'"
 
 FROM alpine:3.7
 
