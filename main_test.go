@@ -17,7 +17,7 @@ func TestFlagHelp(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
 	out, err := testexec.Func(testCtx, t, main, "-h").CombinedOutput()
-	t.Match(err, "exit status 124")
+	t.Match(err, "exit status 2")
 	t.Match(out, "Usage:")
 }
 
@@ -132,7 +132,7 @@ func TestFlag(tt *testing.T) {
 				t.Nil(err)
 				t.Match(out, ver)
 			} else {
-				t.Match(err, "exit status 124")
+				t.Match(err, "exit status 2")
 				t.Match(out, `invalid value .* `+v.flags[0]+`:.*`+v.want)
 			}
 		})

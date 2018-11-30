@@ -110,8 +110,7 @@ func main() { // nolint:gocyclo
 
 	defaultEnv, err := loadINISection(cfg.ini)
 	if err != nil {
-		log.Printf("Failed to load INI: %s.", err)
-		os.Exit(123)
+		fatal("Failed to load INI: %s.", err)
 	}
 
 	setDefaultEnv(defaultEnv)
@@ -119,14 +118,12 @@ func main() { // nolint:gocyclo
 	cfg.template.data.Env = getEnv()
 	err = processTemplatePaths(cfg.template, cfg.templatePaths)
 	if err != nil {
-		log.Printf("Failed to process templates: %s.", err)
-		os.Exit(123)
+		fatal("Failed to process templates: %s.", err)
 	}
 
 	err = waitForURLs(cfg.wait, cfg.waitURLs)
 	if err != nil {
-		log.Printf("Failed to wait: %s.", err)
-		os.Exit(123)
+		fatal("Failed to wait: %s.", err)
 	}
 
 	for _, path := range cfg.tailStdout {
@@ -140,13 +137,17 @@ func main() { // nolint:gocyclo
 	case flag.NArg() > 0:
 		code, err := runCmd(flag.Arg(0), flag.Args()[1:]...)
 		if err != nil {
-			log.Printf("Failed to run command: %s.", err)
-			os.Exit(123)
+			fatal("Failed to run command: %s.", err)
 		}
 		os.Exit(code)
 	case len(cfg.tailStdout)+len(cfg.tailStderr) > 0:
 		select {}
 	}
+}
+
+func fatal(format string, v ...interface{}) {
+	log.Printf(format, v...)
+	os.Exit(123)
 }
 
 func usage() {
@@ -168,5 +169,4 @@ Options:`)
              nginx -g 'daemon off;'
 	`)
 	fmt.Println(`For more information, see https://github.com/powerman/dockerize`)
-	os.Exit(124)
 }
