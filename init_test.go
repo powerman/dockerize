@@ -30,6 +30,8 @@ type checkC struct{ *check.C }
 
 func checkT(t *testing.T) *checkC                          { return &checkC{C: check.T(t)} }
 func (c *checkC) NoErr(_ interface{}, err error)           { c.Helper(); c.Must(c.Nil(err)) }
+func (c *checkC) NoErrInt(v int, err error) int            { c.Helper(); c.Must(c.Nil(err)); return v }
+func (c *checkC) NoErrBuf(v []byte, err error) []byte      { c.Helper(); c.Must(c.Nil(err)); return v }
 func (c *checkC) NoErrFile(v *os.File, err error) *os.File { c.Helper(); c.Must(c.Nil(err)); return v }
 func (c *checkC) NoErrListen(v net.Listener, err error) net.Listener {
 	c.Helper()

@@ -3,12 +3,16 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"runtime"
+	"strconv"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 
@@ -238,13 +242,15 @@ func TestSmoke1(tt *testing.T) {
 
 	cmd := testexec.Func(testCtx, t, main,
 		"-env", "testdata/env1.ini",
-		"-template", "testdata/src1.tmpl", "-no-overwrite",
+		"-template", "testdata/src1.tmpl",
+		"-no-overwrite",
 		"-wait", "file://"+filen,
 		"-wait", "tcp://"+lnTCP.Addr().String(),
 		"-wait", "tcp4://"+lnTCP4.Addr().String(),
 		"-wait", "unix://"+unixn,
 		"-wait", "http://"+ts.Listener.Addr().String()+"/redirect",
-		"-timeout", testSecond.String(), "-wait-retry-interval", (testSecond / 10).String(),
+		"-timeout", testSecond.String(),
+		"-wait-retry-interval", (testSecond / 10).String(),
 		"-stderr", logn,
 		"sh", "-c", "sleep 1; exit 42",
 	)
@@ -261,10 +267,13 @@ func TestSmoke1(tt *testing.T) {
 	defer lnTCP.Close()
 	lnTCP4 = t.NoErrListen(net.Listen("tcp4", lnTCP4.Addr().String()))
 	defer lnTCP4.Close()
+	var callOK bool
 	mux.HandleFunc("/redirect", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/ok", http.StatusFound)
 	})
-	mux.HandleFunc("/ok", func(w http.ResponseWriter, r *http.Request) {})
+	mux.HandleFunc("/ok", func(w http.ResponseWriter, r *http.Request) {
+		callOK = true
+	})
 	ts.Start()
 
 	time.Sleep(testSecond)
@@ -276,4 +285,103 @@ func TestSmoke1(tt *testing.T) {
 	stderr := cmd.Stderr.(*bytes.Buffer).String()
 	t.Equal(stdout, "A=10 B=20 C=31\n")
 	t.HasSuffix(stderr, "log\n")
+
+	t.True(callOK)
+}
+
+func TestSmoke2(tt *testing.T) {
+	t := checkT(tt)
+	t.Parallel()
+
+	dstDir := t.TempPath()
+	if strings.Contains(dstDir, "/gotest") { // protect in case of bug in TempPath
+		defer os.RemoveAll(dstDir)
+	}
+	mux := http.NewServeMux()
+	ts := httptest.NewUnstartedServer(mux)
+	defer ts.Close()
+
+	cmd := testexec.Func(testCtx, t, main,
+		"-env", "https://"+ts.Listener.Addr().String()+"/ini",
+		"-multiline",
+		"-env-section", "Vars",
+		"-env-header", "User: env",
+		"-env-header", "testdata/secret.hdr",
+		"-template", "testdata/src2:"+dstDir,
+		"-delims", "<<:>>",
+		"-wait", "https://"+ts.Listener.Addr().String()+"/redirect",
+		"-wait-http-header", "User: wait",
+		"-wait-http-header", "testdata/secret.hdr",
+		"-skip-tls-verify",
+		"-wait-http-skip-redirect",
+		"-wait-http-status-code", "302",
+		"-wait-http-status-code", "307",
+		"-timeout", testSecond.String(),
+		"-wait-retry-interval", (testSecond / 10).String(),
+		"sh", "-c", `
+			exec </dev/null 2>/dev/null
+			echo $$
+			trap ''                          HUP INT QUIT ABRT ALRM TERM
+			trap 'echo USR; exec >/dev/null' USR1 USR2
+			sleep 10 >/dev/null &
+			while ! wait; do :; done
+			exit 42
+			`,
+	)
+	cmd.Stdout = &bytes.Buffer{}
+	cmd.Stderr = &bytes.Buffer{}
+	t.Nil(cmd.Start())
+
+	time.Sleep(testSecond / 2)
+	var callINI, callRedirect bool
+	mux.HandleFunc("/ini", func(w http.ResponseWriter, r *http.Request) {
+		callINI = true
+		t.Equal(r.Header.Get("User"), "env")
+		t.Equal(r.Header.Get("Pass"), "Secret")
+		f, err := os.Open("testdata/env2.ini")
+		t.Nil(err)
+		t.NoErr(io.Copy(w, f))
+		t.Nil(f.Close())
+	})
+	mux.HandleFunc("/redirect", func(w http.ResponseWriter, r *http.Request) {
+		callRedirect = true
+		t.Equal(r.Header.Get("User"), "wait")
+		t.Equal(r.Header.Get("Pass"), "Secret")
+		http.Redirect(w, r, "/nosuch", http.StatusFound)
+	})
+	ts.StartTLS()
+
+	time.Sleep(testSecond)
+	t.Nil(cmd.Process.Signal(syscall.SIGUSR1))
+	t.Nil(cmd.Process.Signal(syscall.SIGTERM))
+	time.Sleep(testSecond)
+	t.Nil(cmd.Process.Kill())
+
+	t.Match(cmd.Wait(), `signal: killed`)
+	stdout := cmd.Stdout.(*bytes.Buffer).String()
+	stderr := cmd.Stderr.(*bytes.Buffer).String()
+	t.Log(stderr)
+	parts := strings.SplitN(stdout, "\n", 2)
+	t.Must(t.Len(parts, 2))
+
+	childPID := t.NoErrInt(strconv.Atoi(parts[0]))
+	child, err := os.FindProcess(childPID)
+	t.Nil(err)
+	time.Sleep(testSecond / 10) // wait for OS cleanup after forwarding SIGKILL to child on Linux
+	if runtime.GOOS == "linux" {
+		t.Match(child.Kill(), `process already finished`)
+	} else {
+		t.Nil(child.Kill())
+	}
+	t.Nil(child.Release())
+
+	t.Equal(parts[1], "USR\n")
+
+	t.True(callINI)
+	t.True(callRedirect)
+
+	buf := t.NoErrBuf(ioutil.ReadFile(dstDir + "/abc"))
+	t.Equal(string(buf), "A=10 B=20 C=32\n777\n")
+	buf = t.NoErrBuf(ioutil.ReadFile(dstDir + "/subdir/func"))
+	t.Equal(string(buf), "abc exists\nexample.com\nTrue!False!\nJSON value\n0369\n")
 }
