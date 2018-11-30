@@ -62,8 +62,7 @@ If `curl` is not available (e.g. busybox base image) then you can use `wget`:
 wget -O - $(wget -O - https://api.github.com/repos/powerman/dockerize/releases/latest | grep -i /dockerize-$(uname -s)-$(uname -m)\" | cut -d\" -f4) | install /dev/stdin /bin/dockerize
 
 ### busybox: specific version
-wget -O - https://github.com/powerman/dockerize/releases/download/v0.9.1/dockerize-`uname -s`-`u
-name -m` | install /dev/stdin /bin/dockerize
+wget -O - https://github.com/powerman/dockerize/releases/download/v0.9.1/dockerize-`uname -s`-`uname -m` | install /dev/stdin /bin/dockerize
 ```
 
 ### Docker Base Image
