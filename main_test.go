@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"net"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
@@ -208,4 +211,69 @@ func TestTail(tt *testing.T) {
 	t.Match(stdout, `(?m)^log1$`)
 	t.Match(stderr, `(?m)^log2$`)
 	t.Match(stderr, `(?m)^log3$`)
+}
+
+func TestSmoke1(tt *testing.T) {
+	t := checkT(tt)
+	t.Parallel()
+
+	var logf *os.File
+	var logn, filen, unixn string
+	if os.Getenv("GO_WANT_HELPER_PROCESS") == "" { // don't do this again in subprocess
+		logf = t.NoErrFile(ioutil.TempFile("", "gotest"))
+		logn = logf.Name()
+		defer os.Remove(logn) // nolint:errcheck
+		defer logf.Close()
+		filen = t.TempPath()
+		unixn = t.TempPath()
+	}
+
+	lnTCP := t.NoErrListen(net.Listen("tcp", "127.0.0.1:0"))
+	t.Nil(lnTCP.Close())
+	lnTCP4 := t.NoErrListen(net.Listen("tcp4", "127.0.0.1:0"))
+	t.Nil(lnTCP4.Close())
+	mux := http.NewServeMux()
+	ts := httptest.NewUnstartedServer(mux)
+	defer ts.Close()
+
+	cmd := testexec.Func(testCtx, t, main,
+		"-env", "testdata/env1.ini",
+		"-template", "testdata/src1.tmpl", "-no-overwrite",
+		"-wait", "file://"+filen,
+		"-wait", "tcp://"+lnTCP.Addr().String(),
+		"-wait", "tcp4://"+lnTCP4.Addr().String(),
+		"-wait", "unix://"+unixn,
+		"-wait", "http://"+ts.Listener.Addr().String()+"/redirect",
+		"-timeout", testSecond.String(), "-wait-retry-interval", (testSecond / 10).String(),
+		"-stderr", logn,
+		"sh", "-c", "sleep 1; exit 42",
+	)
+	cmd.Stdout = &bytes.Buffer{}
+	cmd.Stderr = &bytes.Buffer{}
+	t.Nil(cmd.Start())
+
+	time.Sleep(testSecond / 2)
+	t.Nil(t.NoErrFile(os.Create(filen)).Close())
+	defer os.Remove(filen) // nolint:errcheck
+	lnUnix := t.NoErrListen(net.Listen("unix", unixn))
+	defer lnUnix.Close()
+	lnTCP = t.NoErrListen(net.Listen("tcp", lnTCP.Addr().String()))
+	defer lnTCP.Close()
+	lnTCP4 = t.NoErrListen(net.Listen("tcp4", lnTCP4.Addr().String()))
+	defer lnTCP4.Close()
+	mux.HandleFunc("/redirect", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/ok", http.StatusFound)
+	})
+	mux.HandleFunc("/ok", func(w http.ResponseWriter, r *http.Request) {})
+	ts.Start()
+
+	time.Sleep(testSecond)
+	t.NoErr(logf.Write([]byte("log\n")))
+	time.Sleep(testSecond)
+
+	t.Match(cmd.Wait(), `exit status 42`)
+	stdout := cmd.Stdout.(*bytes.Buffer).String()
+	stderr := cmd.Stderr.(*bytes.Buffer).String()
+	t.Equal(stdout, "A=10 B=20 C=31\n")
+	t.HasSuffix(stderr, "log\n")
 }
