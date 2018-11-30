@@ -32,7 +32,10 @@ func runCmd(name string, args ...string) (int, error) {
 	)
 	go func() {
 		for sig := range sigc {
-			_ = cmd.Process.Signal(sig) // pretty sure this doesn't do anything. It seems like the signal is automatically sent to the command?
+			// This will duplicate some signals if they're
+			// sent to all processes in current group (like
+			// when Ctrl-C is pressed in shell).
+			_ = cmd.Process.Signal(sig)
 		}
 	}()
 

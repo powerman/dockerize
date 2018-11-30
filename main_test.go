@@ -295,7 +295,7 @@ func TestSmoke2(tt *testing.T) {
 
 	dstDir := t.TempPath()
 	if strings.Contains(dstDir, "/gotest") { // protect in case of bug in TempPath
-		defer os.RemoveAll(dstDir)
+		defer os.RemoveAll(dstDir) // nolint:errcheck
 	}
 	mux := http.NewServeMux()
 	ts := httptest.NewUnstartedServer(mux)
