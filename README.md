@@ -103,6 +103,7 @@ $ dockerize -delims "<%:%>"
 ```
 
 HTTP headers can be specified for http/https protocols.
+If header is specified as a file path then file must contain single string with `Header: value`.
 
 ```
 $ dockerize -wait http://web:80 -wait-http-header "Authorization:Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
@@ -133,7 +134,7 @@ $ dockerize -wait tcp://db:5432 -wait http://web:80 -wait file:///tmp/generated-
 
 ### Timeout
 
-You can optionally specify how long to wait for the services to become available by using the `-timeout #` argument (Default: 10 seconds).  If the timeout is reached and the service is still not available, the process exits with status code 1.
+You can optionally specify how long to wait for the services to become available by using the `-timeout #` argument (Default: 10 seconds).  If the timeout is reached and the service is still not available, the process exits with status code 123.
 
 ```
 $ dockerize -wait tcp://db:5432 -wait http://web:80 -timeout 10s
@@ -171,7 +172,7 @@ variables within a template with `.Env`.
 In template you can use a lot of [functions provided by
 Sprig](http://masterminds.github.io/sprig/) plus a few built in functions as well:
 
-  * `exists $path` - Determines if a file path exists or not. `{{ exists "/etc/default/myapp" }}`
+  * `exists $path` - Determines if a file path exists or not. `{{ if exists "/etc/default/myapp" }}`
   * `parseUrl $url` - Parses a URL into it's [protocol, scheme, host, etc. parts](https://golang.org/pkg/net/url/#URL). Alias for [`url.Parse`](https://golang.org/pkg/net/url/#Parse)
   * `isTrue $value` - Parses a string $value to a boolean value. `{{ if isTrue .Env.ENABLED }}`
   * `jsonQuery $json $query` - Returns the result of a selection query against a json document.

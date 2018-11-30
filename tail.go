@@ -1,19 +1,18 @@
 package main
 
 import (
+	"context"
 	"io"
 	"log"
-
-	"golang.org/x/net/context"
 
 	"github.com/powerman/tail"
 )
 
-func tailFile(ctx context.Context, file string, dest io.Writer) {
-	defer wg.Done()
+func tailFile(path string, dest io.Writer) {
+	t := tail.Follow(context.Background(), tail.LoggerFunc(log.Printf), path)
 
-	t := tail.Follow(ctx, tail.LoggerFunc(log.Printf), file)
-
-	for _, err := io.Copy(dest, t); err != nil; _, err = io.Copy(dest, t) {
-	}
+	go func() {
+		for _, err := io.Copy(dest, t); err != nil; _, err = io.Copy(dest, t) {
+		}
+	}()
 }

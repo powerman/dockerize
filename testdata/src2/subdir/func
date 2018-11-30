@@ -1,0 +1,5 @@
+<< if exists "testdata/src2/abc" >>abc exists<< end >>
+<< (parseUrl "http://example.com/path").Host >>
+<< if isTrue "TRuE" >>True!<<end>><< if not (isTrue "Yes") >>False!<< end >>
+<< jsonQuery `[null,{"key":"JSON value"}]` "[1].key" >>
+<< range untilStep 0 10 3 >><< . >><< end >>
