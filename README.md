@@ -31,16 +31,39 @@ See [A Simple Way To Dockerize Applications](http://jasonwilder.com/blog/2014/10
 
 ## Installation
 
-Download the latest version in your container:
+Dockerize is a statically compiled binary, so it should work with any base image.
+
+To download it with most base images all you need is to install `curl` first:
+
+```sh
+### alpine:
+apk add curl
+
+### debian, ubuntu:
+apt update && apt install -y curl
+```
+
+and then either install the latest version:
 
 ```sh
 curl -sfL $(curl -s https://api.github.com/repos/powerman/dockerize/releases/latest | grep -i /dockerize-$(uname -s)-$(uname -m)\" | cut -d\" -f4) | install /dev/stdin /usr/local/bin/dockerize
 ```
 
-Download specific version in your container:
+or specific version:
 
 ```sh
 curl -sfL https://github.com/powerman/dockerize/releases/download/v0.9.1/dockerize-`uname -s`-`uname -m` | install /dev/stdin /usr/local/bin/dockerize
+```
+
+If `curl` is not available (e.g. busybox base image) then you can use `wget`:
+
+```
+### busybox: latest version
+wget -O - $(wget -O - https://api.github.com/repos/powerman/dockerize/releases/latest | grep -i /dockerize-$(uname -s)-$(uname -m)\" | cut -d\" -f4) | install /dev/stdin /bin/dockerize
+
+### busybox: specific version
+wget -O - https://github.com/powerman/dockerize/releases/download/v0.9.1/dockerize-`uname -s`-`u
+name -m` | install /dev/stdin /bin/dockerize
 ```
 
 ### Docker Base Image
