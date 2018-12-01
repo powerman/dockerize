@@ -17,6 +17,7 @@ import (
 
 type templateConfig struct {
 	noOverwrite bool
+	strict      bool
 	delims      delimsFlag
 	data        struct {
 		Env map[string]string
@@ -74,6 +75,10 @@ func processTemplatePaths(cfg templateConfig, paths []string) error {
 }
 
 func processTemplate(cfg templateConfig, src, dst string) error {
+	option := "missingkey=default"
+	if cfg.strict {
+		option = "missingkey=error"
+	}
 	tmpl, err := template.New(filepath.Base(src)).
 		Funcs(sprig.TxtFuncMap()).
 		Funcs(template.FuncMap{
@@ -83,6 +88,7 @@ func processTemplate(cfg templateConfig, src, dst string) error {
 			"jsonQuery": jsonQuery,
 		}).
 		Delims(cfg.delims[0], cfg.delims[1]).
+		Option(option).
 		ParseFiles(src)
 	if err != nil {
 		return err

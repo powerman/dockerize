@@ -77,6 +77,9 @@ func TestFlag(tt *testing.T) {
 		{[]string{"-no-overwrite"},
 			`-template`},
 		{[]string{"-no-overwrite", "-template", "a"}, ``},
+		{[]string{"-template-strict"},
+			`-template`},
+		{[]string{"-template-strict", "-template", "a"}, ``},
 		{[]string{"-delims", ""},
 			`left:right`},
 		{[]string{"-delims", ":"},
@@ -160,6 +163,14 @@ func TestFailedTemplate(tt *testing.T) {
 	out, err := testexec.Func(testCtx, t, main, "-template", "nosuch.tmpl").CombinedOutput()
 	t.Match(err, "exit status 123")
 	t.Match(out, `nosuch.tmpl: no such file`)
+}
+
+func TestFailedStrictTemplate(tt *testing.T) {
+	t := check.T(tt)
+	t.Parallel()
+	out, err := testexec.Func(testCtx, t, main, "-template", "testdata/src1.tmpl", "-template-strict").CombinedOutput()
+	t.Match(err, "exit status 123")
+	t.Match(out, `no entry for key "C"`)
 }
 
 func TestFailedWait(tt *testing.T) {
