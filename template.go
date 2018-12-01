@@ -17,8 +17,8 @@ import (
 
 type templateConfig struct {
 	noOverwrite bool
-	delims      delimsFlag
 	strict      bool
+	delims      delimsFlag
 	data        struct {
 		Env map[string]string
 	}
