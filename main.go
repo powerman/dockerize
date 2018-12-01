@@ -38,6 +38,7 @@ func init() { // nolint:gochecknoinits
 	flag.Var(&cfg.templatePaths, "template", "template `src:dst` file or dir paths, :dst part is optional\ncan be passed multiple times")
 	flag.BoolVar(&cfg.template.noOverwrite, "no-overwrite", false, "do not overwrite existing destination file from template")
 	flag.Var(&cfg.template.delims, "delims", "action delimiters in templates")
+	flag.BoolVar(&cfg.template.strict, "template-strict", false, "fail if template mention unset environment variable")
 	flag.Var(&cfg.waitURLs, "wait", "wait for `url` (file/tcp/tcp4/tcp6/unix/http/https)\ncan be passed multiple times")
 	flag.Var(&cfg.wait.headers, "wait-http-header", "`name:value` for HTTP header to send\n(if -wait use HTTP)\ncan be passed multiple times")
 	flag.BoolVar(&cfg.wait.skipTLSVerify, "skip-tls-verify", false, "skip TLS verification for HTTPS -wait and -env urls")
@@ -88,6 +89,8 @@ func main() { // nolint:gocyclo
 		fatalFlagValue("require -template", "no-overwrite", cfg.template.noOverwrite)
 	case cfg.template.delims[0] != "" && len(cfg.templatePaths) == 0:
 		fatalFlagValue("require -template", "delims", cfg.template.delims)
+	case cfg.template.strict && len(cfg.templatePaths) == 0:
+		fatalFlagValue("require -template", "template-strict", cfg.template.strict)
 	case waitBadScheme:
 		fatalFlagValue("scheme must be file/tcp/tcp4/tcp6/unix/http/https", "wait", cfg.waitURLs)
 	case len(cfg.wait.headers) > 0 && !waitHTTP:

@@ -52,7 +52,7 @@ curl -sfL $(curl -s https://api.github.com/repos/powerman/dockerize/releases/lat
 or specific version:
 
 ```sh
-curl -sfL https://github.com/powerman/dockerize/releases/download/v0.9.1/dockerize-`uname -s`-`uname -m` | install /dev/stdin /usr/local/bin/dockerize
+curl -sfL https://github.com/powerman/dockerize/releases/download/v0.10.0/dockerize-`uname -s`-`uname -m` | install /dev/stdin /usr/local/bin/dockerize
 ```
 
 If `curl` is not available (e.g. busybox base image) then you can use `wget`:
@@ -62,7 +62,7 @@ If `curl` is not available (e.g. busybox base image) then you can use `wget`:
 wget -O - $(wget -O - https://api.github.com/repos/powerman/dockerize/releases/latest | grep -i /dockerize-$(uname -s)-$(uname -m)\" | cut -d\" -f4) | install /dev/stdin /bin/dockerize
 
 ### busybox: specific version
-wget -O - https://github.com/powerman/dockerize/releases/download/v0.9.1/dockerize-`uname -s`-`uname -m` | install /dev/stdin /bin/dockerize
+wget -O - https://github.com/powerman/dockerize/releases/download/v0.10.0/dockerize-`uname -s`-`uname -m` | install /dev/stdin /bin/dockerize
 ```
 
 ### Docker Base Image
@@ -127,7 +127,14 @@ $ dockerize -stdout info.log -stdout perf.log
 If your file uses `{{` and `}}` as part of it's syntax, you can change the template escape characters using the `-delims`.
 
 ```
-$ dockerize -delims "<%:%>"
+$ dockerize -delims "<%:%>" -template template1.tmpl
+```
+
+You can require all environment variables mentioned in template exists
+with `-template-strict`:
+
+```
+$ dockerize -template-strict -template template1.tmpl
 ```
 
 HTTP headers can be specified for http/https protocols.
