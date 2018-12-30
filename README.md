@@ -211,6 +211,8 @@ Sprig](http://masterminds.github.io/sprig/) plus a few built in functions as wel
   * `parseUrl $url` - Parses a URL into it's [protocol, scheme, host, etc. parts](https://golang.org/pkg/net/url/#URL). Alias for [`url.Parse`](https://golang.org/pkg/net/url/#Parse)
   * `isTrue $value` - Parses a string $value to a boolean value. `{{ if isTrue .Env.ENABLED }}`
   * `jsonQuery $json $query` - Returns the result of a selection query against a json document.
+  * `readFile $fileName` - Reads the content of the named file.
+  * `envValue $env` - Returns the content of the file refered to by the environment variable `${env}_FILE` if set and falls back to the plain environment variable otherwise.
 
 **WARNING! Incompatibility with [original dockerize
 v0.6.1](https://github.com/jwilder/dockerize)!** These template functions
@@ -246,3 +248,9 @@ With the following JSON in `.Env.SERVICES`
 ```
 
 the template expression `jsonQuery .Env.SERVICES "services.[1].port"` returns `9000`.
+
+### envValue
+
+`envValue` provides a shortcut for a common docker idiom when working with secrets. Namely instead of putting a password directly into an environment variable, the environment variable is postfixed with `_FILE` and contains the name of a file containing the data (Those are usually mapped via docker's secret management).
+
+For example, if one sets `POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password` and uses `{{ envValue "POSTGRES_PASSWORD" }}` the result will be the content of the file `/run/secrets/postgres_password`. If `POSTGRES_PASSWORD_FILE` is not set, `envValue` will fall back to evaluating the raw `POSTGRES_PASSWORD` variable (in which case it would be equivalent to `{{ .Env.POSTGRES_PASSWORD }}`).

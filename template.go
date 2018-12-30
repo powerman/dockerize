@@ -49,6 +49,19 @@ func jsonQuery(jsonObj string, query string) (interface{}, error) {
 	return parser.Query(query)
 }
 
+func readFile(fileName string) (string, error) {
+	data, err := ioutil.ReadFile(fileName)
+	return string(data), err
+}
+
+func envValue(env string) (string, error) {
+	envFile := os.Getenv(env + "_FILE")
+	if len(envFile) > 0 {
+		return readFile(envFile)
+	}
+	return os.Getenv(env), nil
+}
+
 func processTemplatePaths(cfg templateConfig, paths []string) error {
 	for _, srcdst := range paths {
 		var src, dst string
@@ -86,6 +99,8 @@ func processTemplate(cfg templateConfig, src, dst string) error {
 			"parseUrl":  url.Parse,
 			"isTrue":    isTrue,
 			"jsonQuery": jsonQuery,
+			"readFile":  readFile,
+			"envValue":  envValue,
 		}).
 		Delims(cfg.delims[0], cfg.delims[1]).
 		Option(option).
