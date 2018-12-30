@@ -211,6 +211,7 @@ Sprig](http://masterminds.github.io/sprig/) plus a few built in functions as wel
   * `parseUrl $url` - Parses a URL into it's [protocol, scheme, host, etc. parts](https://golang.org/pkg/net/url/#URL). Alias for [`url.Parse`](https://golang.org/pkg/net/url/#Parse)
   * `isTrue $value` - Parses a string $value to a boolean value. `{{ if isTrue .Env.ENABLED }}`
   * `jsonQuery $json $query` - Returns the result of a selection query against a json document.
+  * `readFile $fileName` - Reads the content of the named file.
 
 **WARNING! Incompatibility with [original dockerize
 v0.6.1](https://github.com/jwilder/dockerize)!** These template functions
