@@ -51,15 +51,10 @@ func jsonQuery(jsonObj string, query string) (interface{}, error) {
 
 func readFile(fileName string) (string, error) {
 	data, err := ioutil.ReadFile(fileName)
-	return string(data), err
-}
-
-func envValue(env string) (string, error) {
-	envFile := os.Getenv(env + "_FILE")
-	if len(envFile) > 0 {
-		return readFile(envFile)
+	if os.IsNotExist(err) {
+		return "", nil
 	}
-	return os.Getenv(env), nil
+	return string(data), err
 }
 
 func processTemplatePaths(cfg templateConfig, paths []string) error {
@@ -100,7 +95,6 @@ func processTemplate(cfg templateConfig, src, dst string) error {
 			"isTrue":    isTrue,
 			"jsonQuery": jsonQuery,
 			"readFile":  readFile,
-			"envValue":  envValue,
 		}).
 		Delims(cfg.delims[0], cfg.delims[1]).
 		Option(option).
