@@ -28,7 +28,7 @@ jobs:
                     go get -v github.com/mattn/goveralls
             - run: go test -mod=readonly -v -race ./...
             - run: golangci-lint run
-            - run: goveralls -service=circle-ci
+            - run: test -z "$COVERALLS_TOKEN" || goveralls -service=circle-ci
             - save_cache:
                 when: always
                 key: v1-{{ checksum "/tmp/tools.ver" }}-{{ checksum "go.mod" }}-{{ .Branch }}
