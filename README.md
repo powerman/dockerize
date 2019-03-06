@@ -3,7 +3,7 @@
 Utility to simplify running applications in docker containers.
 
 **About this fork:** This fork is supposed to become a community-maintained replacement for
-[not maintained](https://github.com/jwilder/dockerize/issues/120)
+[not maintained](https://github.com/powerman/dockerize/issues/19)
 [original repo](https://github.com/jwilder/dockerize). Everyone who has
 contributed to the project may become a collaborator - just ask for it
 in PR comments after your PR has being merged.
