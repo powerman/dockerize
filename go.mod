@@ -2,7 +2,7 @@ module github.com/powerman/dockerize
 
 require (
 	github.com/Masterminds/semver v1.4.2 // indirect
-	github.com/Masterminds/sprig v2.16.0+incompatible
+	github.com/Masterminds/sprig v2.20.0+incompatible
 	github.com/aokoli/goutils v1.0.1 // indirect
 	github.com/elgs/gosplitargs v0.0.0-20161028071935-a491c5eeb3c8 // indirect
 	github.com/google/uuid v1.0.0 // indirect
