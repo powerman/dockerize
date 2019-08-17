@@ -10,7 +10,7 @@ require (
 	github.com/imdario/mergo v0.3.6 // indirect
 	github.com/jwilder/gojq v0.0.0-20161018055142-c550732d4a52
 	github.com/kr/pretty v0.1.0 // indirect
-	github.com/powerman/check v1.0.1
+	github.com/powerman/check v1.1.0
 	github.com/powerman/gotest v0.1.0
 	github.com/powerman/tail v0.1.0
 	github.com/smartystreets/goconvey v0.0.0-20181108003508-044398e4856c
