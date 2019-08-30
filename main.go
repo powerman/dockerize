@@ -12,6 +12,16 @@ import (
 	"time"
 )
 
+const (
+	schemeFile  = "file"
+	schemeTCP   = "tcp"
+	schemeTCP4  = "tcp4"
+	schemeTCP6  = "tcp6"
+	schemeUnix  = "unix"
+	schemeHTTP  = "http"
+	schemeHTTPS = "https"
+)
+
 // Read-only globals for use only within init() and main().
 var ( // nolint:gochecknoglobals
 	app = strings.TrimSuffix(path.Base(os.Args[0]), ".test")
@@ -60,7 +70,7 @@ func main() { // nolint:gocyclo
 	var iniURL, iniHTTP, templatePathBad, waitBadScheme, waitHTTP bool
 	if u, err := url.Parse(cfg.ini.source); err == nil && u.IsAbs() {
 		iniURL = true
-		iniHTTP = u.Scheme == "http" || u.Scheme == "https"
+		iniHTTP = u.Scheme == schemeHTTP || u.Scheme == schemeHTTPS
 	}
 	for _, path := range cfg.templatePaths {
 		parts := strings.Split(path, ":")
@@ -68,8 +78,8 @@ func main() { // nolint:gocyclo
 	}
 	for _, u := range cfg.waitURLs {
 		switch u.Scheme {
-		case "file", "tcp", "tcp4", "tcp6", "unix":
-		case "http", "https":
+		case schemeFile, schemeTCP, schemeTCP4, schemeTCP6, schemeUnix:
+		case schemeHTTP, schemeHTTPS:
 			waitHTTP = true
 		default:
 			waitBadScheme = true
@@ -145,6 +155,12 @@ func main() { // nolint:gocyclo
 		os.Exit(code)
 	case len(cfg.tailStdout)+len(cfg.tailStderr) > 0:
 		select {}
+	}
+}
+
+func warnIfFail(f func() error) {
+	if err := f(); err != nil {
+		log.Printf("Warning: %s.", err)
 	}
 }
 

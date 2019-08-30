@@ -8,7 +8,7 @@ import (
 )
 
 func runCmd(name string, args ...string) (int, error) {
-	cmd := exec.Command(name, args...)
+	cmd := exec.Command(name, args...) //nolint:gosec
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
