@@ -109,7 +109,7 @@ func processTemplate(cfg templateConfig, src, dst string) error {
 		if err != nil {
 			return err
 		}
-		defer file.Close()
+		defer warnIfFail(file.Close)
 	}
 
 	return tmpl.Execute(file, cfg.data)
@@ -164,7 +164,7 @@ func createDestFile(src, dst string, noOverwrite bool) (*os.File, error) {
 	if ok {
 		err = file.Chown(int(likeSys.Uid), int(likeSys.Gid))
 		if err != nil && !os.IsPermission(err) {
-			file.Close()
+			warnIfFail(file.Close)
 			return nil, err
 		}
 	}

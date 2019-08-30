@@ -45,7 +45,7 @@ func loadINISection(cfg iniConfig) (map[string]string, error) {
 func fetchINI(cfg iniConfig) (data []byte, err error) {
 	client := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.skipTLSVerify},
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.skipTLSVerify}, //nolint:gosec
 		},
 		CheckRedirect: func(*http.Request, []*http.Request) error {
 			return errors.New("redirects disallowed")
@@ -60,11 +60,11 @@ func fetchINI(cfg iniConfig) (data []byte, err error) {
 		req.Header.Add(h.name, h.value)
 	}
 
-	resp, err := client.Do(req)
+	resp, err := client.Do(req) //nolint:bodyclose
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer warnIfFail(resp.Body.Close)
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("bad HTTP status: %d", resp.StatusCode)

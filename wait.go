@@ -33,11 +33,11 @@ func waitForURLs(cfg waitConfig, urls []*url.URL) error {
 		if !waiting[u] { // skip possible duplicates
 			waiting[u] = true
 			switch u.Scheme {
-			case "file":
+			case schemeFile:
 				go waitForPath(ctx, cfg, u, readyc)
-			case "tcp", "tcp4", "tcp6", "unix":
+			case schemeTCP, schemeTCP4, schemeTCP6, schemeUnix:
 				go waitForSocket(ctx, cfg, u, readyc)
-			case "http", "https":
+			case schemeHTTP, schemeHTTPS:
 				go waitForHTTP(ctx, cfg, u, readyc)
 			default:
 				return fmt.Errorf("wait scheme not supported: %s", u)
@@ -79,7 +79,7 @@ func waitForPath(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 
 func waitForSocket(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- *url.URL) {
 	addr := u.Host
-	if u.Scheme == "unix" {
+	if u.Scheme == schemeUnix {
 		addr = u.Path
 	}
 	dialer := &net.Dialer{}
@@ -87,7 +87,7 @@ func waitForSocket(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<
 	for {
 		conn, err := dialer.DialContext(ctx, u.Scheme, addr)
 		if err == nil {
-			conn.Close()
+			warnIfFail(conn.Close)
 			break
 		}
 		log.Printf("Waiting for %s: %s.", u, err)
@@ -115,7 +115,7 @@ func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 
 	client := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.skipTLSVerify},
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.skipTLSVerify}, //nolint:gosec
 		},
 	}
 	if cfg.skipRedirect {
@@ -131,7 +131,7 @@ func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 			for _, header := range cfg.headers {
 				req.Header.Add(header.name, header.value)
 			}
-			resp, err = client.Do(req.WithContext(ctx))
+			resp, err = client.Do(req.WithContext(ctx)) //nolint:bodyclose
 		}
 		if err == nil {
 			_, _ = io.Copy(ioutil.Discard, resp.Body)
