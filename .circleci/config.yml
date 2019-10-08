@@ -5,7 +5,7 @@ jobs:
         docker:
             - image: circleci/golang:1
               environment:
-                GOLANGCI_LINT_VER:  1.17.1
+                GOLANGCI_LINT_VER:  1.19.1
         steps:
             - checkout
             - run:
@@ -15,10 +15,9 @@ jobs:
                     env | grep _VER | sort > /tmp/tools.ver
             - restore_cache:
                 keys:
-                    - v1-{{ checksum "/tmp/tools.ver" }}-{{ checksum "go.mod" }}-{{ .Branch }}
-                    - v1-{{ checksum "/tmp/tools.ver" }}-{{ checksum "go.mod" }}-
-                    - v1-{{ checksum "/tmp/tools.ver" }}-
-                    - v1-
+                    - v2-{{ checksum "/tmp/tools.ver" }}-{{ checksum "go.mod" }}-{{ .Branch }}
+                    - v2-{{ checksum "/tmp/tools.ver" }}-{{ checksum "go.mod" }}-
+                    - v2-{{ checksum "/tmp/tools.ver" }}-
             - run:
                 name: Install tools
                 command: |
@@ -31,7 +30,7 @@ jobs:
             - run: test -z "$COVERALLS_TOKEN" || goveralls -service=circle-ci
             - save_cache:
                 when: always
-                key: v1-{{ checksum "/tmp/tools.ver" }}-{{ checksum "go.mod" }}-{{ .Branch }}
+                key: v2-{{ checksum "/tmp/tools.ver" }}-{{ checksum "go.mod" }}-{{ .Branch }}
                 paths:
                     - /go/bin/
                     - /go/pkg/
