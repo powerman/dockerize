@@ -128,7 +128,7 @@ func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 	for {
 		req, err := http.NewRequest("GET", u.String(), nil)
 		if err == nil {
-			for _, header := range cfg.headers {
+			for _, header := range cfg.headers { //nolint:gocritic
 				req.Header.Add(header.name, header.value)
 			}
 			resp, err = client.Do(req.WithContext(ctx)) //nolint:bodyclose

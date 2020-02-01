@@ -56,7 +56,7 @@ func fetchINI(cfg iniConfig) (data []byte, err error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, h := range cfg.headers {
+	for _, h := range cfg.headers { //nolint:gocritic
 		req.Header.Add(h.name, h.value)
 	}
 

@@ -74,8 +74,8 @@ func (f *httpHeadersFlag) Set(value string) error {
 
 func (f httpHeadersFlag) String() string {
 	hs := make([]string, len(f))
-	for i, h := range f {
-		hs[i] = h.name + ":" + h.value
+	for i := range f {
+		hs[i] = f[i].name + ":" + f[i].value
 	}
 	return strings.Join(hs, ", ")
 }
