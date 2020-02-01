@@ -23,7 +23,8 @@ const (
 )
 
 // Read-only globals for use only within init() and main().
-var ( // nolint:gochecknoglobals
+//nolint:gochecknoglobals
+var (
 	app = strings.TrimSuffix(path.Base(os.Args[0]), ".test")
 	ver = "unknown" // set by ./release
 	cfg struct {
@@ -62,7 +63,7 @@ func init() { // nolint:gochecknoinits
 	flag.Usage = usage
 }
 
-func main() { // nolint:gocyclo
+func main() { // nolint:gocyclo,gocognit
 	if !flag.Parsed() { // flags may be already parsed by tests
 		flag.Parse()
 	}

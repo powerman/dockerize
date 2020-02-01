@@ -7,7 +7,7 @@ run:
   # concurrency: 4
 
   # timeout for analysis, e.g. 30s, 5m, default is 1m
-  # deadline: 1m
+  # timeout: 1m
 
   # exit code when at least one issue was found, default is 1
   # issues-exit-code: 1
@@ -93,6 +93,14 @@ linters-settings:
           # - (github.com/powerman/structlog.Logger).Fatalf
           # - (github.com/powerman/structlog.Logger).Panicf
           # - (github.com/powerman/structlog.Logger).Printf
+
+    # enable or disable analyzers by name
+    # enable:
+    #   - atomicalign
+    enable-all: true
+    # disable:
+    #   - shadow
+    # disable-all: false
   golint:
     # minimal confidence for issues, default is 0.8
     # min-confidence: 0.8
@@ -106,6 +114,9 @@ linters-settings:
   gocyclo:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
     min-complexity: 15
+  gocognit:
+    # minimal code complexity to report, 30 by default (but we recommend 10-20)
+    min-complexity: 20
   maligned:
     # print struct with more effective memory layout or not, false by default
     suggest-new: true
@@ -174,12 +185,10 @@ linters-settings:
     disabled-checks:
       - hugeParam # premature optimization
       - paramTypeCombine # questionable
+      - switchTrue # questionable
       - yodaStyleExpr # questionable
-      - ptrToRefParam
-      - typeUnparen # false positive
-      - commentedOutCode
 
-    # Enable multiple checks by tags, run `GL_DEBUG=gocritic golangci-lint` run to see all tags and checks.
+    # Enable multiple checks by tags, run `GL_DEBUG=gocritic golangci-lint run` to see all tags and checks.
     # Empty list by default. See https://github.com/go-critic/go-critic#usage -> section "Tags".
     enabled-tags:
       - diagnostic
@@ -192,7 +201,29 @@ linters-settings:
       captLocal: # must be valid enabled check name
         paramsOnly: true
       rangeValCopy:
-        sizeThreshold: 64
+        sizeThreshold: 32
+  godox:
+    # report any comments starting with keywords, this is useful for TODO or FIXME comments that
+    # might be left in the code accidentally and should be resolved before merging
+    keywords: # default keywords are TODO, BUG, and FIXME, these can be overwritten by this setting
+      - BUG # marks issues that should be moved to issue tracker before merging
+      - FIXME # marks issues that should be resolved before merging
+  dogsled:
+    # checks assignments with too many blank identifiers; default is 2
+    max-blank-identifiers: 2
+
+  whitespace:
+    multi-if: false   # Enforces newlines (or comments) after every multi-line if statement
+    multi-func: false # Enforces newlines (or comments) after every multi-line function signature
+  wsl:
+    # If true append is only allowed to be cuddled if appending value is
+    # matching variables, fields or types on line above. Default is true.
+    strict-append: true
+    # Allow calls and assignments to be cuddled as long as the lines have any
+    # matching variables, fields or types. Default is true.
+    allow-assign-and-call: true
+    # Allow multiline assignments to be cuddled. Default is true.
+    allow-multiline-assign: true
 
 linters:
   # enable:
@@ -200,12 +231,14 @@ linters:
   #   - govet
   enable-all: true
   disable:
+    - dogsled # questionable
     - dupl
-    - gochecknoglobals
-    - gochecknoinits
+    # - gochecknoglobals
+    # - gochecknoinits
     - lll
     # - misspell
     - prealloc
+    - wsl # questionable
   # disable-all: false
   # presets:
   #   - bugs
@@ -227,27 +260,21 @@ issues:
     # Exclude some linters from running on tests files.
     - path: _test\.go|testing\.go
       linters:
-        - gocyclo
         - bodyclose
-        - errcheck
         - dupl
-        - gosec
-        - gochecknoinits
-        - gochecknoglobals
-        - maligned
+        - errcheck
         - funlen
-        - scopelint
+        - gochecknoglobals
+        - gochecknoinits
+        - gocyclo
+        - gosec
+        - maligned
 
     # Ease some gocritic warnings on test files.
     - path: _test\.go|testing\.go
       text: "(unnamedResult|exitAfterDefer|rangeValCopy)"
       linters:
         - gocritic
-
-    # Package def is designed to contain global constants.
-    # - path: internal/def/
-    #   linters:
-    #     - gochecknoglobals
 
     # Commands are allowed to contain a lot of flags.
     - path: main.go
