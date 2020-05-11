@@ -24,5 +24,5 @@ require (
 	golang.org/x/crypto v0.0.0-20200128174031-69ecbb4d6d5d // indirect
 	golang.org/x/sys v0.0.0-20191120155948-bd437916bb0e // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
-	gopkg.in/ini.v1 v1.55.0
+	gopkg.in/ini.v1 v1.56.0
 )
