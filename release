@@ -8,10 +8,11 @@ GH_USER="${GH%%/*}"
 GH_REPO="${GH##*/}"
 
 mkdir -p $DIST_DIR
-while read suffix GOOS GOARCH GOARM; do
+while read -r suffix GOOS GOARCH GOARM; do
 	CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH GOARM=$GOARM \
-	go build -mod=readonly -v -o "$DIST_DIR/${GH_REPO}-$suffix" \
+		go build -mod=readonly -o "$DIST_DIR/${GH_REPO}-$suffix" \
 		-ldflags "-X 'main.ver=$TAG'"
+	gpg --armor --output "$DIST_DIR/${GH_REPO}-$suffix.asc" --detach-sign "$DIST_DIR/${GH_REPO}-$suffix"
 done <<DIST
 linux-x86_64            linux   amd64
 linux-386               linux   386
