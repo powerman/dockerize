@@ -43,7 +43,7 @@ jobs:
             GHR_VER: 0.12.0
         steps:
             - checkout
-            - run: echo "$GPG_KEY" | gpg --import
+            - run: echo -e "$GPG_KEY" | gpg --import
             - run:
                 name: Install tools
                 command: |
