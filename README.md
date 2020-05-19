@@ -52,17 +52,27 @@ curl -sfL $(curl -s https://api.github.com/repos/powerman/dockerize/releases/lat
 or specific version:
 
 ```sh
-curl -sfL https://github.com/powerman/dockerize/releases/download/v0.10.0/dockerize-`uname -s`-`uname -m` | install /dev/stdin /usr/local/bin/dockerize
+curl -sfL https://github.com/powerman/dockerize/releases/download/v0.11.5/dockerize-`uname -s`-`uname -m` | install /dev/stdin /usr/local/bin/dockerize
 ```
 
 If `curl` is not available (e.g. busybox base image) then you can use `wget`:
 
 ```
 ### busybox: latest version
-wget -O - $(wget -O - https://api.github.com/repos/powerman/dockerize/releases/latest | grep -i /dockerize-$(uname -s)-$(uname -m)\" | cut -d\" -f4) | install /dev/stdin /bin/dockerize
+wget -O - $(wget -O - https://api.github.com/repos/powerman/dockerize/releases/latest | grep -i /dockerize-$(uname -s)-$(uname -m)\" | cut -d\" -f4) | install /dev/stdin /usr/local/bin/dockerize
 
 ### busybox: specific version
-wget -O - https://github.com/powerman/dockerize/releases/download/v0.10.0/dockerize-`uname -s`-`uname -m` | install /dev/stdin /bin/dockerize
+wget -O - https://github.com/powerman/dockerize/releases/download/v0.11.5/dockerize-`uname -s`-`uname -m` | install /dev/stdin /usr/local/bin/dockerize
+```
+
+PGP public key for verifying signed binaries: https://powerman.name/about/Powerman.asc
+
+```
+curl -sfL https://powerman.name/about/Powerman.asc | gpg --import
+curl -sfL https://github.com/powerman/dockerize/releases/download/v0.11.5/dockerize-`uname -s`-`uname -m`.asc    >dockerize.asc
+gpg --verify dockerize.asc /usr/local/bin/dockerize
+curl -sfL https://github.com/powerman/dockerize/releases/download/v0.11.5/dockerize-`uname -s`-`uname -m`.sha256 >dockerize.sha256
+sha256sum -c dockerize.sha256 </usr/local/bin/dockerize
 ```
 
 ### Docker Base Image
