@@ -69,10 +69,8 @@ PGP public key for verifying signed binaries: https://powerman.name/about/Powerm
 
 ```
 curl -sfL https://powerman.name/about/Powerman.asc | gpg --import
-curl -sfL https://github.com/powerman/dockerize/releases/download/v0.11.5/dockerize-`uname -s`-`uname -m`.asc    >dockerize.asc
+curl -sfL https://github.com/powerman/dockerize/releases/download/v0.11.5/dockerize-`uname -s`-`uname -m`.asc >dockerize.asc
 gpg --verify dockerize.asc /usr/local/bin/dockerize
-curl -sfL https://github.com/powerman/dockerize/releases/download/v0.11.5/dockerize-`uname -s`-`uname -m`.sha256 >dockerize.sha256
-sha256sum -c dockerize.sha256 </usr/local/bin/dockerize
 ```
 
 ### Docker Base Image
