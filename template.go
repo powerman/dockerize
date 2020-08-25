@@ -50,7 +50,7 @@ func jsonQuery(jsonObj string, query string) (interface{}, error) {
 }
 
 func readFile(fileName string) (string, error) {
-	data, err := ioutil.ReadFile(fileName)
+	data, err := ioutil.ReadFile(fileName) //nolint:gosec // File inclusion via variable.
 	if os.IsNotExist(err) {
 		return "", nil
 	}
@@ -63,7 +63,7 @@ func processTemplatePaths(cfg templateConfig, paths []string) error {
 		switch parts := strings.SplitN(srcdst, ":", 2); len(parts) {
 		case 1:
 			src = parts[0]
-		case 2:
+		case 2: //nolint:gomnd // TODO Refactor?
 			src, dst = parts[0], parts[1]
 		}
 
