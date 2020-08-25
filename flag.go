@@ -49,7 +49,7 @@ type httpHeader struct {
 type httpHeadersFlag []httpHeader
 
 func (f *httpHeadersFlag) Set(value string) error {
-	buf, err := ioutil.ReadFile(value)
+	buf, err := ioutil.ReadFile(value) //nolint:gosec // File inclusion via variable.
 	if err == nil {
 		value = string(buf)
 	} else if !os.IsNotExist(err) {
@@ -122,5 +122,5 @@ func (f delimsFlag) String() string {
 func fatalFlagValue(msg, name string, val interface{}) {
 	fmt.Fprintf(os.Stderr, "invalid value %q for flag -%s: %s\n", val, name, msg)
 	flag.Usage()
-	os.Exit(2)
+	os.Exit(exitCodeUsage)
 }

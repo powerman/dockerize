@@ -101,7 +101,7 @@ func waitForSocket(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<
 	readyc <- u
 }
 
-func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- *url.URL) { // nolint:interfacer
+func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- *url.URL) { //nolint:interfacer // False positive.
 	waitStatusCode := make(map[int]bool, 100)
 	if len(cfg.statusCodes) == 0 {
 		for statusCode := 200; statusCode < 300; statusCode++ {
@@ -115,7 +115,7 @@ func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 
 	client := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.skipTLSVerify}, //nolint:gosec
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.skipTLSVerify}, //nolint:gosec // TLS InsecureSkipVerify may be true.
 		},
 	}
 	if cfg.skipRedirect {
@@ -128,10 +128,10 @@ func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 	for {
 		req, err := http.NewRequest("GET", u.String(), nil)
 		if err == nil {
-			for _, header := range cfg.headers { //nolint:gocritic
-				req.Header.Add(header.name, header.value)
+			for _, h := range cfg.headers { //nolint:gocritic // Premature optimization.
+				req.Header.Add(h.name, h.value)
 			}
-			resp, err = client.Do(req.WithContext(ctx)) //nolint:bodyclose
+			resp, err = client.Do(req.WithContext(ctx)) //nolint:bodyclose // False positive.
 		}
 		if err == nil {
 			_, _ = io.Copy(ioutil.Discard, resp.Body)

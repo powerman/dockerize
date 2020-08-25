@@ -11,7 +11,7 @@ import (
 	ini "gopkg.in/ini.v1"
 )
 
-type iniConfig struct { // nolint:maligned
+type iniConfig struct {
 	source        string // URL or file path
 	options       ini.LoadOptions
 	section       string
@@ -45,7 +45,7 @@ func loadINISection(cfg iniConfig) (map[string]string, error) {
 func fetchINI(cfg iniConfig) (data []byte, err error) {
 	client := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.skipTLSVerify}, //nolint:gosec
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.skipTLSVerify}, //nolint:gosec // TLS InsecureSkipVerify may be true.
 		},
 		CheckRedirect: func(*http.Request, []*http.Request) error {
 			return errors.New("redirects disallowed")
@@ -56,11 +56,11 @@ func fetchINI(cfg iniConfig) (data []byte, err error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, h := range cfg.headers { //nolint:gocritic
+	for _, h := range cfg.headers { //nolint:gocritic // Premature optimization.
 		req.Header.Add(h.name, h.value)
 	}
 
-	resp, err := client.Do(req) //nolint:bodyclose
+	resp, err := client.Do(req) //nolint:bodyclose // False positive.
 	if err != nil {
 		return nil, err
 	}

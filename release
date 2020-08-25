@@ -10,8 +10,7 @@ GH_REPO="${GH##*/}"
 mkdir -p $DIST_DIR
 while read -r suffix GOOS GOARCH GOARM; do
 	CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH GOARM=$GOARM \
-		go build -mod=readonly -o "$DIST_DIR/${GH_REPO}-$suffix" \
-		-ldflags "-X 'main.ver=$TAG'"
+		go build -o "$DIST_DIR/${GH_REPO}-$suffix" -ldflags "-X 'main.ver=$TAG'"
 	pushd "$DIST_DIR"
 	sha256sum "${GH_REPO}-$suffix" >"${GH_REPO}-$suffix.sha256"
 	gpg --armor --output "${GH_REPO}-$suffix.asc" --detach-sign "${GH_REPO}-$suffix"
@@ -22,6 +21,7 @@ linux-386               linux   386
 linux-armel             linux   arm     5
 linux-armhf             linux   arm     6
 linux-arm64             linux   arm64
+linux-ppc64le           linux   ppc64le
 darwin-x86_64           darwin  amd64
 DIST
 

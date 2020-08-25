@@ -24,7 +24,7 @@ func TestFlagHelp(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
 	out, err := testexec.Func(testCtx, t, main, "-h").CombinedOutput()
-	t.Match(err, "exit status 2")
+	t.Nil(err)
 	t.Match(out, "Usage:")
 }
 
@@ -199,7 +199,7 @@ func TestTail(tt *testing.T) {
 		for i := range logf {
 			logf[i] = t.NoErrFile(ioutil.TempFile("", "gotest"))
 			logn[i] = logf[i].Name()
-			defer os.Remove(logn[i]) // nolint:errcheck
+			defer os.Remove(logn[i])
 			defer logf[i].Close()
 		}
 	}
@@ -237,7 +237,7 @@ func TestSmoke1(tt *testing.T) {
 	if os.Getenv("GO_WANT_HELPER_PROCESS") == "" { // don't do this again in subprocess
 		logf = t.NoErrFile(ioutil.TempFile("", "gotest"))
 		logn = logf.Name()
-		defer os.Remove(logn) // nolint:errcheck
+		defer os.Remove(logn)
 		defer logf.Close()
 		filen = t.TempPath()
 		unixn = t.TempPath()
@@ -271,7 +271,7 @@ func TestSmoke1(tt *testing.T) {
 
 	time.Sleep(testSecond / 2)
 	t.Nil(t.NoErrFile(os.Create(filen)).Close())
-	defer os.Remove(filen) // nolint:errcheck
+	defer os.Remove(filen)
 	lnUnix := t.NoErrListen(net.Listen("unix", unixn))
 	defer lnUnix.Close()
 	lnTCP = t.NoErrListen(net.Listen("tcp", lnTCP.Addr().String()))
@@ -306,7 +306,7 @@ func TestSmoke2(tt *testing.T) {
 
 	dstDir := t.TempPath()
 	if strings.Contains(dstDir, "/gotest") { // protect in case of bug in TempPath
-		defer os.RemoveAll(dstDir) // nolint:errcheck
+		defer os.RemoveAll(dstDir)
 	}
 	mux := http.NewServeMux()
 	ts := httptest.NewUnstartedServer(mux)

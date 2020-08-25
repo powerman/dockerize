@@ -8,7 +8,7 @@ import (
 )
 
 func runCmd(name string, args ...string) (int, error) {
-	cmd := exec.Command(name, args...) //nolint:gosec
+	cmd := exec.Command(name, args...) //nolint:gosec // Subprocess launched with variable.
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -19,7 +19,8 @@ func runCmd(name string, args ...string) (int, error) {
 		return 0, err
 	}
 
-	sigc := make(chan os.Signal, 8)
+	const sigcSize = 8
+	sigc := make(chan os.Signal, sigcSize)
 	signal.Notify(sigc,
 		syscall.SIGHUP,
 		syscall.SIGINT,

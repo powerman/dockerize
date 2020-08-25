@@ -13,17 +13,21 @@ import (
 )
 
 const (
-	schemeFile  = "file"
-	schemeTCP   = "tcp"
-	schemeTCP4  = "tcp4"
-	schemeTCP6  = "tcp6"
-	schemeUnix  = "unix"
-	schemeHTTP  = "http"
-	schemeHTTPS = "https"
+	schemeFile           = "file"
+	schemeTCP            = "tcp"
+	schemeTCP4           = "tcp4"
+	schemeTCP6           = "tcp6"
+	schemeUnix           = "unix"
+	schemeHTTP           = "http"
+	schemeHTTPS          = "https"
+	defWaitTimeout       = 10 * time.Second
+	defWaitRetryInterval = time.Second
+	exitCodeUsage        = 2
+	exitCodeFatal        = 123
 )
 
 // Read-only globals for use only within init() and main().
-//nolint:gochecknoglobals
+//nolint:gochecknoglobals // By design.
 var (
 	app = strings.TrimSuffix(path.Base(os.Args[0]), ".test")
 	ver = "unknown" // set by ./release
@@ -40,7 +44,7 @@ var (
 )
 
 // One-time initialization shared with tests.
-func init() { // nolint:gochecknoinits
+func init() { // nolint:gochecknoinits // By design.
 	flag.BoolVar(&cfg.version, "version", false, "print version and exit")
 	flag.StringVar(&cfg.ini.source, "env", "", "path or URL to INI file with default values for unset env vars")
 	flag.BoolVar(&cfg.ini.options.AllowPythonMultilineValues, "multiline", false, "allow Python-like multi-line values in INI file")
@@ -55,15 +59,15 @@ func init() { // nolint:gochecknoinits
 	flag.BoolVar(&cfg.wait.skipTLSVerify, "skip-tls-verify", false, "skip TLS verification for HTTPS -wait and -env urls")
 	flag.BoolVar(&cfg.wait.skipRedirect, "wait-http-skip-redirect", false, "do not follow HTTP redirects\n(if -wait use HTTP)")
 	flag.Var(&cfg.wait.statusCodes, "wait-http-status-code", "HTTP status `code` to wait for (2xx by default)\ncan be passed multiple times")
-	flag.DurationVar(&cfg.wait.timeout, "timeout", 10*time.Second, "timeout for -wait")
-	flag.DurationVar(&cfg.wait.delay, "wait-retry-interval", time.Second, "delay before retrying failed -wait")
+	flag.DurationVar(&cfg.wait.timeout, "timeout", defWaitTimeout, "timeout for -wait")
+	flag.DurationVar(&cfg.wait.delay, "wait-retry-interval", defWaitRetryInterval, "delay before retrying failed -wait")
 	flag.Var(&cfg.tailStdout, "stdout", "file `path` to tail to stdout\ncan be passed multiple times")
 	flag.Var(&cfg.tailStderr, "stderr", "file `path` to tail to stderr\ncan be passed multiple times")
 
 	flag.Usage = usage
 }
 
-func main() { // nolint:gocyclo,gocognit
+func main() { //nolint:gocyclo,gocognit // TODO Refactor?
 	if !flag.Parsed() { // flags may be already parsed by tests
 		flag.Parse()
 	}
@@ -74,8 +78,9 @@ func main() { // nolint:gocyclo,gocognit
 		iniHTTP = u.Scheme == schemeHTTP || u.Scheme == schemeHTTPS
 	}
 	for _, path := range cfg.templatePaths {
+		const maxParts = 2
 		parts := strings.Split(path, ":")
-		templatePathBad = templatePathBad || path == "" || parts[0] == "" || len(parts) > 2
+		templatePathBad = templatePathBad || path == "" || parts[0] == "" || len(parts) > maxParts
 	}
 	for _, u := range cfg.waitURLs {
 		switch u.Scheme {
@@ -89,7 +94,7 @@ func main() { // nolint:gocyclo,gocognit
 	switch {
 	case flag.NArg() == 0 && flag.NFlag() == 0:
 		flag.Usage()
-		os.Exit(2)
+		os.Exit(exitCodeUsage)
 	case iniURL && !iniHTTP:
 		fatalFlagValue("scheme must be http/https", "env", cfg.ini.source)
 	case len(cfg.ini.headers) > 0 && !iniHTTP:
@@ -124,7 +129,7 @@ func main() { // nolint:gocyclo,gocognit
 
 	defaultEnv, err := loadINISection(cfg.ini)
 	if err != nil {
-		fatal("Failed to load INI: %s.", err)
+		fatalf("Failed to load INI: %s.", err)
 	}
 
 	setDefaultEnv(defaultEnv)
@@ -132,12 +137,12 @@ func main() { // nolint:gocyclo,gocognit
 	cfg.template.data.Env = getEnv()
 	err = processTemplatePaths(cfg.template, cfg.templatePaths)
 	if err != nil {
-		fatal("Failed to process templates: %s.", err)
+		fatalf("Failed to process templates: %s.", err)
 	}
 
 	err = waitForURLs(cfg.wait, cfg.waitURLs)
 	if err != nil {
-		fatal("Failed to wait: %s.", err)
+		fatalf("Failed to wait: %s.", err)
 	}
 
 	for _, path := range cfg.tailStdout {
@@ -151,7 +156,7 @@ func main() { // nolint:gocyclo,gocognit
 	case flag.NArg() > 0:
 		code, err := runCmd(flag.Arg(0), flag.Args()[1:]...)
 		if err != nil {
-			fatal("Failed to run command: %s.", err)
+			fatalf("Failed to run command: %s.", err)
 		}
 		os.Exit(code)
 	case len(cfg.tailStdout)+len(cfg.tailStderr) > 0:
@@ -165,9 +170,9 @@ func warnIfFail(f func() error) {
 	}
 }
 
-func fatal(format string, v ...interface{}) {
+func fatalf(format string, v ...interface{}) {
 	log.Printf(format, v...)
-	os.Exit(123)
+	os.Exit(exitCodeFatal)
 }
 
 func usage() {
