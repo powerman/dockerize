@@ -49,7 +49,7 @@ jobs:
                 name: Install tools
                 command: |
                     curl -sfL https://github.com/tcnksm/ghr/releases/download/v${GHR_VER}/ghr_v${GHR_VER}_linux_amd64.tar.gz |
-                        tar xzf - -C /tmp && mv /tmp/ghr_v${GHR_VER}_linux_amd64/ghr /go/bin/
+                        tar xzf - -C /tmp && mv /tmp/ghr_v${GHR_VER}_linux_amd64/ghr $(go env GOPATH)/bin/
             - run: ./release
 
 workflows:
