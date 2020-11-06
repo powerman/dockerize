@@ -11,13 +11,12 @@ require (
 	github.com/jwilder/gojq v0.0.0-20161018055142-c550732d4a52
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
-	github.com/powerman/check v1.2.1
+	github.com/powerman/check v1.3.0
 	github.com/powerman/gotest v0.3.0
 	github.com/powerman/tail v0.1.0
 	github.com/smartystreets/assertions v1.0.1 // indirect
 	github.com/smartystreets/goconvey v1.6.4
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
-	golang.org/x/sys v0.0.0-20191120155948-bd437916bb0e // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/ini.v1 v1.62.0
 )
