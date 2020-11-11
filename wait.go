@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"io"
@@ -24,6 +25,7 @@ var (
 type waitConfig struct {
 	headers       httpHeadersFlag
 	skipTLSVerify bool
+	ca            *x509.CertPool
 	skipRedirect  bool
 	statusCodes   statusCodesFlag
 	timeout       time.Duration
@@ -122,7 +124,10 @@ func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 
 	client := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.skipTLSVerify}, //nolint:gosec // TLS InsecureSkipVerify may be true.
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: cfg.skipTLSVerify, //nolint:gosec // TLS InsecureSkipVerify may be true.
+				RootCAs:            cfg.ca,
+			},
 		},
 	}
 	if cfg.skipRedirect {

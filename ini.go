@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -23,6 +24,7 @@ type iniConfig struct {
 	section       string
 	headers       httpHeadersFlag
 	skipTLSVerify bool
+	ca            *x509.CertPool
 }
 
 func loadINISection(cfg iniConfig) (map[string]string, error) {
@@ -51,7 +53,10 @@ func loadINISection(cfg iniConfig) (map[string]string, error) {
 func fetchINI(cfg iniConfig) (data []byte, err error) {
 	client := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.skipTLSVerify}, //nolint:gosec // TLS InsecureSkipVerify may be true.
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: cfg.skipTLSVerify, //nolint:gosec // TLS InsecureSkipVerify may be true.
+				RootCAs:            cfg.ca,
+			},
 		},
 		CheckRedirect: func(*http.Request, []*http.Request) error {
 			return errRedirectsDisallowed
