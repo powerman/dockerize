@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -12,6 +13,12 @@ import (
 	"net/url"
 	"os"
 	"time"
+)
+
+var (
+	errUnexpectedStatusCode = errors.New("unexpected HTTP status code")
+	errSchemeNotSupported   = errors.New("wait scheme not supported")
+	errTimedOut             = errors.New("timed out")
 )
 
 type waitConfig struct {
@@ -40,7 +47,7 @@ func waitForURLs(cfg waitConfig, urls []*url.URL) error {
 			case schemeHTTP, schemeHTTPS:
 				go waitForHTTP(ctx, cfg, u, readyc)
 			default:
-				return fmt.Errorf("wait scheme not supported: %s", u)
+				return fmt.Errorf("%w: %s", errSchemeNotSupported, u)
 			}
 		}
 	}
@@ -52,7 +59,7 @@ func waitForURLs(cfg waitConfig, urls []*url.URL) error {
 			delete(waiting, u)
 		case <-ctx.Done():
 			for s := range waiting {
-				return fmt.Errorf("timed out: %s", s)
+				return fmt.Errorf("%w: %s", errTimedOut, s)
 			}
 			panic("internal error")
 		}
@@ -139,7 +146,7 @@ func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 			if waitStatusCode[resp.StatusCode] {
 				break
 			}
-			err = fmt.Errorf("unexpected HTTP status code: %d", resp.StatusCode)
+			err = fmt.Errorf("%w: %d", errUnexpectedStatusCode, resp.StatusCode)
 		}
 		log.Printf("Waiting for %s: %s.", u, err)
 		select {

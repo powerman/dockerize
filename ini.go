@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -9,6 +10,11 @@ import (
 	"net/url"
 
 	ini "gopkg.in/ini.v1"
+)
+
+var (
+	errRedirectsDisallowed = errors.New("redirects disallowed")
+	errBadStatusCode       = errors.New("bad HTTP status")
 )
 
 type iniConfig struct {
@@ -48,11 +54,11 @@ func fetchINI(cfg iniConfig) (data []byte, err error) {
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.skipTLSVerify}, //nolint:gosec // TLS InsecureSkipVerify may be true.
 		},
 		CheckRedirect: func(*http.Request, []*http.Request) error {
-			return errors.New("redirects disallowed")
+			return errRedirectsDisallowed
 		},
 	}
 
-	req, err := http.NewRequest("GET", cfg.source, nil)
+	req, err := http.NewRequestWithContext(context.Background(), "GET", cfg.source, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +73,7 @@ func fetchINI(cfg iniConfig) (data []byte, err error) {
 	defer warnIfFail(resp.Body.Close)
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("bad HTTP status: %d", resp.StatusCode)
+		return nil, fmt.Errorf("%w: %d", errBadStatusCode, resp.StatusCode)
 	}
 	return ioutil.ReadAll(resp.Body)
 }
