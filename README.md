@@ -1,3 +1,21 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [dockerize * * * * *](#dockerize-----)
+  - [Installation](#installation)
+    - [Docker Base Image](#docker-base-image)
+  - [Usage](#usage)
+    - [Command-line Options](#command-line-options)
+    - [Waiting for other dependencies](#waiting-for-other-dependencies)
+    - [Timeout](#timeout)
+    - [Skip SSL cert verification for https connections](#skip-ssl-cert-verification-for-https-connections)
+    - [Injecting env vars from INI file](#injecting-env-vars-from-ini-file)
+  - [Using Templates](#using-templates)
+    - [jsonQuery](#jsonquery)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # dockerize [![GitHub release](https://img.shields.io/github/release/powerman/dockerize.svg)](https://github.com/powerman/dockerize/releases/latest) [![CI Build Status](https://circleci.com/gh/powerman/dockerize.svg?style=svg)](https://circleci.com/gh/powerman/dockerize) [![Docker Build Status](https://img.shields.io/docker/build/powerman/dockerize.svg)](https://hub.docker.com/r/powerman/dockerize/) [![Go Report Card](https://goreportcard.com/badge/github.com/powerman/dockerize)](https://goreportcard.com/report/github.com/powerman/dockerize) [![Coverage Status](https://coveralls.io/repos/github/powerman/dockerize/badge.svg?branch=master)](https://coveralls.io/github/powerman/dockerize?branch=master)
 
 Utility to simplify running applications in docker containers.
