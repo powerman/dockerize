@@ -8,6 +8,26 @@ Utility to simplify running applications in docker containers.
 contributed to the project may become a collaborator - just ask for it
 in PR comments after your PR has being merged.
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Overview](#overview)
+- [Installation](#installation)
+  - [Docker Base Image](#docker-base-image)
+- [Usage](#usage)
+  - [Command-line Options](#command-line-options)
+  - [Waiting for other dependencies](#waiting-for-other-dependencies)
+  - [Timeout](#timeout)
+  - [Skip SSL cert verification for https connections](#skip-ssl-cert-verification-for-https-connections)
+  - [Injecting env vars from INI file](#injecting-env-vars-from-ini-file)
+- [Using Templates](#using-templates)
+  - [jsonQuery](#jsonquery)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Overview
+
 dockerize is a utility to simplify running applications in docker containers.  It allows you to:
 * generate application configuration files at container startup time from templates and container environment variables
 * Tail multiple log files to stdout and/or stderr
