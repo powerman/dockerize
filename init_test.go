@@ -10,7 +10,9 @@ import (
 	"time"
 
 	"github.com/powerman/check"
-	_ "github.com/smartystreets/goconvey/convey" // get nice diff in web UI
+
+	// Get nice diff in web UI.
+	_ "github.com/smartystreets/goconvey/convey"
 )
 
 var (
@@ -38,6 +40,7 @@ func (c *checkC) NoErrListen(v net.Listener, err error) net.Listener {
 	c.Must(c.Nil(err))
 	return v
 }
+
 func (c *checkC) TempPath() string {
 	c.Helper()
 	f := c.NoErrFile(ioutil.TempFile("", "gotest"))

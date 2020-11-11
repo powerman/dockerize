@@ -44,7 +44,7 @@ var (
 )
 
 // One-time initialization shared with tests.
-func init() { // nolint:gochecknoinits // By design.
+func init() { //nolint:gochecknoinits // By design.
 	flag.BoolVar(&cfg.version, "version", false, "print version and exit")
 	flag.StringVar(&cfg.ini.source, "env", "", "path or URL to INI file with default values for unset env vars")
 	flag.BoolVar(&cfg.ini.options.AllowPythonMultilineValues, "multiline", false, "allow Python-like multi-line values in INI file")
@@ -67,7 +67,7 @@ func init() { // nolint:gochecknoinits // By design.
 	flag.Usage = usage
 }
 
-func main() { //nolint:gocyclo,gocognit // TODO Refactor?
+func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 	if !flag.Parsed() { // flags may be already parsed by tests
 		flag.Parse()
 	}

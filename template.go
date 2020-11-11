@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/url"
@@ -14,6 +15,8 @@ import (
 	"github.com/Masterminds/sprig/v3"
 	"github.com/jwilder/gojq"
 )
+
+var errNotADirectory = errors.New("not a directory")
 
 type templateConfig struct {
 	noOverwrite bool
@@ -157,7 +160,7 @@ func createDestFile(src, dst string, noOverwrite bool) (*os.File, error) {
 		openFlags = os.O_RDWR | os.O_CREATE | os.O_EXCL
 	}
 
-	file, err := os.OpenFile(dst, openFlags, like.Mode().Perm())
+	file, err := os.OpenFile(dst, openFlags, like.Mode().Perm()) //nolint:gosec // File inclusion.
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +180,7 @@ func ensureDestDir(src, dst string) error {
 		return err
 	}
 	if !like.IsDir() {
-		return fmt.Errorf("not a directory: %s", src)
+		return fmt.Errorf("%w: %s", errNotADirectory, src)
 	}
 	likeSys, ok := like.Sys().(*syscall.Stat_t)
 
@@ -186,7 +189,7 @@ func ensureDestDir(src, dst string) error {
 	case err == nil && fi.IsDir():
 		return nil
 	case err == nil:
-		return fmt.Errorf("not a directory: %s", dst)
+		return fmt.Errorf("%w: %s", errNotADirectory, dst)
 	case !os.IsNotExist(err):
 		return err
 	}

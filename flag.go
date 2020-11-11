@@ -11,6 +11,13 @@ import (
 	"strings"
 )
 
+var (
+	errNameValueMultiline   = errors.New("name:value must be a single line")
+	errNameValueRequired    = errors.New("must be a name:value")
+	errStatusCodeOutOfRange = errors.New("status code must be between 100 and 599")
+	errLeftRightRequired    = errors.New("must be a left:right")
+)
+
 type stringsFlag []string
 
 func (f *stringsFlag) Set(value string) error {
@@ -57,15 +64,15 @@ func (f *httpHeadersFlag) Set(value string) error {
 	}
 	value = strings.TrimSpace(value)
 	if strings.ContainsAny(value, "\r\n") {
-		return errors.New("name:value must be a single line")
+		return errNameValueMultiline
 	} else if strings.Count(value, ":") == 0 {
-		return errors.New("must be a name:value")
+		return errNameValueRequired
 	}
 	nv := strings.SplitN(value, ":", 2)
 	for i := range nv {
 		nv[i] = strings.TrimSpace(nv[i])
 		if nv[i] == "" {
-			return errors.New("must be a name:value")
+			return errNameValueRequired
 		}
 	}
 	*f = append(*f, httpHeader{name: nv[0], value: nv[1]})
@@ -88,7 +95,7 @@ func (f *statusCodesFlag) Set(value string) error {
 		return err
 	}
 	if i < 100 || 599 < i {
-		return errors.New("status code must be between 100 and 599")
+		return errStatusCodeOutOfRange
 	}
 	*f = append(*f, i)
 	return nil
@@ -107,7 +114,7 @@ type delimsFlag [2]string
 func (f *delimsFlag) Set(value string) error {
 	delims := strings.Split(value, ":")
 	if len(delims) != 2 || len(strings.Fields(delims[0])) != 1 || len(strings.Fields(delims[1])) != 1 {
-		return errors.New("must be a left:right")
+		return errLeftRightRequired
 	}
 	(*f)[0] = delims[0]
 	(*f)[1] = delims[1]

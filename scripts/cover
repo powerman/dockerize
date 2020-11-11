@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e -o pipefail
+
+gobin -m -run gotest.tools/gotestsum -- \
+	-coverpkg="$(go list ./... | paste -s -d,)" \
+	-coverprofile cover.out \
+	-tags=integration ./...
+
+go tool cover -func=cover.out | tail -n 1 | xargs echo
+
+test -n "$CI" || go tool cover -html=cover.out

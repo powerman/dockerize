@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x -e -o pipefail
 
-DIST_DIR=dist
+DIST_DIR=bin
 TAG=$(git describe --match='v*' --exact-match)
 GH="$(git remote get-url origin | sed -e 's/.*://' -e 's/\.git$//')"
 GH_USER="${GH%%/*}"
