@@ -1,4 +1,4 @@
-FROM golang:1.15.4-alpine3.12 AS builder
+FROM golang:1.15.0-alpine3.12 AS builder
 SHELL ["/bin/ash","-e","-o","pipefail","-x","-c"]
 
 LABEL org.opencontainers.image.source="https://github.com/powerman/dockerize"
