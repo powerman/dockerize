@@ -19,6 +19,7 @@ in PR comments after your PR has being merged.
   - [Command-line Options](#command-line-options)
   - [Waiting for other dependencies](#waiting-for-other-dependencies)
   - [Timeout](#timeout)
+  - [Use custom CA for SSL cert verification for https connections](#use-custom-ca-for-ssl-cert-verification-for-https-connections)
   - [Skip SSL cert verification for https connections](#skip-ssl-cert-verification-for-https-connections)
   - [Injecting env vars from INI file](#injecting-env-vars-from-ini-file)
 - [Using Templates](#using-templates)
