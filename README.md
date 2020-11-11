@@ -205,6 +205,12 @@ $ dockerize -wait tcp://db:5432 -wait http://web:80 -timeout 10s
 
 See [this issue](https://github.com/docker/compose/issues/374#issuecomment-126312313) for a deeper discussion, and why support isn't and won't be available in the Docker ecosystem itself.
 
+### Use custom CA for SSL cert verification for https connections
+
+```
+$ dockerize -cacert /path/to/ca.pem -wait https://web:80
+```
+
 ### Skip SSL cert verification for https connections
 
 ```

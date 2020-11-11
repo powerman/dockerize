@@ -38,6 +38,7 @@ var (
 		template      templateConfig
 		waitURLs      urlsFlag
 		wait          waitConfig
+		caCert        string
 		tailStdout    stringsFlag
 		tailStderr    stringsFlag
 	}
@@ -57,6 +58,7 @@ func init() { //nolint:gochecknoinits // By design.
 	flag.Var(&cfg.waitURLs, "wait", "wait for `url` (file/tcp/tcp4/tcp6/unix/http/https)\ncan be passed multiple times")
 	flag.Var(&cfg.wait.headers, "wait-http-header", "`name:value` for HTTP header to send\n(if -wait use HTTP)\ncan be passed multiple times")
 	flag.BoolVar(&cfg.wait.skipTLSVerify, "skip-tls-verify", false, "skip TLS verification for HTTPS -wait and -env urls")
+	flag.StringVar(&cfg.caCert, "cacert", "", "path to CA certificate for HTTPS -wait and -env urls")
 	flag.BoolVar(&cfg.wait.skipRedirect, "wait-http-skip-redirect", false, "do not follow HTTP redirects\n(if -wait use HTTP)")
 	flag.Var(&cfg.wait.statusCodes, "wait-http-status-code", "HTTP status `code` to wait for (2xx by default)\ncan be passed multiple times")
 	flag.DurationVar(&cfg.wait.timeout, "timeout", defWaitTimeout, "timeout for -wait")
@@ -117,12 +119,20 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 		fatalFlagValue("require -wait with HTTP url", "wait-http-skip-redirect", cfg.wait.skipRedirect)
 	case cfg.wait.skipTLSVerify && !iniHTTP && !waitHTTP:
 		fatalFlagValue("require -wait/-env with HTTP url", "skip-tls-verify", cfg.wait.skipTLSVerify)
+	case cfg.caCert != "" && !iniHTTP && !waitHTTP:
+		fatalFlagValue("require -wait/-env with HTTP url", "cacert", cfg.caCert)
 	case cfg.version:
 		fmt.Println(app, ver, runtime.Version())
 		os.Exit(0)
 	}
 
+	var err error
 	cfg.ini.skipTLSVerify = cfg.wait.skipTLSVerify
+	cfg.wait.ca, err = LoadCACert(cfg.caCert)
+	if err != nil {
+		fatalf("Failed to load CA cert: %s", err)
+	}
+	cfg.ini.ca = cfg.wait.ca
 	if cfg.template.delims[0] == "" {
 		cfg.template.delims = [2]string{"{{", "}}"}
 	}
