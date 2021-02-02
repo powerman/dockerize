@@ -8,7 +8,7 @@ require (
 	github.com/golangci/golangci-lint v1.32.2
 	github.com/jwilder/gojq v0.0.0-20161018055142-c550732d4a52
 	github.com/mattn/goveralls v0.0.7
-	github.com/powerman/check v1.3.0
+	github.com/powerman/check v1.3.1
 	github.com/powerman/gotest v0.3.0
 	github.com/powerman/tail v0.1.0
 	github.com/smartystreets/goconvey v1.6.4

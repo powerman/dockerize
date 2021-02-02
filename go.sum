@@ -338,8 +338,8 @@ github.com/polyfloyd/go-errorlint v0.0.0-20201006195004-351e25ade6e3/go.mod h1:w
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
 github.com/powerman/check v1.0.1 h1:NYfsMwCzLl0KvmT2NP2v4zUgDQelPrRzO8l0dSClKLE=
 github.com/powerman/check v1.0.1/go.mod h1:wOYaLZeuhk6i79TDfPcqkDx70tbaVLEiE0aqMhMKojc=
-github.com/powerman/check v1.3.0 h1:GsncV4RbbC4nZEzLTVpUIdp1rgZil4N36D/XuPZUA60=
-github.com/powerman/check v1.3.0/go.mod h1:k/8NCUQwepaKJKctBBKjQo84jvGEvKiumD9pDl87RB0=
+github.com/powerman/check v1.3.1 h1:86xiEjMNn0K4b3bhQsLfrLqJb0DWLXHBK3wBd5PoJH4=
+github.com/powerman/check v1.3.1/go.mod h1:k/8NCUQwepaKJKctBBKjQo84jvGEvKiumD9pDl87RB0=
 github.com/powerman/gotest v0.3.0 h1:3HdlkyT8XoTIw220BvCP+yy7OhB1AxZ11Qfzn00l3YQ=
 github.com/powerman/gotest v0.3.0/go.mod h1:vR8gUJorGFev+TucLyhbbx566IelaJFxCSAcDYD4fdY=
 github.com/powerman/tail v0.1.0 h1:EznVt+S27fLfHlf8oFV55azSWx24i7inhTvVT+z4dtM=
