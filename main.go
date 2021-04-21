@@ -41,6 +41,7 @@ var (
 		caCert        string
 		tailStdout    stringsFlag
 		tailStderr    stringsFlag
+		exitCodeFatal int
 	}
 )
 
@@ -65,6 +66,7 @@ func init() { //nolint:gochecknoinits // By design.
 	flag.DurationVar(&cfg.wait.delay, "wait-retry-interval", defWaitRetryInterval, "delay before retrying failed -wait")
 	flag.Var(&cfg.tailStdout, "stdout", "file `path` to tail to stdout\ncan be passed multiple times")
 	flag.Var(&cfg.tailStderr, "stderr", "file `path` to tail to stderr\ncan be passed multiple times")
+	flag.IntVar(&cfg.exitCodeFatal, "exit-code", exitCodeFatal, "exit code for dockerize errors")
 
 	flag.Usage = usage
 }
@@ -182,7 +184,7 @@ func warnIfFail(f func() error) {
 
 func fatalf(format string, v ...interface{}) {
 	log.Printf(format, v...)
-	os.Exit(exitCodeFatal)
+	os.Exit(cfg.exitCodeFatal)
 }
 
 func usage() {
