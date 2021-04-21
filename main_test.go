@@ -201,10 +201,9 @@ func TestSmoke1(tt *testing.T) {
 	t := checkT(tt)
 	t.Parallel()
 
-	var logf *os.File
 	var logn, filen, unixn string
 	if os.Getenv("GO_WANT_HELPER_PROCESS") == "" { // don't do this again in subprocess
-		logf = t.NoErrFile(ioutil.TempFile("", "gotest"))
+		logf := t.NoErrFile(ioutil.TempFile("", "gotest"))
 		logn = logf.Name()
 		defer os.Remove(logn)
 		defer logf.Close()
@@ -256,15 +255,11 @@ func TestSmoke1(tt *testing.T) {
 	})
 	ts.Start()
 
-	time.Sleep(testSecond)
-	t.NoErr(logf.Write([]byte("log\n")))
-	time.Sleep(testSecond)
-
 	t.Match(cmd.Wait(), `exit status 42`)
 	stdout := cmd.Stdout.(*bytes.Buffer).String()
 	stderr := cmd.Stderr.(*bytes.Buffer).String()
 	t.Equal(stdout, "A=10 B=20 C=31\n")
-	t.HasSuffix(stderr, "log\n")
+	t.Contains(stderr, "Ready:")
 
 	t.True(callOK)
 }

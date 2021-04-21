@@ -17,7 +17,7 @@ setup_env: &setup_env
 jobs:
   test:
     docker:
-      - image: "cimg/go:1.15"
+      - image: "cimg/go:1.16"
         environment:
           GOFLAGS: "-mod=readonly"
     steps:
@@ -56,7 +56,7 @@ jobs:
 
   release:
     docker:
-      - image: "cimg/go:1.15"
+      - image: "cimg/go:1.16"
         environment:
           GOFLAGS: "-mod=readonly"
           GHR_VER: 0.13.0
