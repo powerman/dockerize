@@ -121,8 +121,8 @@ func TestFlag(tt *testing.T) {
 func TestFailedINI(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
-	out, err := testexec.Func(testCtx, t, main, "-env", "nosuch.ini").CombinedOutput()
-	t.Match(err, "exit status 123")
+	out, err := testexec.Func(testCtx, t, main, "-exit-code", "42", "-env", "nosuch.ini").CombinedOutput()
+	t.Match(err, "exit status 42")
 	t.Match(out, `nosuch.ini: no such file`)
 }
 
