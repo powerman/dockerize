@@ -1,4 +1,4 @@
-FROM golang:1.16.3-alpine3.13 AS builder
+FROM golang:1.16.5-alpine3.14 AS builder
 SHELL ["/bin/ash","-e","-o","pipefail","-x","-c"]
 
 LABEL org.opencontainers.image.source="https://github.com/powerman/dockerize"
@@ -10,7 +10,7 @@ WORKDIR /src
 
 RUN CGO_ENABLED=0 go install -ldflags "-X 'main.ver=$(git describe --match='v*' --exact-match)'"
 
-FROM alpine:3.13
+FROM alpine:3.14
 
 COPY --from=builder /go/bin/dockerize /usr/local/bin
 
