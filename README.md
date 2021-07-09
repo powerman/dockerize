@@ -19,8 +19,8 @@ in PR comments after your PR has being merged.
   - [Command-line Options](#command-line-options)
   - [Waiting for other dependencies](#waiting-for-other-dependencies)
   - [Timeout](#timeout)
-  - [Use custom CA for SSL cert verification for https connections](#use-custom-ca-for-ssl-cert-verification-for-https-connections)
-  - [Skip SSL cert verification for https connections](#skip-ssl-cert-verification-for-https-connections)
+  - [Use custom CA for SSL cert verification for https/amqps connections](#use-custom-ca-for-ssl-cert-verification-for-https-connections)
+  - [Skip SSL cert verification for https/amqps connections](#skip-ssl-cert-verification-for-https-connections)
   - [Injecting env vars from INI file](#injecting-env-vars-from-ini-file)
 - [Using Templates](#using-templates)
   - [jsonQuery](#jsonquery)
@@ -190,7 +190,7 @@ $ dockerize -wait http://web:80 -wait-http-skip-redirect
 
 It is common when using tools like [Docker Compose](https://docs.docker.com/compose/) to depend on services in other linked containers, however oftentimes relying on [links](https://docs.docker.com/compose/compose-file/#links) is not enough - whilst the container itself may have _started_, the _service(s)_ within it may not yet be ready - resulting in shell script hacks to work around race conditions.
 
-Dockerize gives you the ability to wait for services on a specified protocol (`file`, `tcp`, `tcp4`, `tcp6`, `http`, `https` and `unix`) before starting your application:
+Dockerize gives you the ability to wait for services on a specified protocol (`file`, `tcp`, `tcp4`, `tcp6`, `http`, `https`, `amqp`, `amqps` and `unix`) before starting your application:
 
 ```
 $ dockerize -wait tcp://db:5432 -wait http://web:80 -wait file:///tmp/generated-file
@@ -206,13 +206,13 @@ $ dockerize -wait tcp://db:5432 -wait http://web:80 -timeout 10s
 
 See [this issue](https://github.com/docker/compose/issues/374#issuecomment-126312313) for a deeper discussion, and why support isn't and won't be available in the Docker ecosystem itself.
 
-### Use custom CA for SSL cert verification for https connections
+### Use custom CA for SSL cert verification for https/amqps connections
 
 ```
 $ dockerize -cacert /path/to/ca.pem -wait https://web:80
 ```
 
-### Skip SSL cert verification for https connections
+### Skip SSL cert verification for https/amqps connections
 
 ```
 $ dockerize -skip-tls-verify -wait https://web:80

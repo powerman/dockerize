@@ -14,6 +14,8 @@ import (
 	"net/url"
 	"os"
 	"time"
+
+	"github.com/streadway/amqp"
 )
 
 var (
@@ -48,6 +50,8 @@ func waitForURLs(cfg waitConfig, urls []*url.URL) error {
 				go waitForSocket(ctx, cfg, u, readyc)
 			case schemeHTTP, schemeHTTPS:
 				go waitForHTTP(ctx, cfg, u, readyc)
+			case schemeAMQP, schemeAMQPS:
+				go waitForAMQP(ctx, cfg, u, readyc)
 			default:
 				return fmt.Errorf("%w: %s", errSchemeNotSupported, u)
 			}
@@ -153,6 +157,38 @@ func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 			}
 			err = fmt.Errorf("%w: %d", errUnexpectedStatusCode, resp.StatusCode)
 		}
+		log.Printf("Waiting for %s: %s.", u, err)
+		select {
+		case <-time.After(cfg.delay):
+		case <-ctx.Done():
+			return
+		}
+	}
+
+	readyc <- u
+}
+
+func waitForAMQP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- *url.URL) { //nolint:interfacer // False positive.
+	amqpCfg := amqp.Config{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: cfg.skipTLSVerify, //nolint:gosec // TLS InsecureSkipVerify may be true.
+			RootCAs:            cfg.ca,
+		},
+	}
+
+	for {
+		if deadline, ok := ctx.Deadline(); ok {
+			amqpCfg.Dial = amqp.DefaultDial(deadline.Sub(time.Now()))
+		}
+		conn, err := amqp.DialConfig(u.String(), amqpCfg)
+		if err == nil {
+			_, err = conn.Channel()
+			conn.Close()
+		}
+		if err == nil {
+			break
+		}
+
 		log.Printf("Waiting for %s: %s.", u, err)
 		select {
 		case <-time.After(cfg.delay):
