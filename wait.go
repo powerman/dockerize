@@ -178,12 +178,12 @@ func waitForAMQP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 
 	for {
 		if deadline, ok := ctx.Deadline(); ok {
-			amqpCfg.Dial = amqp.DefaultDial(deadline.Sub(time.Now()))
+			amqpCfg.Dial = amqp.DefaultDial(time.Until(deadline))
 		}
 		conn, err := amqp.DialConfig(u.String(), amqpCfg)
 		if err == nil {
 			_, err = conn.Channel()
-			conn.Close()
+			_ = conn.Close()
 		}
 		if err == nil {
 			break
