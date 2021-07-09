@@ -20,6 +20,8 @@ const (
 	schemeUnix           = "unix"
 	schemeHTTP           = "http"
 	schemeHTTPS          = "https"
+	schemeAMQP           = "amqp"
+	schemeAMQPS          = "amqps"
 	defWaitTimeout       = 10 * time.Second
 	defWaitRetryInterval = time.Second
 	exitCodeUsage        = 2
@@ -56,10 +58,10 @@ func init() { //nolint:gochecknoinits // By design.
 	flag.BoolVar(&cfg.template.noOverwrite, "no-overwrite", false, "do not overwrite existing destination file from template")
 	flag.BoolVar(&cfg.template.strict, "template-strict", false, "fail if template mention unset environment variable")
 	flag.Var(&cfg.template.delims, "delims", "action delimiters in templates")
-	flag.Var(&cfg.waitURLs, "wait", "wait for `url` (file/tcp/tcp4/tcp6/unix/http/https)\ncan be passed multiple times")
+	flag.Var(&cfg.waitURLs, "wait", "wait for `url` (file/tcp/tcp4/tcp6/unix/http/https/amqp/amqps)\ncan be passed multiple times")
 	flag.Var(&cfg.wait.headers, "wait-http-header", "`name:value` for HTTP header to send\n(if -wait use HTTP)\ncan be passed multiple times")
-	flag.BoolVar(&cfg.wait.skipTLSVerify, "skip-tls-verify", false, "skip TLS verification for HTTPS -wait and -env urls")
-	flag.StringVar(&cfg.caCert, "cacert", "", "path to CA certificate for HTTPS -wait and -env urls")
+	flag.BoolVar(&cfg.wait.skipTLSVerify, "skip-tls-verify", false, "skip TLS verification for HTTPS/AMQPS -wait and -env urls")
+	flag.StringVar(&cfg.caCert, "cacert", "", "path to CA certificate for HTTPS/AMQPS -wait and -env urls")
 	flag.BoolVar(&cfg.wait.skipRedirect, "wait-http-skip-redirect", false, "do not follow HTTP redirects\n(if -wait use HTTP)")
 	flag.Var(&cfg.wait.statusCodes, "wait-http-status-code", "HTTP status `code` to wait for (2xx by default)\ncan be passed multiple times")
 	flag.DurationVar(&cfg.wait.timeout, "timeout", defWaitTimeout, "timeout for -wait")
@@ -76,7 +78,7 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 		flag.Parse()
 	}
 
-	var iniURL, iniHTTP, templatePathBad, waitBadScheme, waitHTTP bool
+	var iniURL, iniHTTP, templatePathBad, waitBadScheme, waitHTTP, waitAMQPS bool
 	if u, err := url.Parse(cfg.ini.source); err == nil && u.IsAbs() {
 		iniURL = true
 		iniHTTP = u.Scheme == schemeHTTP || u.Scheme == schemeHTTPS
@@ -91,6 +93,9 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 		case schemeFile, schemeTCP, schemeTCP4, schemeTCP6, schemeUnix:
 		case schemeHTTP, schemeHTTPS:
 			waitHTTP = true
+		case schemeAMQP:
+		case schemeAMQPS:
+			waitAMQPS = true
 		default:
 			waitBadScheme = true
 		}
@@ -112,16 +117,16 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 	case cfg.template.delims[0] != "" && len(cfg.templatePaths) == 0:
 		fatalFlagValue("require -template", "delims", cfg.template.delims)
 	case waitBadScheme:
-		fatalFlagValue("scheme must be file/tcp/tcp4/tcp6/unix/http/https", "wait", cfg.waitURLs)
+		fatalFlagValue("scheme must be file/tcp/tcp4/tcp6/unix/http/https/amqp/amqps", "wait", cfg.waitURLs)
 	case len(cfg.wait.headers) > 0 && !waitHTTP:
 		fatalFlagValue("require -wait with HTTP url", "wait-http-header", cfg.wait.headers)
 	case len(cfg.wait.statusCodes) > 0 && !waitHTTP:
 		fatalFlagValue("require -wait with HTTP url", "wait-http-status-code", cfg.wait.statusCodes)
 	case cfg.wait.skipRedirect && !waitHTTP:
 		fatalFlagValue("require -wait with HTTP url", "wait-http-skip-redirect", cfg.wait.skipRedirect)
-	case cfg.wait.skipTLSVerify && !iniHTTP && !waitHTTP:
+	case cfg.wait.skipTLSVerify && !iniHTTP && !waitHTTP && !waitAMQPS:
 		fatalFlagValue("require -wait/-env with HTTP url", "skip-tls-verify", cfg.wait.skipTLSVerify)
-	case cfg.caCert != "" && !iniHTTP && !waitHTTP:
+	case cfg.caCert != "" && !iniHTTP && !waitHTTP && !waitAMQPS:
 		fatalFlagValue("require -wait/-env with HTTP url", "cacert", cfg.caCert)
 	case cfg.version:
 		fmt.Println(app, ver, runtime.Version())
