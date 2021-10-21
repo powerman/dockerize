@@ -2,7 +2,7 @@ name: CI/CD
 
 on:
   push:
-    branches: master
+    branches: test-release
     tags: v*
   pull_request:
     branches: master
@@ -73,11 +73,6 @@ jobs:
           restore-keys: |
             v1-build-${{ runner.os }}-
 
-      - run: echo -e "$GPG_KEY" | gpg --import
-      - run: scripts/release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Upload to DockerHub Container Registry
         run: |
           docker build -t "$(basename $(go list -m))" .
@@ -93,3 +88,11 @@ jobs:
             docker tag "$(basename $(go list -m))" "$IMAGE_TAG"
             docker push "$IMAGE_TAG"
           done
+
+      - run: echo -e "$GPG_KEY" | gpg --import
+        env:
+          GPG_KEY: ${{ secrets.GPG_KEY }}
+
+      - run: scripts/release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
