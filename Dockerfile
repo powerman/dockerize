@@ -1,9 +1,10 @@
-FROM golang:1.16.5-alpine3.14 AS builder
+# Go version is also in .github/workflows/CI&CD.yml.
+FROM golang:1.17.2-alpine3.14 AS builder
 SHELL ["/bin/ash","-e","-o","pipefail","-x","-c"]
 
 LABEL org.opencontainers.image.source="https://github.com/powerman/dockerize"
 
-RUN apk add --no-cache openssl=~1.1.1k git=~2.32.0
+RUN apk add --no-cache openssl=~1.1.1l git=~2.32.0
 
 COPY . /src
 WORKDIR /src
