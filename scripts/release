@@ -1,8 +1,10 @@
 #!/bin/bash
 set -x -e -o pipefail
+export PATH="$PWD/.gobincache:$PATH"
+GOBIN="$PWD/.gobincache" go install github.com/tcnksm/ghr
 
 DIST_DIR=bin
-TAG=$(git describe --match='v*' --exact-match)
+TAG=$(git describe --match='v*' --exact-match --tags)
 GH="$(git remote get-url origin | sed -e 's/.*://' -e 's/\.git$//')"
 GH_USER="${GH%%/*}"
 GH_REPO="${GH##*/}"
@@ -13,7 +15,7 @@ while read -r suffix GOOS GOARCH GOARM; do
 		go build -o "$DIST_DIR/${GH_REPO}-$suffix" -ldflags "-X 'main.ver=$TAG'"
 	pushd "$DIST_DIR"
 	sha256sum "${GH_REPO}-$suffix" >"${GH_REPO}-$suffix.sha256"
-	gpg --armor --output "${GH_REPO}-$suffix.asc" --detach-sign "${GH_REPO}-$suffix"
+	#gpg --armor --output "${GH_REPO}-$suffix.asc" --detach-sign "${GH_REPO}-$suffix"
 	popd
 done <<DIST
 linux-x86_64            linux   amd64
