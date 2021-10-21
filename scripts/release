@@ -4,7 +4,7 @@ export PATH="$PWD/.gobincache:$PATH"
 GOBIN="$PWD/.gobincache" go install github.com/tcnksm/ghr
 
 DIST_DIR=bin
-TAG=$(git describe --match='v*' --exact-match)
+TAG=$(git describe --match='v*' --exact-match --tags)
 GH="$(git remote get-url origin | sed -e 's/.*://' -e 's/\.git$//')"
 GH_USER="${GH%%/*}"
 GH_REPO="${GH##*/}"
