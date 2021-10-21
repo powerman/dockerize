@@ -1,0 +1,97 @@
+name: CI/CD
+
+on:
+  push:
+    tags: v*
+  pull_request:
+    branches: master
+
+env:
+  GO_VERSION: '1.17.2' # Also in Dockerfile.
+
+jobs:
+
+  test:
+    runs-on: 'ubuntu-latest'
+    timeout-minutes: 30
+    steps:
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/go/bin
+            ~/go/pkg
+            ~/go/src
+            ~/.cache/go-build
+            ~/.cache/golangci-lint
+            .gobincache
+          key: v3-test-${{ runner.os }}-${{ hashFiles('go.mod') }}
+          restore-keys: |
+            v3-test-${{ runner.os }}-
+
+      - run: scripts/test
+
+      - name: Report code coverage
+        env:
+          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+        if: env.COVERALLS_TOKEN
+        run: |
+          scripts/cover
+          .gobincache/goveralls -coverprofile=cover.out -service=GitHub
+
+  build-and-release:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - uses: actions/checkout@v2
+
+      - name: Turnstyle
+        uses: softprops/turnstyle@v1
+        with:
+          poll-interval-seconds: 3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/go/pkg
+            ~/.cache/go-build
+          key: v1-build-${{ runner.os }}-${{ hashFiles('go.mod') }}
+          restore-keys: |
+            v1-build-${{ runner.os }}-
+
+      - name: Upload to DockerHub Container Registry
+        run: |
+          docker build -t "$(basename $(go list -m))" .
+          docker login -u '${{ secrets.CR_USER }}' -p '${{ secrets.CR_PAT }}'
+          if echo "$GITHUB_REF" | grep -q '^refs/tags/v'; then
+            TAGS="${GITHUB_REF/refs\/tags\/v}"
+          else
+            #TAGS="$GITHUB_SHA latest"
+            TAGS="latest"
+          fi
+          for TAG in $TAGS; do
+            IMAGE_TAG="${GITHUB_REPOSITORY,,*}:$TAG"
+            docker tag "$(basename $(go list -m))" "$IMAGE_TAG"
+            docker push "$IMAGE_TAG"
+          done
+
+      - run: echo -e "$GPG_KEY" | gpg --import
+        env:
+          GPG_KEY: ${{ secrets.GPG_KEY }}
+
+      - run: scripts/release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
