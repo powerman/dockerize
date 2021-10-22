@@ -10,7 +10,7 @@ require (
 	github.com/powerman/check v1.3.1
 	github.com/powerman/gotest v0.3.0
 	github.com/powerman/tail v0.1.0
-	github.com/smartystreets/goconvey v1.6.4
+	github.com/smartystreets/goconvey v1.6.7
 	github.com/streadway/amqp v1.0.0
 	github.com/tcnksm/ghr v0.14.0
 	gopkg.in/ini.v1 v1.62.0
