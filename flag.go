@@ -40,6 +40,12 @@ func (f *urlsFlag) Set(value string) error {
 	return nil
 }
 
+func (f *urlsFlag) Append(others *urlsFlag) {
+	for _, url := range *others {
+		*f = append(*f, url)
+	}
+}
+
 func (f urlsFlag) String() string {
 	urls := make([]string, len(f))
 	for i := range f {

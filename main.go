@@ -44,11 +44,12 @@ var (
 		tailStdout    stringsFlag
 		tailStderr    stringsFlag
 		exitCodeFatal int
+		loadFromEnv   bool
 	}
 )
 
 // One-time initialization shared with tests.
-func init() { //nolint:gochecknoinits // By design.
+func init() { //nolint:gochecknoinits // By design.)
 	flag.BoolVar(&cfg.version, "version", false, "print version and exit")
 	flag.StringVar(&cfg.ini.source, "env", "", "path or URL to INI file with default values for unset env vars")
 	flag.BoolVar(&cfg.ini.options.AllowPythonMultilineValues, "multiline", false, "allow Python-like multi-line values in INI file")
@@ -69,6 +70,7 @@ func init() { //nolint:gochecknoinits // By design.
 	flag.Var(&cfg.tailStdout, "stdout", "file `path` to tail to stdout\ncan be passed multiple times")
 	flag.Var(&cfg.tailStderr, "stderr", "file `path` to tail to stderr\ncan be passed multiple times")
 	flag.IntVar(&cfg.exitCodeFatal, "exit-code", exitCodeFatal, "exit code for dockerize errors")
+	flag.BoolVar(&cfg.loadFromEnv, "from-env", false, "Load wait list from DOCKERIZE_WAIT<N>")
 
 	flag.Usage = usage
 }
@@ -83,11 +85,18 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 		iniURL = true
 		iniHTTP = u.Scheme == schemeHTTP || u.Scheme == schemeHTTPS
 	}
+
 	for _, path := range cfg.templatePaths {
 		const maxParts = 2
 		parts := strings.Split(path, ":")
 		templatePathBad = templatePathBad || path == "" || parts[0] == "" || len(parts) > maxParts
 	}
+
+	if cfg.loadFromEnv {
+		envWaits := getWaitsFromEnv()
+		cfg.waitURLs.Append(envWaits)
+	}
+
 	for _, u := range cfg.waitURLs {
 		switch u.Scheme {
 		case schemeFile, schemeTCP, schemeTCP4, schemeTCP6, schemeUnix:
