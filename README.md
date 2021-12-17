@@ -196,6 +196,17 @@ Dockerize gives you the ability to wait for services on a specified protocol (`f
 $ dockerize -wait tcp://db:5432 -wait http://web:80 -wait file:///tmp/generated-file
 ```
 
+Wich is equivalend of using the flag `-from-env` with each url defined in an environment variable named `DOCKERIZE_WAIT<int>`:
+
+```
+$ export DOCKERIZE_WAIT1="http://web:80"
+$ export DOCKERIZE_WAIT2="tcp://db:5432"
+$ export DOCKERIZE_WAIT3="file:///tmp/generated-file"
+
+$ dockerize -wait-from-env
+```
+
+
 ### Timeout
 
 You can optionally specify how long to wait for the services to become available by using the `-timeout #` argument (Default: 10 seconds).  If the timeout is reached and the service is still not available, the process exits with status code 123.

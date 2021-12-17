@@ -70,7 +70,7 @@ func init() { //nolint:gochecknoinits // By design.)
 	flag.Var(&cfg.tailStdout, "stdout", "file `path` to tail to stdout\ncan be passed multiple times")
 	flag.Var(&cfg.tailStderr, "stderr", "file `path` to tail to stderr\ncan be passed multiple times")
 	flag.IntVar(&cfg.exitCodeFatal, "exit-code", exitCodeFatal, "exit code for dockerize errors")
-	flag.BoolVar(&cfg.loadFromEnv, "from-env", false, "Load wait list from DOCKERIZE_WAIT<N>")
+	flag.BoolVar(&cfg.loadFromEnv, "wait-from-env", false, "Load wait list from DOCKERIZE_WAIT<N> env variables")
 
 	flag.Usage = usage
 }
