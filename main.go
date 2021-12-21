@@ -70,7 +70,7 @@ func init() { //nolint:gochecknoinits // By design.
 	flag.Var(&cfg.tailStdout, "stdout", "file `path` to tail to stdout\ncan be passed multiple times")
 	flag.Var(&cfg.tailStderr, "stderr", "file `path` to tail to stderr\ncan be passed multiple times")
 	flag.IntVar(&cfg.exitCodeFatal, "exit-code", exitCodeFatal, "exit code for dockerize errors")
-	flag.StringVar(&cfg.waitList, "wait-list", "", "A space separated list of URLs to wait for")
+	flag.StringVar(&cfg.waitList, "wait-list", "", "A space-separated list of URLs to wait for. Can be combined with -wait flag")
 
 	flag.Usage = usage
 }
