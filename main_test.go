@@ -75,6 +75,7 @@ func TestFlag(tt *testing.T) {
 		{[]string{"-wait", "/dev/null"}, `file/tcp/tcp4/tcp6/unix/http/https/amqp/amqps`},
 		{[]string{"-wait", "file:///dev/null", "-wait", "http:", "-wait", "https:"}, ``},
 		{[]string{"-wait", "tcp:", "-wait", "tcp4:", "-wait", "tcp6:", "-wait", "unix:"}, ``},
+		{[]string{"-wait-list", "tcp: tcp4: http: https: unix: file:"}, ``},
 		{[]string{"-wait-http-header", ""}, `name:value`},
 		{[]string{"-wait-http-header", "a:b"}, `-wait with HTTP`},
 		{[]string{"-wait-http-header", "a:b", "-wait", "unix:"}, `-wait with HTTP`},
@@ -195,6 +196,69 @@ func TestTail(tt *testing.T) {
 	t.Match(stdout, `(?m)^log1$`)
 	t.Match(stderr, `(?m)^log2$`)
 	t.Match(stderr, `(?m)^log3$`)
+}
+
+func TestWaitList(tt *testing.T) {
+	t := checkT(tt)
+	t.Parallel()
+
+	var logn, filen, unixn string
+	if os.Getenv("GO_WANT_HELPER_PROCESS") == "" { // don't do this again in subprocess
+		logf := t.NoErrFile(ioutil.TempFile("", "gotest"))
+		logn = logf.Name()
+		defer os.Remove(logn)
+		defer logf.Close()
+		filen = t.TempPath()
+		unixn = t.TempPath()
+	}
+
+	lnTCP := t.NoErrListen(net.Listen("tcp", "127.0.0.1:0"))
+	t.Nil(lnTCP.Close())
+	lnTCP4 := t.NoErrListen(net.Listen("tcp4", "127.0.0.1:0"))
+	t.Nil(lnTCP4.Close())
+	mux := http.NewServeMux()
+	ts := httptest.NewUnstartedServer(mux)
+	defer ts.Close()
+
+	cmd := testexec.Func(testCtx, t, main,
+		"-env", "testdata/env1.ini",
+		"-template", "testdata/src1.tmpl",
+		"-no-overwrite",
+		"-wait-list", "file://"+filen+" tcp://"+lnTCP.Addr().String()+" tcp4://"+lnTCP4.Addr().String()+" unix://"+unixn+" http://"+ts.Listener.Addr().String()+"/redirect",
+		"-timeout", testSecond.String(),
+		"-wait-retry-interval", (testSecond / 10).String(),
+		"-stderr", logn,
+		"sh", "-c", "sleep 1; exit 42",
+	)
+	cmd.Stdout = &bytes.Buffer{}
+	cmd.Stderr = &bytes.Buffer{}
+	t.Nil(cmd.Start())
+
+	time.Sleep(testSecond / 2)
+	t.Nil(t.NoErrFile(os.Create(filen)).Close())
+	defer os.Remove(filen)
+	lnUnix := t.NoErrListen(net.Listen("unix", unixn))
+	defer lnUnix.Close()
+	lnTCP = t.NoErrListen(net.Listen("tcp", lnTCP.Addr().String()))
+	defer lnTCP.Close()
+	lnTCP4 = t.NoErrListen(net.Listen("tcp4", lnTCP4.Addr().String()))
+	defer lnTCP4.Close()
+	var callOK bool
+	mux.HandleFunc("/redirect", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/ok", http.StatusFound)
+	})
+	mux.HandleFunc("/ok", func(w http.ResponseWriter, r *http.Request) {
+		callOK = true
+	})
+	ts.Start()
+
+	t.Match(cmd.Wait(), `exit status 42`)
+	stdout := cmd.Stdout.(*bytes.Buffer).String()
+	stderr := cmd.Stderr.(*bytes.Buffer).String()
+	t.Equal(stdout, "A=10 B=20 C=31\n")
+	t.Contains(stderr, "Ready:")
+
+	t.True(callOK)
 }
 
 func TestSmoke1(tt *testing.T) {
