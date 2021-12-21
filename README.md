@@ -196,6 +196,16 @@ Dockerize gives you the ability to wait for services on a specified protocol (`f
 $ dockerize -wait tcp://db:5432 -wait http://web:80 -wait file:///tmp/generated-file
 ```
 
+Multiple URLs can also be specified with `-wait-list` flag, that accept a space-separated list of URLs. The behaviour is equivalent to use multiple `-wait` flags.
+The two flags can be combined.
+
+This command is equivalent to the one above:
+
+```
+$ dockerize -wait-list "tcp://db:5432 http://web:80 file:///tmp/generated-file"
+```
+
+
 ### Timeout
 
 You can optionally specify how long to wait for the services to become available by using the `-timeout #` argument (Default: 10 seconds).  If the timeout is reached and the service is still not available, the process exits with status code 123.
