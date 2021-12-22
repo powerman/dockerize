@@ -93,7 +93,9 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 
 	waitListParts := strings.Fields(cfg.waitList)
 	for _, url := range waitListParts {
-		cfg.waitURLs.Set(url)
+		if err := cfg.waitURLs.Set(url); err != nil {
+			fatalFlagValue("unable to parse URLs list", "wait-list", url)
+		}
 	}
 
 	for _, u := range cfg.waitURLs {
