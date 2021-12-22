@@ -44,6 +44,7 @@ var (
 		tailStdout    stringsFlag
 		tailStderr    stringsFlag
 		exitCodeFatal int
+		waitList      string
 	}
 )
 
@@ -69,6 +70,7 @@ func init() { //nolint:gochecknoinits // By design.
 	flag.Var(&cfg.tailStdout, "stdout", "file `path` to tail to stdout\ncan be passed multiple times")
 	flag.Var(&cfg.tailStderr, "stderr", "file `path` to tail to stderr\ncan be passed multiple times")
 	flag.IntVar(&cfg.exitCodeFatal, "exit-code", exitCodeFatal, "exit code for dockerize errors")
+	flag.StringVar(&cfg.waitList, "wait-list", "", "a space-separated list of URLs to wait for\ncan be combined with -wait flag")
 
 	flag.Usage = usage
 }
@@ -88,6 +90,14 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 		parts := strings.Split(path, ":")
 		templatePathBad = templatePathBad || path == "" || parts[0] == "" || len(parts) > maxParts
 	}
+
+	waitListParts := strings.Fields(cfg.waitList)
+	for _, url := range waitListParts {
+		if err := cfg.waitURLs.Set(url); err != nil {
+			fatalFlagValue("unable to parse URLs list", "wait-list", url)
+		}
+	}
+
 	for _, u := range cfg.waitURLs {
 		switch u.Scheme {
 		case schemeFile, schemeTCP, schemeTCP4, schemeTCP6, schemeUnix:
