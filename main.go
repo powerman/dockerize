@@ -91,11 +91,9 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 		templatePathBad = templatePathBad || path == "" || parts[0] == "" || len(parts) > maxParts
 	}
 
-	if len(cfg.waitList) > 0 {
-		parts := strings.Split(cfg.waitList, " ")
-		for _, url := range parts {
-			cfg.waitURLs.Set(url)
-		}
+	waitListParts := strings.Fields(cfg.waitList)
+	for _, url := range waitListParts {
+		cfg.waitURLs.Set(url)
 	}
 
 	for _, u := range cfg.waitURLs {
