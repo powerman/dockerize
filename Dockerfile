@@ -1,5 +1,5 @@
 # Go version is also in .github/workflows/CI&CD.yml.
-FROM golang:1.17.2-alpine3.14 AS builder
+FROM golang:1.17.5-alpine3.14 AS builder
 SHELL ["/bin/ash","-e","-o","pipefail","-x","-c"]
 
 LABEL org.opencontainers.image.source="https://github.com/powerman/dockerize"
