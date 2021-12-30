@@ -1,4 +1,10 @@
-# dockerize [![GitHub release](https://img.shields.io/github/release/powerman/dockerize.svg)](https://github.com/powerman/dockerize/releases/latest) [![CI Build Status](https://circleci.com/gh/powerman/dockerize.svg?style=svg)](https://circleci.com/gh/powerman/dockerize) [![Docker Build Status](https://img.shields.io/docker/build/powerman/dockerize.svg)](https://hub.docker.com/r/powerman/dockerize/) [![Go Report Card](https://goreportcard.com/badge/github.com/powerman/dockerize)](https://goreportcard.com/report/github.com/powerman/dockerize) [![Coverage Status](https://coveralls.io/repos/github/powerman/dockerize/badge.svg?branch=master)](https://coveralls.io/github/powerman/dockerize?branch=master)
+# dockerize
+
+[![Release](https://img.shields.io/github/v/release/powerman/dockerize.svg)](https://github.com/powerman/dockerize/releases/latest)
+[![Docker Automated Build](https://img.shields.io/docker/automated/powerman/dockerize.svg)](https://hub.docker.com/r/powerman/dockerize/tags)
+[![CI](https://github.com/powerman/dockerize/workflows/CI/badge.svg?event=push)](https://github.com/powerman/dockerize/actions?query=workflow%3ACI%2FCD)
+[![Go Report Card](https://goreportcard.com/badge/github.com/powerman/dockerize)](https://goreportcard.com/report/github.com/powerman/dockerize)
+[![Coverage Status](https://coveralls.io/repos/github/powerman/dockerize/badge.svg?branch=master)](https://coveralls.io/github/powerman/dockerize?branch=master)
 
 Utility to simplify running applications in docker containers.
 
