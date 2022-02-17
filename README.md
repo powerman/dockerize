@@ -25,6 +25,7 @@ in PR comments after your PR has being merged.
   - [Command-line Options](#command-line-options)
   - [Waiting for other dependencies](#waiting-for-other-dependencies)
   - [Timeout](#timeout)
+  - [Delay before retrying](#delay-before-retrying)
   - [Use custom CA for SSL cert verification for https/amqps connections](#use-custom-ca-for-ssl-cert-verification-for-httpsamqps-connections)
   - [Skip SSL cert verification for https/amqps connections](#skip-ssl-cert-verification-for-httpsamqps-connections)
   - [Injecting env vars from INI file](#injecting-env-vars-from-ini-file)
@@ -211,7 +212,6 @@ This command is equivalent to the one above:
 $ dockerize -wait-list "tcp://db:5432 http://web:80 file:///tmp/generated-file"
 ```
 
-
 ### Timeout
 
 You can optionally specify how long to wait for the services to become available by using the `-timeout #` argument (Default: 10 seconds).  If the timeout is reached and the service is still not available, the process exits with status code 123.
@@ -221,6 +221,16 @@ $ dockerize -wait tcp://db:5432 -wait http://web:80 -timeout 10s
 ```
 
 See [this issue](https://github.com/docker/compose/issues/374#issuecomment-126312313) for a deeper discussion, and why support isn't and won't be available in the Docker ecosystem itself.
+
+### Delay before retrying
+
+You can optionally specify how long to wait after a failed `-wait` check by using the `-wait-retry-interval #` argument (Default: 1 second).
+
+Waiting for 5 seconds before checking again of a currently unavailable service:
+
+```
+$ dockerize -wait tcp://db:5432 -wait-retry-interval 5s
+```
 
 ### Use custom CA for SSL cert verification for https/amqps connections
 
