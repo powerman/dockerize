@@ -14,7 +14,7 @@ require (
 	github.com/streadway/amqp v1.0.0
 	github.com/tcnksm/ghr v0.14.0
 	gopkg.in/ini.v1 v1.62.0
-	gotest.tools/gotestsum v1.7.0
+	gotest.tools/gotestsum v1.8.0
 )
 
 require (
