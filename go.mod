@@ -13,7 +13,7 @@ require (
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/streadway/amqp v1.0.0
 	github.com/tcnksm/ghr v0.14.0
-	gopkg.in/ini.v1 v1.62.0
+	gopkg.in/ini.v1 v1.66.5
 	gotest.tools/gotestsum v1.7.0
 )
 
