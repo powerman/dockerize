@@ -15,13 +15,13 @@ jobs:
     runs-on: 'ubuntu-latest'
     timeout-minutes: 30
     steps:
-      - uses: actions/setup-go@v2.1.5
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3
 
-      - uses: actions/cache@v2.1.7
+      - uses: actions/cache@v3
         with:
           path: |
             ~/go/bin
@@ -50,11 +50,11 @@ jobs:
     timeout-minutes: 30
     if: github.event_name == 'push'
     steps:
-      - uses: actions/setup-go@v2.1.5
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3
 
       - name: Turnstyle
         uses: softprops/turnstyle@v1
@@ -63,7 +63,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/cache@v2.1.7
+      - uses: actions/cache@v3
         with:
           path: |
             ~/go/pkg
