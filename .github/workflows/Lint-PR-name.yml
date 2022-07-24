@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install Dependencies
         run: npm install @commitlint/config-conventional
 
-      - uses: JulienKode/pull-request-name-linter-action@v0.4.0
+      - uses: JulienKode/pull-request-name-linter-action@v1
         with:
           configuration-path: '.github/commitlint.config.js'
