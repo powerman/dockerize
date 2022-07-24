@@ -4,7 +4,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"strconv"
@@ -56,7 +55,7 @@ type httpHeader struct {
 type httpHeadersFlag []httpHeader
 
 func (f *httpHeadersFlag) Set(value string) error {
-	buf, err := ioutil.ReadFile(value) //nolint:gosec // File inclusion via variable.
+	buf, err := os.ReadFile(value) //nolint:gosec // File inclusion via variable.
 	if err == nil {
 		value = string(buf)
 	} else if !os.IsNotExist(err) {
@@ -68,7 +67,7 @@ func (f *httpHeadersFlag) Set(value string) error {
 	} else if strings.Count(value, ":") == 0 {
 		return errNameValueRequired
 	}
-	nv := strings.SplitN(value, ":", 2)
+	nv := strings.SplitN(value, ":", 1+1)
 	for i := range nv {
 		nv[i] = strings.TrimSpace(nv[i])
 		if nv[i] == "" {
@@ -129,5 +128,5 @@ func (f delimsFlag) String() string {
 func fatalFlagValue(msg, name string, val interface{}) {
 	fmt.Fprintf(os.Stderr, "invalid value %q for flag -%s: %s\n", val, name, msg)
 	flag.Usage()
-	os.Exit(exitCodeUsage)
+	os.Exit(exitCodeUsage) //nolint:revive // By design.
 }

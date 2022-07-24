@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -53,7 +52,7 @@ func jsonQuery(jsonObj string, query string) (interface{}, error) {
 }
 
 func readFile(fileName string) (string, error) {
-	data, err := ioutil.ReadFile(fileName) //nolint:gosec // File inclusion via variable.
+	data, err := os.ReadFile(fileName) //nolint:gosec // File inclusion via variable.
 	if os.IsNotExist(err) {
 		return "", nil
 	}
@@ -62,14 +61,7 @@ func readFile(fileName string) (string, error) {
 
 func processTemplatePaths(cfg templateConfig, paths []string) error {
 	for _, srcdst := range paths {
-		var src, dst string
-		switch parts := strings.SplitN(srcdst, ":", 2); len(parts) {
-		case 1:
-			src = parts[0]
-		case 2: //nolint:gomnd // TODO Refactor?
-			src, dst = parts[0], parts[1]
-		}
-
+		src, dst, _ := strings.Cut(srcdst, ":")
 		fi, err := os.Stat(src)
 		if err == nil {
 			if fi.IsDir() {
@@ -126,7 +118,7 @@ func processTemplateDir(cfg templateConfig, src, dst string) error {
 		}
 	}
 
-	entries, err := ioutil.ReadDir(src)
+	entries, err := os.ReadDir(src)
 	if err != nil {
 		return err
 	}
@@ -148,7 +140,7 @@ func processTemplateDir(cfg templateConfig, src, dst string) error {
 	return nil
 }
 
-func createDestFile(src, dst string, noOverwrite bool) (*os.File, error) {
+func createDestFile(src, dst string, noOverwrite bool) (*os.File, error) { //nolint:revive // TODO.
 	like, err := os.Stat(src)
 	if err != nil {
 		return nil, err

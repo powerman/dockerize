@@ -1,12 +1,7 @@
 #!/bin/bash
-set -e -o pipefail
 export PATH="$PWD/.gobincache:$PATH"
+set -x -e -o pipefail
 go generate
-HADOLINT_VER="2.7.0"
-hadolint --version | grep -wq $HADOLINT_VER || curl -sSfL https://github.com/hadolint/hadolint/releases/download/v${HADOLINT_VER}/hadolint-"$(uname)"-x86_64 | install -D /dev/stdin .gobincache/hadolint
-SHELLCHECK_VER="0.8.0"
-shellcheck --version | grep -wq $SHELLCHECK_VER || curl -sSfL https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VER}/shellcheck-v${SHELLCHECK_VER}."$(uname)".x86_64.tar.xz | tar xJf - -C .gobincache --strip-components=1 shellcheck-v${SHELLCHECK_VER}/shellcheck
-set -x
 
 hadolint Dockerfile
 
@@ -14,4 +9,4 @@ shellcheck scripts/*
 
 golangci-lint run
 
-gotestsum -- -race -tags=integration "$@" ./...
+gotestsum -- -race -timeout=60s "$@" ./...

@@ -1,7 +1,7 @@
 #!/bin/bash
-set -x -e -o pipefail
 export PATH="$PWD/.gobincache:$PATH"
-GOBIN="$PWD/.gobincache" go install github.com/tcnksm/ghr
+set -x -e -o pipefail
+go generate
 
 DIST_DIR=bin
 TAG=$(git describe --match='v*' --exact-match --tags)

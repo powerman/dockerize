@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -115,9 +114,9 @@ func waitForSocket(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<
 }
 
 func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- *url.URL) { //nolint:interfacer // False positive.
-	waitStatusCode := make(map[int]bool, 100)
+	waitStatusCode := make(map[int]bool)
 	if len(cfg.statusCodes) == 0 {
-		for statusCode := 200; statusCode < 300; statusCode++ {
+		for statusCode := http.StatusOK; statusCode < http.StatusMultipleChoices; statusCode++ {
 			waitStatusCode[statusCode] = true
 		}
 	} else {
@@ -142,15 +141,15 @@ func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 	var resp *http.Response
 
 	for {
-		req, err := http.NewRequest("GET", u.String(), nil)
+		req, err := http.NewRequest("GET", u.String(), http.NoBody)
 		if err == nil {
-			for _, h := range cfg.headers { //nolint:gocritic // Premature optimization.
+			for _, h := range cfg.headers {
 				req.Header.Add(h.name, h.value)
 			}
-			resp, err = client.Do(req.WithContext(ctx)) //nolint:bodyclose // False positive.
+			resp, err = client.Do(req.WithContext(ctx))
 		}
 		if err == nil {
-			_, _ = io.Copy(ioutil.Discard, resp.Body)
+			_, _ = io.Copy(io.Discard, resp.Body)
 			_ = resp.Body.Close()
 			if waitStatusCode[resp.StatusCode] {
 				break

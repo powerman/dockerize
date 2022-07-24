@@ -18,8 +18,8 @@ func setDefaultEnv(defaultEnv map[string]string) {
 func getEnv() map[string]string {
 	env := make(map[string]string)
 	for _, kv := range os.Environ() {
-		parts := strings.SplitN(kv, "=", 2)
-		env[parts[0]] = parts[1]
+		name, val, _ := strings.Cut(kv, "=")
+		env[name] = val
 	}
 	return env
 }

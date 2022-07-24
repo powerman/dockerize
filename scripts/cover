@@ -1,12 +1,12 @@
 #!/bin/bash
-set -e -o pipefail
 export PATH="$PWD/.gobincache:$PATH"
-GOBIN="$PWD/.gobincache" go install gotest.tools/gotestsum
+set -x -e -o pipefail
+go generate
 
 gotestsum -- \
 	-coverpkg="$(go list ./... | paste -s -d,)" \
 	-coverprofile cover.out \
-	-tags=integration "$@" ./...
+	"$@" ./...
 
 go tool cover -func=cover.out | tail -n 1 | xargs echo
 

@@ -6,9 +6,10 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
+	"os"
 
 	ini "gopkg.in/ini.v1"
 )
@@ -29,7 +30,7 @@ type iniConfig struct {
 
 func loadINISection(cfg iniConfig) (map[string]string, error) {
 	if cfg.source == "" {
-		return nil, nil
+		return nil, nil //nolint:nilnil // TODO.
 	}
 
 	var data []byte
@@ -37,7 +38,7 @@ func loadINISection(cfg iniConfig) (map[string]string, error) {
 	if err == nil && u.IsAbs() {
 		data, err = fetchINI(cfg)
 	} else {
-		data, err = ioutil.ReadFile(cfg.source)
+		data, err = os.ReadFile(cfg.source)
 	}
 	if err != nil {
 		return nil, err
@@ -63,15 +64,15 @@ func fetchINI(cfg iniConfig) (data []byte, err error) {
 		},
 	}
 
-	req, err := http.NewRequestWithContext(context.Background(), "GET", cfg.source, nil)
+	req, err := http.NewRequestWithContext(context.Background(), "GET", cfg.source, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
-	for _, h := range cfg.headers { //nolint:gocritic // Premature optimization.
+	for _, h := range cfg.headers {
 		req.Header.Add(h.name, h.value)
 	}
 
-	resp, err := client.Do(req) //nolint:bodyclose // False positive.
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -80,5 +81,5 @@ func fetchINI(cfg iniConfig) (data []byte, err error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("%w: %d", errBadStatusCode, resp.StatusCode)
 	}
-	return ioutil.ReadAll(resp.Body)
+	return io.ReadAll(resp.Body)
 }
