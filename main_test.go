@@ -1,3 +1,4 @@
+//nolint:testpackage // By design.
 package main
 
 import (
@@ -106,7 +107,7 @@ func TestFlag(tt *testing.T) {
 		t.Run(strings.Join(v.flags, " "), func(tt *testing.T) {
 			t := check.T(tt)
 			t.Parallel()
-			flags := append(v.flags, "-version")
+			flags := append(v.flags, "-version") //nolint:gocritic // By design.
 			out, err := testexec.Func(testCtx, t, main, flags...).CombinedOutput()
 			if v.want == "" {
 				t.Nil(err)
@@ -169,8 +170,8 @@ func TestTail(tt *testing.T) {
 		for i := range logf {
 			logf[i] = t.NoErrFile(ioutil.TempFile("", "gotest"))
 			logn[i] = logf[i].Name()
-			defer os.Remove(logn[i])
-			defer logf[i].Close()
+			defer os.Remove(logn[i]) //nolint:gocritic,revive // By design.
+			defer logf[i].Close()    //nolint:gocritic,revive // By design.
 		}
 	}
 
@@ -184,7 +185,7 @@ func TestTail(tt *testing.T) {
 
 	time.Sleep(testSecond)
 	for i := range logf {
-		t.NoErr(logf[i].Write([]byte(fmt.Sprintf("log%d\n", i))))
+		t.NoErr(fmt.Fprintf(logf[i], "log%d\n", i))
 	}
 	time.Sleep(testSecond)
 
@@ -420,8 +421,8 @@ func TestSmoke2(tt *testing.T) {
 	t.True(callINI)
 	t.True(callRedirect)
 
-	buf := t.NoErrBuf(ioutil.ReadFile(dstDir + "/abc"))
-	t.Equal(string(buf), "A=10 B=20 C=32\n777\n")
-	buf = t.NoErrBuf(ioutil.ReadFile(dstDir + "/subdir/func"))
+	buf := t.NoErrBuf(os.ReadFile(dstDir + "/abc"))
+	t.Equal(string(buf), "A=10 B=20 C=32\n    777\n")
+	buf = t.NoErrBuf(os.ReadFile(dstDir + "/subdir/func"))
 	t.Equal(string(buf), "abc exists\nexample.com\nTrue!False!\nJSON value\n0369\n")
 }

@@ -199,7 +199,7 @@ func warnIfFail(f func() error) {
 
 func fatalf(format string, v ...interface{}) {
 	log.Printf(format, v...)
-	os.Exit(cfg.exitCodeFatal)
+	os.Exit(cfg.exitCodeFatal) //nolint:revive // By design.
 }
 
 func usage() {

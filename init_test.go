@@ -1,3 +1,4 @@
+//nolint:testpackage // By design.
 package main
 
 import (
@@ -10,14 +11,12 @@ import (
 	"time"
 
 	"github.com/powerman/check"
-
-	// Get nice diff in web UI.
 	_ "github.com/smartystreets/goconvey/convey"
 )
 
 var (
 	testTimeFactor = floatGetenv("GO_TEST_TIME_FACTOR", 1.0)
-	testSecond     = time.Duration(float64(time.Second) * testTimeFactor)
+	testSecond     = time.Duration(testTimeFactor) * time.Second //nolint:revive // By design.
 	testCtx        = context.Background()
 )
 
@@ -30,7 +29,7 @@ func floatGetenv(name string, def float64) float64 {
 
 type checkC struct{ *check.C }
 
-func checkT(t *testing.T) *checkC                          { return &checkC{C: check.T(t)} }
+func checkT(t *testing.T) *checkC                          { t.Helper(); return &checkC{C: check.T(t)} }
 func (c *checkC) NoErr(_ interface{}, err error)           { c.Helper(); c.Must(c.Nil(err)) }
 func (c *checkC) NoErrInt(v int, err error) int            { c.Helper(); c.Must(c.Nil(err)); return v }
 func (c *checkC) NoErrBuf(v []byte, err error) []byte      { c.Helper(); c.Must(c.Nil(err)); return v }
