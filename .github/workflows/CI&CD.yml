@@ -19,7 +19,7 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3.0.2
 
       - uses: actions/cache@v2.1.7
         with:
@@ -54,7 +54,7 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3.0.2
 
       - name: Turnstyle
         uses: softprops/turnstyle@v1
