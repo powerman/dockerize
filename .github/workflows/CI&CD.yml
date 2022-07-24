@@ -90,9 +90,11 @@ jobs:
           done
 
       - run: echo -e "$GPG_KEY" | gpg --import
+        if: ${{ env.GITHUB_REF_TYPE == 'tag' }}
         env:
           GPG_KEY: ${{ secrets.GPG_KEY }}
 
       - run: scripts/release
+        if: ${{ env.GITHUB_REF_TYPE == 'tag' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
