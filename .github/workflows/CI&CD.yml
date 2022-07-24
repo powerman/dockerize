@@ -7,7 +7,7 @@ on:
     branches: master
 
 env:
-  GO_VERSION: '1.17.5' # Also in Dockerfile.
+  GO_VERSION: '1.18.4' # Also in Dockerfile.
 
 jobs:
 
