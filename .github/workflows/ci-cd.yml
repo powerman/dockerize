@@ -89,10 +89,10 @@ jobs:
             docker build . --push --file Dockerfile --tag "$IMAGE_TAG" --platform linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/arm64,linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/386
           done
 
-      - run: echo -e "$GPG_KEY" | gpg --import
-        if: github.ref_type == 'tag'
-        env:
-          GPG_KEY: ${{ secrets.GPG_KEY }}
+      #- run: echo -e "$GPG_KEY" | gpg --import
+      #  if: github.ref_type == 'tag'
+      #  env:
+      #    GPG_KEY: ${{ secrets.GPG_KEY }}
 
       - run: scripts/release
         if: github.ref_type == 'tag'
