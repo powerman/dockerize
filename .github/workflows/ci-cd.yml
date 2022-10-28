@@ -1,4 +1,4 @@
-name: CI/CD
+name: Build and release
 
 on:
   push:
@@ -73,9 +73,13 @@ jobs:
           restore-keys: |
             v1-build-${{ runner.os }}-
 
+      - uses: docker/setup-buildx-action@v2
+        if: github.ref_type == 'tag'
+        with:
+          install: true
+
       - name: Build and push to official Docker registry
         if: github.ref_type == 'tag'
-        uses: docker/setup-buildx-action@v2
         run: |
           docker login -u '${{ secrets.CR_USER }}' -p '${{ secrets.CR_PAT }}'
           if echo "$GITHUB_REF" | grep -q '^refs/tags/v'; then
