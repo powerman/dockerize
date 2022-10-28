@@ -1,8 +1,8 @@
-name: Lint PR name
+name: Lint pull requests
 
 on:
   pull_request:
-    branches: master
+    branches: main
     types: [ opened, edited, synchronize, reopened ]
 
 jobs:

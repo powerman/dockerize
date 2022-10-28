@@ -3,9 +3,9 @@ name: CI/CD
 on:
   push:
     tags: v*
-    branches: master
+    branches: main
   pull_request:
-    branches: master
+    branches: main
 
 env:
   GO_VERSION: '1.18.4' # Also in Dockerfile.
@@ -73,9 +73,9 @@ jobs:
           restore-keys: |
             v1-build-${{ runner.os }}-
 
-      - name: Upload to DockerHub Container Registry
+      - name: Build and push to official Docker registry
+        uses: docker/setup-buildx-action@v2
         run: |
-          docker build -t "$(basename ${GITHUB_REPOSITORY,,})" .
           docker login -u '${{ secrets.CR_USER }}' -p '${{ secrets.CR_PAT }}'
           if echo "$GITHUB_REF" | grep -q '^refs/tags/v'; then
             TAGS="${GITHUB_REF/refs\/tags\/v}"
@@ -85,8 +85,7 @@ jobs:
           fi
           for TAG in $TAGS; do
             IMAGE_TAG="${{ secrets.CR_USER }}/$(basename ${GITHUB_REPOSITORY,,}):$TAG"
-            docker tag "$(basename ${GITHUB_REPOSITORY,,})" "$IMAGE_TAG"
-            docker push "$IMAGE_TAG"
+            docker build . --push --file Dockerfile --tag "$IMAGE_TAG" --platform linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/arm64,linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/386
           done
 
       - run: echo -e "$GPG_KEY" | gpg --import
