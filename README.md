@@ -103,10 +103,20 @@ gpg --verify dockerize.asc /usr/local/bin/dockerize
 
 ### Docker Base Image
 
-The `powerman/dockerize` image is a base image based on `alpine linux`.  `dockerize` is installed in the `$PATH` and can be used directly.
+The `powerman/dockerize` image is a base image based on `Alpine Linux`.  `dockerize` is installed in the `$PATH` and can be used directly.
 
 ```
-FROM powerman/dockerize
+FROM ezintz/dockerize
+...
+ENTRYPOINT dockerize ...
+```
+
+### Docker Multiple Stage Image
+
+```
+FROM ezintz/dockerize AS dockerize
+FROM alpine:3.16
+COPY --from=dockerize /usr/local/bin/dockerize /usr/local/bin
 ...
 ENTRYPOINT dockerize ...
 ```
