@@ -88,7 +88,7 @@ jobs:
           fi
           for TAG in $TAGS; do
             IMAGE_TAG="${{ secrets.DOCKERHUB_USERNAME }}/$(basename ${GITHUB_REPOSITORY,,}):$TAG"
-            docker build . --push --file Dockerfile --tag "$IMAGE_TAG" --platform linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/arm64,linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/386
+            docker build . --push --file Dockerfile --tag "$IMAGE_TAG" --platform linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/arm64,linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64
           done
 
       #- run: echo -e "$GPG_KEY" | gpg --import
