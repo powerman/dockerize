@@ -1,10 +1,10 @@
 # dockerize
 
-[![Release](https://img.shields.io/github/v/release/ezintz/dockerize.svg)](https://github.com/ezintz/dockerize/releases/latest)
-[![Docker Automated Build](https://img.shields.io/docker/automated/ezintz/dockerize.svg)](https://hub.docker.com/r/ezintz/dockerize/tags)
-[![CI/CD](https://github.com/ezintz/dockerize/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/ezintz/dockerize/actions/workflows/ci-cd.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/ezintz/dockerize)](https://goreportcard.com/report/github.com/ezintz/dockerize)
-[![Coverage Status](https://coveralls.io/repos/github/ezintz/dockerize/badge.svg?branch=main)](https://coveralls.io/github/ezintz/dockerize?branch=main)
+[![Release](https://img.shields.io/github/v/release/powerman/dockerize.svg)](https://github.com/powerman/dockerize/releases/latest)
+[![Docker Automated Build](https://img.shields.io/docker/automated/powerman/dockerize.svg)](https://hub.docker.com/r/powerman/dockerize/tags)
+[![CI/CD](https://github.com/powerman/dockerize/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/powerman/dockerize/actions/workflows/ci-cd.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/powerman/dockerize)](https://goreportcard.com/report/github.com/powerman/dockerize)
+[![Coverage Status](https://coveralls.io/repos/github/powerman/dockerize/badge.svg?branch=main)](https://coveralls.io/github/powerman/dockerize?branch=main)
 
 Utility to simplify running applications in docker containers.
 
@@ -107,7 +107,7 @@ gpg --verify dockerize.asc /usr/local/bin/dockerize
 The `powerman/dockerize` image is a base image based on `Alpine Linux`.  `dockerize` is installed in the `$PATH` and can be used directly.
 
 ```
-FROM ezintz/dockerize
+FROM powerman/dockerize
 ...
 ENTRYPOINT dockerize ...
 ```
@@ -115,7 +115,7 @@ ENTRYPOINT dockerize ...
 ### Docker Multiple Stage Image
 
 ```
-FROM ezintz/dockerize AS dockerize
+FROM powerman/dockerize AS dockerize
 FROM alpine:3.16
 COPY --from=dockerize /usr/local/bin/dockerize /usr/local/bin
 ...
