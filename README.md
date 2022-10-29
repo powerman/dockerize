@@ -1,10 +1,10 @@
 # dockerize
 
-[![Release](https://img.shields.io/github/v/release/powerman/dockerize.svg)](https://github.com/powerman/dockerize/releases/latest)
-[![Docker Automated Build](https://img.shields.io/docker/automated/powerman/dockerize.svg)](https://hub.docker.com/r/powerman/dockerize/tags)
-[![CI/CD](https://github.com/powerman/dockerize/actions/workflows/CI&CD.yml/badge.svg)](https://github.com/powerman/dockerize/actions/workflows/CI&CD.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/powerman/dockerize)](https://goreportcard.com/report/github.com/powerman/dockerize)
-[![Coverage Status](https://coveralls.io/repos/github/powerman/dockerize/badge.svg?branch=master)](https://coveralls.io/github/powerman/dockerize?branch=master)
+[![Release](https://img.shields.io/github/v/release/ezintz/dockerize.svg)](https://github.com/ezintz/dockerize/releases/latest)
+[![Docker Automated Build](https://img.shields.io/docker/automated/ezintz/dockerize.svg)](https://hub.docker.com/r/ezintz/dockerize/tags)
+[![CI/CD](https://github.com/ezintz/dockerize/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/ezintz/dockerize/actions/workflows/ci-cd.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/ezintz/dockerize)](https://goreportcard.com/report/github.com/ezintz/dockerize)
+[![Coverage Status](https://coveralls.io/repos/github/ezintz/dockerize/badge.svg?branch=main)](https://coveralls.io/github/ezintz/dockerize?branch=main)
 
 Utility to simplify running applications in docker containers.
 
@@ -98,7 +98,7 @@ PGP public key for verifying signed binaries: https://powerman.name/about/Powerm
 
 ```
 curl -sfL https://powerman.name/about/Powerman.asc | gpg --import
-curl -sfL https://github.com/powerman/dockerize/releases/download/v0.11.5/dockerize-`uname -s`-`uname -m`.asc >dockerize.asc
+curl -sfL https://github.com/powerman/dockerize/releases/download/v0.11.5/dockerize-`uname -s`-`uname -m`.asc > dockerize.asc
 gpg --verify dockerize.asc /usr/local/bin/dockerize
 ```
 
