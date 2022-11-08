@@ -29,6 +29,7 @@ const (
 )
 
 // Read-only globals for use only within init() and main().
+//
 //nolint:gochecknoglobals // By design.
 var (
 	app = strings.TrimSuffix(path.Base(os.Args[0]), ".test")
