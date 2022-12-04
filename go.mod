@@ -10,7 +10,7 @@ require (
 	github.com/powerman/tail v0.1.0
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/streadway/amqp v1.0.0
-	gopkg.in/ini.v1 v1.66.6
+	gopkg.in/ini.v1 v1.67.0
 )
 
 require (
