@@ -54,6 +54,7 @@ func loadINISection(cfg iniConfig) (map[string]string, error) {
 func fetchINI(cfg iniConfig) (data []byte, err error) {
 	client := &http.Client{
 		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: cfg.skipTLSVerify, //nolint:gosec // TLS InsecureSkipVerify may be true.
 				RootCAs:            cfg.ca,
