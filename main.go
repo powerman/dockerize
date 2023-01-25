@@ -192,7 +192,7 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 	case cfg.exec:
 		arg0, err := exec.LookPath(flag.Arg(0))
 		if err == nil {
-			err = syscall.Exec(arg0, flag.Args()[1:], os.Environ()) //nolint:gosec // False positive.
+			err = syscall.Exec(arg0, flag.Args(), os.Environ()) //nolint:gosec // False positive.
 		}
 		if err != nil {
 			fatalf("Failed to run command: %s.", err)
