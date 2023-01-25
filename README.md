@@ -154,6 +154,7 @@ $ dockerize -no-overwrite -template template1.tmpl:file
 ```
 
 You can tail multiple files to `STDOUT` and `STDERR` by passing the options multiple times.
+(These options can't be combined with `-exec`.)
 
 ```
 $ dockerize -stdout info.log -stdout perf.log
@@ -191,6 +192,12 @@ HTTP redirects can be ignored:
 
 ```
 $ dockerize -wait http://web:80 -wait-http-skip-redirect
+```
+
+Dockerize process can be replaced with given command:
+
+```
+$ dockerize -exec some-command args...
 ```
 
 ### Waiting for other dependencies

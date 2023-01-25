@@ -6,9 +6,11 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"os/exec"
 	"path"
 	"runtime"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -46,6 +48,7 @@ var (
 		tailStderr    stringsFlag
 		exitCodeFatal int
 		waitList      string
+		exec          bool
 	}
 )
 
@@ -72,6 +75,7 @@ func init() { //nolint:gochecknoinits // By design.
 	flag.Var(&cfg.tailStderr, "stderr", "file `path` to tail to stderr\ncan be passed multiple times")
 	flag.IntVar(&cfg.exitCodeFatal, "exit-code", exitCodeFatal, "exit code for dockerize errors")
 	flag.StringVar(&cfg.waitList, "wait-list", "", "a space-separated list of URLs to wait for\ncan be combined with -wait flag")
+	flag.BoolVar(&cfg.exec, "exec", false, "replace dockerize process with given command")
 
 	flag.Usage = usage
 }
@@ -139,6 +143,10 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 		fatalFlagValue("require -wait/-env with HTTP url", "skip-tls-verify", cfg.wait.skipTLSVerify)
 	case cfg.caCert != "" && !iniHTTP && !waitHTTP && !waitAMQPS:
 		fatalFlagValue("require -wait/-env with HTTP url", "cacert", cfg.caCert)
+	case cfg.exec && len(cfg.tailStdout)+len(cfg.tailStderr) > 0:
+		fatalFlagValue("using -exec with -stdout/-stderr is not supported", "exec", cfg.exec)
+	case cfg.exec && flag.NArg() == 0:
+		fatalFlagValue("require command to exec", "exec", cfg.exec)
 	case cfg.version:
 		fmt.Println(app, ver, runtime.Version())
 		os.Exit(0)
@@ -181,6 +189,14 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 	}
 
 	switch {
+	case cfg.exec:
+		arg0, err := exec.LookPath(flag.Arg(0))
+		if err == nil {
+			err = syscall.Exec(arg0, flag.Args()[1:], os.Environ()) //nolint:gosec // False positive.
+		}
+		if err != nil {
+			fatalf("Failed to run command: %s.", err)
+		}
 	case flag.NArg() > 0:
 		code, err := runCmd(flag.Arg(0), flag.Args()[1:]...)
 		if err != nil {

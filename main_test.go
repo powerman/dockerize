@@ -101,6 +101,9 @@ func TestFlag(tt *testing.T) {
 		{[]string{"-timeout", "1s"}, ``},
 		{[]string{"-wait-retry-interval", "1s"}, ``},
 		{[]string{"-stdout", "", "-stdout", " ", "-stderr", "  "}, ``},
+		{[]string{"-exec"}, `require command to exec`},
+		{[]string{"-exec", "-stdout", "/dev/null"}, `not supported`},
+		{[]string{"-exec", "-stderr", "/dev/null"}, `not supported`},
 	}
 	for _, v := range cases {
 		v := v
