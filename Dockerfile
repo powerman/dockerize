@@ -11,7 +11,7 @@ WORKDIR /src
 
 RUN CGO_ENABLED=0 go install -ldflags "-s -X 'main.ver=$(git describe --match='v*' --exact-match)'"
 
-FROM alpine:3.17.1
+FROM alpine:3.17
 
 COPY --from=builder /go/bin/dockerize /usr/local/bin
 
