@@ -73,21 +73,28 @@ jobs:
           restore-keys: |
             v1-build-${{ runner.os }}-
 
+      # Add support for more platforms with QEMU (optional)
+      # https://github.com/docker/setup-qemu-action
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
       - name: Upload to DockerHub Container Registry
         run: |
-          docker build -t "$(basename ${GITHUB_REPOSITORY,,})" .
           docker login -u '${{ secrets.CR_USER }}' -p '${{ secrets.CR_PAT }}'
           if echo "$GITHUB_REF" | grep -q '^refs/tags/v'; then
-            TAGS="${GITHUB_REF/refs\/tags\/v}"
+            TAG="${GITHUB_REF/refs\/tags\/v}"
           else
-            #TAGS="$GITHUB_SHA latest"
-            TAGS="latest"
+            TAG="latest"
           fi
-          for TAG in $TAGS; do
-            IMAGE_TAG="${{ secrets.CR_USER }}/$(basename ${GITHUB_REPOSITORY,,}):$TAG"
-            docker tag "$(basename ${GITHUB_REPOSITORY,,})" "$IMAGE_TAG"
-            docker push "$IMAGE_TAG"
-          done
+          IMAGE_TAG="${{ secrets.CR_USER }}/$(basename ${GITHUB_REPOSITORY,,}):${TAG}"
+          docker buildx build \
+            --platform linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x \
+            --tag "${IMAGE_TAG}" \
+            --push \
+            .
 
       - run: echo -e "$GPG_KEY" | gpg --import
         if: github.ref_type == 'tag'
