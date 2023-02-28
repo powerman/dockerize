@@ -1,9 +1,7 @@
-//nolint:testpackage // By design.
 package main
 
 import (
 	"context"
-	"io/ioutil"
 	"net"
 	"os"
 	"strconv"
@@ -30,7 +28,7 @@ func floatGetenv(name string, def float64) float64 {
 type checkC struct{ *check.C }
 
 func checkT(t *testing.T) *checkC                          { t.Helper(); return &checkC{C: check.T(t)} }
-func (c *checkC) NoErr(_ interface{}, err error)           { c.Helper(); c.Must(c.Nil(err)) }
+func (c *checkC) NoErr(_ any, err error)                   { c.Helper(); c.Must(c.Nil(err)) }
 func (c *checkC) NoErrInt(v int, err error) int            { c.Helper(); c.Must(c.Nil(err)); return v }
 func (c *checkC) NoErrBuf(v []byte, err error) []byte      { c.Helper(); c.Must(c.Nil(err)); return v }
 func (c *checkC) NoErrFile(v *os.File, err error) *os.File { c.Helper(); c.Must(c.Nil(err)); return v }
@@ -42,7 +40,7 @@ func (c *checkC) NoErrListen(v net.Listener, err error) net.Listener {
 
 func (c *checkC) TempPath() string {
 	c.Helper()
-	f := c.NoErrFile(ioutil.TempFile("", "gotest"))
+	f := c.NoErrFile(os.CreateTemp("", "gotest"))
 	c.Nil(f.Close())
 	c.Nil(os.Remove(f.Name()))
 	return f.Name()

@@ -125,7 +125,7 @@ func (f delimsFlag) String() string {
 }
 
 // fatalFlagValue report invalid flag values in same way as flag.Parse().
-func fatalFlagValue(msg, name string, val interface{}) {
+func fatalFlagValue(msg, name string, val any) {
 	fmt.Fprintf(os.Stderr, "invalid value %v for flag -%s: %s\n", val, name, msg)
 	flag.Usage()
 	os.Exit(exitCodeUsage) //nolint:revive // By design.

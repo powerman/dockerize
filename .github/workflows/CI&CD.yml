@@ -8,7 +8,7 @@ on:
     branches: master
 
 env:
-  GO_VERSION: '1.19.3' # Also in Dockerfile.
+  GO_VERSION: '1.20.1' # Also in Dockerfile.
 
 jobs:
 
@@ -30,10 +30,10 @@ jobs:
             ~/go/src
             ~/.cache/go-build
             ~/.cache/golangci-lint
-            .gobincache
-          key: v3-test-${{ runner.os }}-${{ hashFiles('go.mod') }}
+            .buildcache
+          key: v4-test-${{ runner.os }}-${{ hashFiles('go.mod') }}
           restore-keys: |
-            v3-test-${{ runner.os }}-
+            v4-test-${{ runner.os }}-
 
       - run: scripts/test
 
@@ -43,7 +43,7 @@ jobs:
         if: env.COVERALLS_TOKEN
         run: |
           scripts/cover
-          .gobincache/goveralls -coverprofile=cover.out -service=GitHub
+          .buildcache/bin/goveralls -coverprofile=cover.out -service=GitHub
 
   build-and-release:
     needs: test

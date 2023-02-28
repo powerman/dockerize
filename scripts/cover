@@ -1,5 +1,5 @@
 #!/bin/bash
-export PATH="$PWD/.gobincache:$PATH"
+export PATH="$PWD/.buildcache/bin:$PATH"
 set -x -e -o pipefail
 go generate
 

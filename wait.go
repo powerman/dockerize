@@ -142,12 +142,12 @@ func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 	var resp *http.Response
 
 	for {
-		req, err := http.NewRequest("GET", u.String(), http.NoBody)
+		req, err := http.NewRequest(http.MethodGet, u.String(), http.NoBody)
 		if err == nil {
 			for _, h := range cfg.headers {
 				req.Header.Add(h.name, h.value)
 			}
-			resp, err = client.Do(req.WithContext(ctx))
+			resp, err = client.Do(req.WithContext(ctx)) //nolint:bodyclose // False positive.
 		}
 		if err == nil {
 			_, _ = io.Copy(io.Discard, resp.Body)

@@ -43,7 +43,7 @@ func isTrue(s string) bool {
 	return b
 }
 
-func jsonQuery(jsonObj string, query string) (interface{}, error) {
+func jsonQuery(jsonObj string, query string) (any, error) {
 	parser, err := gojq.NewStringQuery(jsonObj)
 	if err != nil {
 		return nil, err
