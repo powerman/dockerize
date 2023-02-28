@@ -1,3 +1,4 @@
+// Tool dockerize simplify running applications in docker containers.
 package main
 
 import (
@@ -77,7 +78,7 @@ func init() { //nolint:gochecknoinits // By design.
 	flag.StringVar(&cfg.waitList, "wait-list", "", "a space-separated list of URLs to wait for\ncan be combined with -wait flag")
 	flag.BoolVar(&cfg.exec, "exec", false, "replace dockerize process with given command")
 
-	flag.Usage = usage
+	flag.Usage = usage //nolint:reassign // By design.
 }
 
 func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
@@ -214,7 +215,7 @@ func warnIfFail(f func() error) {
 	}
 }
 
-func fatalf(format string, v ...interface{}) {
+func fatalf(format string, v ...any) {
 	log.Printf(format, v...)
 	os.Exit(cfg.exitCodeFatal) //nolint:revive // By design.
 }

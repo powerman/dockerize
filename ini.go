@@ -65,7 +65,7 @@ func fetchINI(cfg iniConfig) (data []byte, err error) {
 		},
 	}
 
-	req, err := http.NewRequestWithContext(context.Background(), "GET", cfg.source, http.NoBody)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, cfg.source, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func fetchINI(cfg iniConfig) (data []byte, err error) {
 		req.Header.Add(h.name, h.value)
 	}
 
-	resp, err := client.Do(req)
+	resp, err := client.Do(req) //nolint:bodyclose // False positive.
 	if err != nil {
 		return nil, err
 	}
