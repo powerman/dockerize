@@ -1,15 +1,24 @@
+# syntax=docker/dockerfile:1
+
 # Go version is also in .github/workflows/CI&CD.yml.
 FROM golang:1.20.1-alpine3.17 AS builder
 SHELL ["/bin/ash","-e","-o","pipefail","-x","-c"]
 
 LABEL org.opencontainers.image.source="https://github.com/powerman/dockerize"
 
-RUN apk add --no-cache openssl=~3 git=~2
+# hadolint ignore=DL3019
+RUN apk update; \
+    apk add openssl=~3 git=~2; \
+    apk add upx=~4 || :; \
+    rm -f /var/cache/apk/*
 
 COPY . /src
 WORKDIR /src
 
-RUN CGO_ENABLED=0 go install -ldflags "-s -X 'main.ver=$(git describe --match='v*' --exact-match)'"
+RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg/mod \
+    CGO_ENABLED=0 go install -ldflags "-s -w -X 'main.ver=$(git describe --match='v*' --exact-match)'" && \
+    ! which upx >/dev/null || upx /go/bin/dockerize && \
+    dockerize --version
 
 FROM alpine:3.17.2
 
