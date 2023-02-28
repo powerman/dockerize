@@ -4,7 +4,7 @@ SHELL ["/bin/ash","-e","-o","pipefail","-x","-c"]
 
 LABEL org.opencontainers.image.source="https://github.com/powerman/dockerize"
 
-RUN apk add --no-cache openssl=~3.0.7 git=~2.38.3
+RUN apk add --no-cache openssl=~3 git=~2
 
 COPY . /src
 WORKDIR /src
