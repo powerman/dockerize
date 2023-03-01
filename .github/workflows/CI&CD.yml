@@ -83,18 +83,39 @@ jobs:
 
       - name: Upload to DockerHub Container Registry
         run: |
+          IMAGE_NAME="${{ secrets.CR_USER }}/$(basename ${GITHUB_REPOSITORY,,})"
+          PLATFORMS=(
+            "linux/386"
+            "linux/amd64"
+            "linux/arm/v6"
+            "linux/arm/v7"
+            "linux/arm64/v8"
+            "linux/ppc64le"
+            "linux/s390x"
+          )
+
           docker login -u '${{ secrets.CR_USER }}' -p '${{ secrets.CR_PAT }}'
-          if echo "$GITHUB_REF" | grep -q '^refs/tags/v'; then
-            TAG="${GITHUB_REF/refs\/tags\/v}"
-          else
-            TAG="latest"
+
+          TAGS=()
+          if echo "$GITHUB_REF" | grep -qE '^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            PATCH_VERSION="${GITHUB_REF/refs\/tags\/v}"
+            MINOR_VERSION="$(echo "${PATCH_VERSION}" | cut -d "." -f 1,2)"
+            MAJOR_VERSION="$(echo "${PATCH_VERSION}" | cut -d "." -f 1)"
+            TAGS+=(
+              "${IMAGE_NAME}:latest"
+              "${IMAGE_NAME}:${PATCH_VERSION}"
+              "${IMAGE_NAME}:${MINOR_VERSION}"
+              "${IMAGE_NAME}:${MAJOR_VERSION}"
+            )
           fi
-          IMAGE_TAG="${{ secrets.CR_USER }}/$(basename ${GITHUB_REPOSITORY,,}):${TAG}"
-          docker buildx build \
-            --platform linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x \
-            --tag "${IMAGE_TAG}" \
-            --push \
-            .
+
+          if [ "${#TAGS}" -ne 0 ]; then
+            docker buildx build \
+              --platform "$(IFS=, ; echo "${PLATFORMS[*]}")" \
+              --tag "$(IFS=, ; echo "${TAGS[*]}")" \
+              --push \
+              .
+          fi
 
       - run: echo -e "$GPG_KEY" | gpg --import
         if: github.ref_type == 'tag'
