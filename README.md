@@ -111,6 +111,24 @@ FROM powerman/dockerize
 ENTRYPOINT dockerize ...
 ```
 
+### Install in Docker Image
+
+You can use multistage built feature to install `dockerize` in your previous docker base image:
+
+```dockerfile
+FROM powerman/dockerize:0.17.0 AS dockerize
+FROM node:18-slim
+
+...
+
+COPY --from=dockerize /usr/local/bin/dockerize /usr/bin/dockerize
+
+...
+
+ENTRYPOINT dockerize ...
+```
+
+
 ## Usage
 
 dockerize works by wrapping the call to your application using the `ENTRYPOINT` or `CMD` directives.
