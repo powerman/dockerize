@@ -113,7 +113,7 @@ ENTRYPOINT dockerize ...
 
 ### Install in Docker Image
 
-You can use multi-stage build feature to install `dockerize` in your previous docker base image:
+You can use multi-stage build feature to install `dockerize` in your docker image without changing base image:
 
 ```dockerfile
 FROM powerman/dockerize AS dockerize
