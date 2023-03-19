@@ -116,7 +116,7 @@ ENTRYPOINT dockerize ...
 You can use multi-stage build feature to install `dockerize` in your previous docker base image:
 
 ```dockerfile
-FROM powerman/dockerize:0.17.0 AS dockerize
+FROM powerman/dockerize AS dockerize
 FROM node:18-slim
 
 ...
