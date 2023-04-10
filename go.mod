@@ -8,7 +8,7 @@ require (
 	github.com/powerman/check v1.6.0
 	github.com/powerman/gotest v0.3.0
 	github.com/powerman/tail v0.1.0
-	github.com/smartystreets/goconvey v1.7.2
+	github.com/smartystreets/goconvey v1.8.0
 	github.com/streadway/amqp v1.0.0
 	gopkg.in/ini.v1 v1.67.0
 )
@@ -76,7 +76,7 @@ require (
 	github.com/golangci/unconvert v0.0.0-20180507085042-28b1c447d1f4 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
+	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/gordonklaus/ineffassign v0.0.0-20230107090616-13ace0543b28 // indirect
 	github.com/gostaticanalysis/analysisutil v0.7.1 // indirect
 	github.com/gostaticanalysis/comment v1.4.2 // indirect
@@ -154,7 +154,7 @@ require (
 	github.com/sivchari/containedctx v1.0.2 // indirect
 	github.com/sivchari/nosnakecase v1.7.0 // indirect
 	github.com/sivchari/tenv v1.7.1 // indirect
-	github.com/smartystreets/assertions v1.2.0 // indirect
+	github.com/smartystreets/assertions v1.13.1 // indirect
 	github.com/sonatard/noctx v0.0.1 // indirect
 	github.com/sourcegraph/go-diff v0.7.0 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
@@ -187,12 +187,11 @@ require (
 	golang.org/x/crypto v0.3.0 // indirect
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect
 	golang.org/x/exp/typeparams v0.0.0-20221208152030-732eee02a75a // indirect
-	golang.org/x/mod v0.7.0 // indirect
-	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/mod v0.9.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.5.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
-	golang.org/x/tools v0.5.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/tools v0.7.0 // indirect
 	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd // indirect
 	google.golang.org/grpc v1.46.2 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
