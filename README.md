@@ -21,6 +21,7 @@ in PR comments after your PR has being merged.
 - [Overview](#overview)
 - [Installation](#installation)
   - [Docker Base Image](#docker-base-image)
+  - [Install in Docker Image](#install-in-docker-image)
 - [Usage](#usage)
   - [Command-line Options](#command-line-options)
   - [Waiting for other dependencies](#waiting-for-other-dependencies)
