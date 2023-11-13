@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/g
     ! which upx >/dev/null || upx /go/bin/dockerize && \
     dockerize --version
 
-FROM alpine:3.17.2
+FROM alpine:3.17.5
 
 COPY --from=builder /go/bin/dockerize /usr/local/bin
 
