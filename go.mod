@@ -2,6 +2,8 @@ module github.com/powerman/dockerize
 
 go 1.22
 
+toolchain go1.22.4
+
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/jwilder/gojq v0.0.0-20161018055142-c550732d4a52
