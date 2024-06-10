@@ -27,7 +27,8 @@ run:
   #  - mytag
 
   # Which dirs to skip: issues from them won't be reported.
-  # Can use regexp here: `generated.*`, regexp is applied on full path.
+  # Can use regexp here: `generated.*`, regexp is applied on full path,
+  # including the path prefix if one is set.
   # Default value is empty list,
   # but default dirs are skipped independently of this option's value (see skip-dirs-use-default).
   # "/" will be replaced by current OS file path separator to properly work on Windows.
@@ -73,7 +74,7 @@ run:
 
 # output configuration options
 output:
-  # Format: colored-line-number|line-number|json|tab|checkstyle|code-climate|junit-xml|github-actions
+  # Format: colored-line-number|line-number|json|colored-tab|tab|checkstyle|code-climate|junit-xml|github-actions|teamcity
   #
   # Multiple can be specified by separating them by comma, output can be provided
   # for each of them by separating format name and path by colon symbol.
@@ -155,6 +156,10 @@ linters-settings:
     #  - var
     #  - func
 
+    # If true, underscore vars (vars with "_" as the name) will be ignored at all checks
+    # Default: false (underscore vars are not ignored)
+    #ignore-underscore-vars: false
+
     # If true, order of declarations is not checked at all.
     # Default: true (disabled)
     #disable-dec-order-check: false
@@ -167,54 +172,59 @@ linters-settings:
     # Default: true (disabled)
     #disable-dec-num-check: false
 
+    # If true, type declarations will be ignored for dec num check
+    # Default: false (type statements are not ignored)
+    #disable-type-dec-num-check: false
+
+    # If true, const declarations will be ignored for dec num check
+    # Default: false (const statements are not ignored)
+    #disable-const-dec-num-check: false
+
+    # If true, var declarations will be ignored for dec num check
+    # Default: false (var statements are not ignored)
+    #disable-var-dec-num-check: false
+
   depguard:
-    # Kind of list is passed in.
-    # Allowed values: allowlist|denylist
-    # Default: denylist
-    #list-type: allowlist
-
-    # Check the list against standard lib.
-    # Default: false
-    include-go-root: true
-
-    # A list of packages for the list type specified.
-    # Can accept both string prefixes and string glob patterns.
-    # Default: []
-    packages:
-      #- log
-      - github.com/go-errors/errors
-      - github.com/pkg/errors
-      - github.com/prometheus/client_golang/prometheus/promauto
-      - github.com/prometheus/common/log
-      - github.com/golang/protobuf
-
-    # A list of packages for the list type specified.
-    # Specify an error message to output when a denied package is used.
-    # Default: []
-    packages-with-error-message:
-      #- log: "logging is allowed only by github.com/powerman/structlog"
-
-    # Specify rules by which the linter ignores certain files for consideration.
-    # Can accept both string prefixes and string glob patterns.
-    # The ! character in front of the rule is a special character
-    # which signals that the linter should negate the rule.
-    # This allows for more precise control, but it is only available for glob patterns.
-    # Default: []
-    #ignore-file-rules:
-    #  - "ignore/**/*.go"
-    #  - "!**/*_test.go"
-
-    # Create additional guards that follow the same configuration pattern.
-    # Results from all guards are aggregated together.
-    #additional-guards:
-    #  - list-type: denylist
-    #    include-go-root: false
-    #    packages:
-    #      - github.com/stretchr/testify
-    #    # Specify rules by which the linter ignores certain files for consideration.
-    #    ignore-file-rules:
-    #      - "**/*_test.go"
-    #      - "**/mock/**/*.go"
+    # Rules to apply.
+    #
+    # Variables:
+    # - File Variables
+    #   you can still use and exclamation mark ! in front of a variable to say not to use it.
+    #   Example !$test will match any file that is not a go test file.
+    #
+    #   `$all` - matches all go files
+    #   `$test` - matches all go test files
+    #
+    # - Package Variables
+    #
+    #  `$gostd` - matches all of go's standard library (Pulled from `GOROOT`)
+    #
+    # Default: Only allow $gostd in all files.
+    rules:
+      # Name of a rule.
+      main:
+        # List of file globs that will match this list of settings to compare against.
+        # Default: $all
+        #files:
+        #  - "!**/*_a _file.go"
+        # List of allowed packages.
+        #allow:
+        #  - $gostd
+        #  - github.com/OpenPeeDeeP
+        # Packages that are not allowed where the value is a suggestion.
+        deny:
+          - pkg: "github.com/prometheus/common/log"
+            desc: Should be replaced by standard lib log/slog package
+          - pkg: "github.com/sirupsen/logrus"
+            desc: Should be replaced by standard lib log/slog package
+          - pkg: "github.com/go-errors/errors"
+            desc: Should be replaced by standard lib errors package
+          - pkg: "github.com/pkg/errors"
+            desc: Should be replaced by standard lib errors package
+          - pkg: "github.com/prometheus/client_golang/prometheus/promauto"
+            desc: Not allowed because it uses global variables
+          - pkg: "github.com/golang/protobuf"
+            desc: Should be replaced by google.golang.org/protobuf package
 
   dogsled:
     # Checks assignments with too many blank identifiers.
@@ -298,6 +308,9 @@ linters-settings:
     # See the https://github.com/polyfloyd/go-errorlint for caveats.
     # Default: true
     #errorf: false
+    # Permit more than 1 %w verb, valid per Go 1.20 (Requires errorf:true)
+    # Default: true
+    #errorf-multi: false
     # Check for plain type assertions and type switches.
     # Default: true
     #asserts: false
@@ -361,13 +374,31 @@ linters-settings:
     # Forbid the following identifiers (list of regexp).
     # Default: ["^(fmt\\.Print(|f|ln)|print|println)$"]
     forbid:
+      # Builtin function:
       - ^print(ln)?$
-      # Optionally put comments at the end of the regex, surrounded by `(# )?`
-      # Escape any special characters.
+      # Optional message that gets included in error reports.
+      #- p: ^fmt\.Print.*$
+      #  msg: Do not commit print statements.
+      # Alternatively, put messages at the end of the regex, surrounded by `(# )?`
+      # Escape any special characters. Those messages get included in error reports.
       #- 'fmt\.Print.*(# Do not commit print statements\.)?'
+      # Forbid spew Dump, whether it is called as function or method.
+      # Depends on analyze-types below.
+      #- ^spew\.(ConfigState\.)?Dump$
+      # The package name might be ambiguous.
+      # The full import path can be used as additional criteria.
+      # Depends on analyze-types below.
+      #- p: ^v1.Dump$
+      #  pkg: ^example.com/pkg/api/v1$
     # Exclude godoc examples from forbidigo checks.
     # Default: true
-    exclude_godoc_examples: false
+    exclude-godoc-examples: false
+    # Instead of matching the literal source code,
+    # use type information to replace expressions with strings that contain the package name
+    # and (for methods and fields) the type name.
+    # This makes it possible to handle import renaming and forbid struct fields and methods.
+    # Default: false
+    analyze-types: true
 
   funlen:
     # Checks the number of lines in a function.
@@ -378,6 +409,9 @@ linters-settings:
     # If lower than 0, disable the check.
     # Default: 40
     #statements: -1
+    # Ignore comments when counting lines.
+    # Default false
+    ignore-comments: true
 
   gci:
     # DEPRECATED: use `sections` and `prefix(github.com/org/project)` instead.
@@ -418,6 +452,22 @@ linters-settings:
     # Suppress the wrong error assertion warning.
     # Default: false
     #suppress-err-assertion: true
+
+    # Suppress the wrong comparison assertion warning.
+    # Default: false
+    #suppress-compare-assertion: true
+
+    # Suppress the function all in async assertion warning.
+    # Default: false
+    #suppress-async-assertion: true
+
+    # Trigger warning for ginkgo focus containers like FDescribe, FContext, FWhen or FIt
+    # Default: false
+    #forbid-focus-container: true
+
+    # Don't trigger warnings for HaveLen(0)
+    # Default: false
+    #allow-havelen-zero: true
 
   gocognit:
     # Minimal code complexity to report.
@@ -470,9 +520,6 @@ linters-settings:
       - switchTrue       # questionable
       - todoCommentWithoutDetail  # questionable
       - yodaStyleExpr    # questionable
-      # XXX TEMPORARY Work around generics https://github.com/go-critic/go-critic/issues/1193#issuecomment-1077631484
-      - typeDefFirst
-      - rangeValCopy
       # TODO Enable after fixing https://github.com/go-critic/go-critic/issues/1257.
       - timeCmpSimplify
 
@@ -627,8 +674,6 @@ linters-settings:
         replacement: 'a[b:]'
 
   gofumpt:
-    # Select the Go version to target.
-    # Default: "1.15"
     # Deprecated: use the global `run.go` instead.
     #lang-version: "1.18"
 
@@ -713,15 +758,15 @@ linters-settings:
     # Values always ignored: `.+_test.go`
     # Default: []
     #ignored-files:
-    #  - 'magic1_.*.go'
+    #  - 'magic1_.+\.go$'
     # List of function patterns to exclude from analysis.
     # Following functions are always ignored: `time.Date`,
     # `strconv.FormatInt`, `strconv.FormatUint`, `strconv.FormatFloat`,
     # `strconv.ParseInt`, `strconv.ParseUint`, `strconv.ParseFloat`.
     # Default: []
     #ignored-functions:
-    #  - 'math.*'
-    #  - 'http.StatusText'
+    #  - '^math\.'
+    #  - '^http\.StatusText$'
 
   gomoddirectives:
     # Allow local `replace` directives.
@@ -773,8 +818,6 @@ linters-settings:
       local_replace_directives: false
 
   gosimple:
-    # Select the Go version to target.
-    # Default: 1.13
     # Deprecated: use the global `run.go` instead.
     #go: "1.18"
     # Sxxxx checks in https://staticcheck.io/docs/configuration/options/#checks
@@ -824,11 +867,11 @@ linters-settings:
     # To specify a set of rules to explicitly exclude.
     # Available rules: https://github.com/securego/gosec#available-rules
     # Default: []
-    #excludes:
+    excludes:
     #  - G101 # Look for hard coded credentials
     #  - G102 # Bind to all interfaces
     #  - G103 # Audit the use of unsafe block
-    #  - G104 # Audit errors not checked
+     - G104 # Audit errors not checked
     #  - G106 # Audit the use of ssh.InsecureIgnoreHostKey
     #  - G107 # Url provided to HTTP request as taint input
     #  - G108 # Profiling endpoint automatically exposed on /debug/pprof
@@ -954,6 +997,37 @@ linters-settings:
       # Default: "0600"
       G306: "0600"
 
+  gosmopolitan:
+    # Allow and ignore `time.Local` usages.
+    #
+    # Default: false
+    #allow-time-local: true
+    # List of fully qualified names in the `full/pkg/path.name` form, to act as "i18n escape hatches".
+    # String literals inside call-like expressions to, or struct literals of those names,
+    # are exempt from the writing system check.
+    #
+    # Default: []
+    #escape-hatches:
+    #  - 'github.com/nicksnyder/go-i18n/v2/i18n.Message'
+    #  - 'example.com/your/project/i18n/markers.Raw'
+    #  - 'example.com/your/project/i18n/markers.OK'
+    #  - 'example.com/your/project/i18n/markers.TODO'
+    #  - 'command-line-arguments.Simple'
+    # Ignore test files.
+    #
+    # Default: true
+    #ignore-tests: false
+    # List of Unicode scripts to watch for any usage in string literals.
+    # https://pkg.go.dev/unicode#pkg-variables
+    #
+    # Default: ["Han"]
+    #watch-for-scripts:
+    #  - Devanagari
+    #  - Han
+    #  - Hangul
+    #  - Hiragana
+    #  - Katakana
+
   govet:
     # Report about shadowed variables.
     # Default: false
@@ -1004,6 +1078,7 @@ linters-settings:
     #  - composites
     #  - copylocks
     #  - deepequalerrors
+    #  - defers
     #  - errorsas
     #  - fieldalignment
     #  - findcall
@@ -1143,13 +1218,14 @@ linters-settings:
     #max: 5
 
   ireturn:
-    # ireturn allows using `allow` and `reject` settings at the same time.
+    # ireturn does not allow using `allow` and `reject` settings at the same time.
     # Both settings are lists of the keywords and regular expressions matched to interface or package names.
     # keywords:
     # - `empty` for `interface{}`
     # - `error` for errors
     # - `stdlib` for standard library
     # - `anon` for anonymous interfaces
+    # - `generic` for generic interfaces added in go 1.18
 
     # By default, it allows using errors, empty interfaces, anonymous interfaces,
     # and interfaces provided by the standard library.
@@ -1228,14 +1304,14 @@ linters-settings:
 
   musttag:
     # A set of custom functions to check in addition to the builtin ones.
-    # Default: json, xml, gopkg.in/yaml.v3, BurntSushi/toml, mitchellh/mapstructure
+    # Default: json, xml, gopkg.in/yaml.v3, BurntSushi/toml, mitchellh/mapstructure, jmoiron/sqlx
     functions:
         # The full name of the function, including the package.
-      - name: github.com/jmoiron/sqlx.Get
+      #- name: github.com/hashicorp/hcl/v2/hclsimple.DecodeFile
         # The struct tag whose presence should be ensured.
-        tag: db
+      #  tag: hcl
         # The position of the argument to check.
-        arg-pos: 1
+      #  arg-pos: 2
 
   nakedret:
     # Make an issue if func has more lines of code than this setting, and it has naked returns.
@@ -1286,6 +1362,10 @@ linters-settings:
     # Ignore missing calls to `t.Parallel()` and only report incorrect uses of it.
     # Default: false
     ignore-missing: true
+    # Ignore missing calls to `t.Parallel()` in subtests. Top-level tests are
+    # still required to have `t.Parallel`, but subtests are allowed to skip it.
+    # Default: false
+    ignore-missing-subtests: true
 
   prealloc:
     # IMPORTANT: we don't recommend using this linter before doing performance profiling.
@@ -1405,10 +1485,9 @@ linters-settings:
       - name: call-to-gc
       #- name: cognitive-complexity
         #arguments: [ 15 ]
-      # TODO Try to enable it after fixing https://github.com/mgechev/revive/issues/788.
-      #- name: comment-spacings
-      #  arguments:
-      #   - nolint
+      - name: comment-spacings
+        arguments:
+          - nolint
       #- name: confusing-naming
       - name: confusing-results
       - name: constant-logical-expr
@@ -1462,6 +1541,9 @@ linters-settings:
             - '/^[^\n]*$/'
             - must not contain line breaks
       - name: struct-tag
+        #arguments:
+        #  - "json,inline"
+        #  - "bson,outline,gnu"
       - name: superfluous-else
       - name: time-equal
       - name: unconditional-recursion
@@ -1488,8 +1570,6 @@ linters-settings:
       - github.com/powerman/sqlxx
 
   staticcheck:
-    # Select the Go version to target.
-    # Default: "1.13"
     # Deprecated: use the global `run.go` instead.
     #go: "1.18"
     # SAxxxx checks in https://staticcheck.io/docs/configuration/options/#checks
@@ -1497,8 +1577,6 @@ linters-settings:
     checks: [ "all" ]
 
   stylecheck:
-    # Select the Go version to target.
-    # Default: 1.13
     # Deprecated: use the global `run.go` instead.
     #go: "1.18"
     # STxxxx checks in https://staticcheck.io/docs/configuration/options/#checks
@@ -1515,6 +1593,47 @@ linters-settings:
     # Default: ["200", "400", "404", "500"]
     http-status-code-whitelist: [ "200", "400", "404", "500" ]
 
+  tagalign:
+    # Align and sort can be used together or separately.
+    #
+    # Whether enable align. If true, the struct tags will be aligned.
+    # eg:
+    # type FooBar struct {
+    #     Bar    string `json:"bar" validate:"required"`
+    #     FooFoo int8   `json:"foo_foo" validate:"required"`
+    # }
+    # will be formatted to:
+    # type FooBar struct {
+    #     Bar    string `json:"bar"     validate:"required"`
+    #     FooFoo int8   `json:"foo_foo" validate:"required"`
+    # }
+    # Default: true.
+    #align: false
+    # Whether enable tags sort.
+    # If true, the tags will be sorted by name in ascending order.
+    # eg: `xml:"bar" json:"bar" validate:"required"` -> `json:"bar" validate:"required" xml:"bar"`
+    # Default: true
+    #sort: false
+    # Specify the order of tags, the other tags will be sorted by name.
+    # This option will be ignored if `sort` is false.
+    # Default: []
+    order:
+      - json
+      - yaml
+      - yml
+      - toml
+      - env
+      - mod
+      - mapstructure
+      - binding
+      - validate
+    # Whether enable strict style.
+    # In this style, the tags will be sorted and aligned in the dictionary order,
+    # and the tags with the same name will be aligned together.
+    # Note: This option will be ignored if 'align' or 'sort' is false.
+    # Default: false
+    strict: true
+
   tagliatelle:
     # Check the struct tag name case.
     case:
@@ -1525,13 +1644,15 @@ linters-settings:
       # Default: {}
       rules:
         # Any struct tag type can be used.
-        # Support string case: `camel`, `pascal`, `kebab`, `snake`, `goCamel`, `goPascal`, `goKebab`, `goSnake`, `upper`, `lower`, `header`
+        # Support string case: `camel`, `pascal`, `kebab`, `snake`, `upperSnake`, `goCamel`, `goPascal`, `goKebab`, `goSnake`, `upper`, `lower`, `header`
         json: snake
         yaml: kebab
         xml: camel
         bson: camel
         avro: snake
         mapstructure: kebab
+        #env: upperSnake
+        envconfig: upperSnake
 
   tenv:
     # The option `all` will run against whole test files (`_test.go`) regardless of method/function signatures.
@@ -1613,7 +1734,7 @@ linters-settings:
     # Suggest the use of rpc.DefaultXXPath.
     # Default: false
     default-rpc-path: true
-    # Suggest the use of os.DevNull.
+    # DEPRECATED Suggest the use of os.DevNull.
     # Default: false
     os-dev-null: true
     # Suggest the use of sql.LevelXX.String().
@@ -1625,7 +1746,7 @@ linters-settings:
     # Suggest the use of constant.Kind.String().
     # Default: false
     constant-kind: true
-    # Suggest the use of syslog.Priority.
+    # DEPRECATED Suggest the use of syslog.Priority.
     # Default: false
     syslog-priority: true
 
@@ -1856,6 +1977,7 @@ linters:
   #  - goprintffuncname
   #  - gosec
   #  - gosimple
+  #  - gosmopolitan
   #   - govet
   #  - grouper
   #  - ifshort
@@ -1869,6 +1991,7 @@ linters:
   #  - maintidx
   #  - makezero
   #  - maligned
+  #  - mirror
   #  - misspell
   #  - musttag
   #  - nakedret
@@ -1893,6 +2016,7 @@ linters:
   #  - staticcheck
   #  - structcheck
   #  - stylecheck
+  #  - tagalign
   #  - tagliatelle
   #  - testableexamples
   #  - tenv
@@ -1910,6 +2034,7 @@ linters:
   #  - whitespace
   #  - wrapcheck
   #  - wsl
+  #  - zerologlint
 
   # Enable all available linters.
   # Default: false
@@ -1917,6 +2042,7 @@ linters:
   # Disable specific linter
   # https://golangci-lint.run/usage/linters/#disabled-by-default
   disable:
+    - containedctx      # questionable
     - contextcheck      # questionable
     - cyclop          # prefer gocognit
     - deadcode          # deprecated (replaced by unused)
@@ -1976,9 +2102,6 @@ issues:
     - "declaration of \"(log|err|ctx)\" shadows"
     - "missing cases in switch of type \\S+: \\S+_UNSPECIFIED$"
     # - "Potential file inclusion via variable" # [DEFAULT] gosec: False positive is triggered by 'src, err := ioutil.ReadFile(filename)'
-    # XXX TEMPORARY Work around generics https://github.com/go-critic/go-critic/issues/1193#issuecomment-1077631484
-    - "receiver-naming: receiver name \\S+ should be consistent with previous receiver name \\S+ for invalid-type"
-    - "//nolint:gocritic .* is unused for linter"
 
   # Excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:
@@ -2016,6 +2139,11 @@ issues:
     - path: ^(.*/)?embed.go$
       linters:
         - gochecknoglobals
+
+    # Run some linter only for test files by excluding its issues for everything else.
+    #- path-except: _test\.go
+    #  linters:
+    #    - forbidigo
 
     # Exclude known linters from partially hard-vendored code,
     # which is impossible to exclude via `nolint` comments.
@@ -2102,6 +2230,7 @@ severity:
   # - Code climate: https://docs.codeclimate.com/docs/issues#issue-severity
   # - Checkstyle: https://checkstyle.sourceforge.io/property_types.html#SeverityLevel
   # - GitHub: https://help.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-error-message
+  # - TeamCity: https://www.jetbrains.com/help/teamcity/service-messages.html#Inspection+Instance
   #
   # Default value is an empty string.
   default-severity: error

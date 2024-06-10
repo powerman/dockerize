@@ -7,8 +7,8 @@
 
 package tools
 
-//go:generate GOINSTALL github.com/golangci/golangci-lint/cmd/golangci-lint@v1.51.1
-//go:generate GOINSTALL github.com/mattn/goveralls@v0.0.11
+//go:generate GOINSTALL github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2
+//go:generate GOINSTALL github.com/mattn/goveralls@v0.0.12
 //go:generate GOINSTALL github.com/tcnksm/ghr@v0.14.0
 //go:generate GOINSTALL gotest.tools/gotestsum@v1.8.1
 //go:generate INSTALL-HADOLINT 2.10.0
