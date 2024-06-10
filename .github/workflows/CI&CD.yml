@@ -112,7 +112,7 @@ jobs:
           if [ "${#TAGS}" -ne 0 ]; then
             docker buildx build \
               --platform "$(IFS=, ; echo "${PLATFORMS[*]}")" \
-              --tag "$(IFS=, ; echo "${TAGS[*]}")" \
+              $(echo "${TAGS[@]/#/--tag }") \
               --push \
               .
           fi
