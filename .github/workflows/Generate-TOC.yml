@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 3
     steps:
       - name: Turnstyle
-        uses: softprops/turnstyle@v1
+        uses: softprops/turnstyle@v2
         with:
           poll-interval-seconds: 3
         env:
