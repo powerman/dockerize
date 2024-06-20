@@ -58,7 +58,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Turnstyle
-        uses: softprops/turnstyle@v1
+        uses: softprops/turnstyle@v2
         with:
           poll-interval-seconds: 3
         env:
