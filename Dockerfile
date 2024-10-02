@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Go version is also in .github/workflows/CI&CD.yml.
-FROM golang:1.23.1-alpine3.20 AS builder
+FROM golang:1.23.2-alpine3.20 AS builder
 SHELL ["/bin/ash","-e","-o","pipefail","-x","-c"]
 
 LABEL org.opencontainers.image.source="https://github.com/powerman/dockerize"
