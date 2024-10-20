@@ -8,7 +8,7 @@ on:
     branches: master
 
 env:
-  GO_VERSION: '1.22.4' # Also in Dockerfile.
+  GO_VERSION: '1.23.2' # Also in Dockerfile.
 
 jobs:
 
@@ -43,7 +43,7 @@ jobs:
         if: env.COVERALLS_TOKEN
         run: |
           scripts/cover
-          .buildcache/bin/goveralls -coverprofile=cover.out -service=GitHub
+          .buildcache/bin/goveralls -coverprofile=.buildcache/cover.out -service=GitHub
 
   build-and-release:
     needs: test

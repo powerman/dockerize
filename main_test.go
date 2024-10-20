@@ -104,7 +104,6 @@ func TestFlag(tt *testing.T) {
 		{[]string{"-exec", "-stderr", "/dev/null"}, `not supported`},
 	}
 	for _, v := range cases {
-		v := v
 		t.Run(strings.Join(v.flags, " "), func(tt *testing.T) {
 			t := check.T(tt)
 			t.Parallel()
@@ -251,7 +250,7 @@ func TestWaitList(tt *testing.T) {
 	mux.HandleFunc("/redirect", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/ok", http.StatusFound)
 	})
-	mux.HandleFunc("/ok", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/ok", func(_ http.ResponseWriter, _ *http.Request) {
 		callOK = true
 	})
 	ts.Start()
@@ -318,7 +317,7 @@ func TestSmoke1(tt *testing.T) {
 	mux.HandleFunc("/redirect", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/ok", http.StatusFound)
 	})
-	mux.HandleFunc("/ok", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/ok", func(_ http.ResponseWriter, _ *http.Request) {
 		callOK = true
 	})
 	ts.Start()

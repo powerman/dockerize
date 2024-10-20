@@ -7,4 +7,3 @@
 # !name     - include previously excluded path …
 /.buildcache/
 /bin/
-/cover.out
