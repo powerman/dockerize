@@ -43,7 +43,7 @@ jobs:
         if: env.COVERALLS_TOKEN
         run: |
           scripts/cover
-          .buildcache/bin/goveralls -coverprofile=cover.out -service=GitHub
+          .buildcache/bin/goveralls -coverprofile=.buildcache/cover.out -service=GitHub
 
   build-and-release:
     needs: test
