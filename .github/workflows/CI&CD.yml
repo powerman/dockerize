@@ -2,10 +2,10 @@ name: CI/CD
 
 on:
   push:
-    tags: v*
-    branches: master
+    tags: [v*]
+    branches: [master]
   pull_request:
-    branches: master
+    branches: [master]
 
 env:
   GO_VERSION: '1.23.2' # Also in Dockerfile.
@@ -16,24 +16,25 @@ jobs:
     runs-on: 'ubuntu-latest'
     timeout-minutes: 30
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
-
-      - uses: actions/checkout@v4
+          cache: false
 
       - uses: actions/cache@v4
+        id: cache-go-with-tools
         with:
           path: |
-            ~/go/bin
-            ~/go/pkg
-            ~/go/src
+            ~/go/pkg/mod
             ~/.cache/go-build
             ~/.cache/golangci-lint
             .buildcache
-          key: v4-test-${{ runner.os }}-${{ hashFiles('go.mod') }}
+          key: v1-go-with-tools-${{ runner.os }}-${{ matrix.go }}-${{ hashFiles('tools.go') }}-${{ hashFiles('go.sum') }}
           restore-keys: |
-            v4-test-${{ runner.os }}-
+            v1-go-with-tools-${{ runner.os }}-${{ matrix.go }}-${{ hashFiles('tools.go') }}-
+            v1-go-with-tools-${{ runner.os }}-${{ matrix.go }}-
 
       - run: scripts/test
 
@@ -41,7 +42,7 @@ jobs:
         env:
           COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
         if: env.COVERALLS_TOKEN
-        run: |
+        run: |-
           scripts/cover
           .buildcache/bin/goveralls -coverprofile=.buildcache/cover.out -service=GitHub
 
@@ -51,11 +52,12 @@ jobs:
     timeout-minutes: 30
     if: github.event_name == 'push'
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
-
-      - uses: actions/checkout@v4
+          cache: false
 
       - name: Turnstyle
         uses: softprops/turnstyle@v2
@@ -65,13 +67,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/cache@v4
+        id: cache-go-with-tools
         with:
           path: |
-            ~/go/pkg
+            ~/go/pkg/mod
             ~/.cache/go-build
-          key: v1-build-${{ runner.os }}-${{ hashFiles('go.mod') }}
+            ~/.cache/golangci-lint
+            .buildcache
+          key: v1-go-with-tools-${{ runner.os }}-${{ matrix.go }}-${{ hashFiles('tools.go') }}-${{ hashFiles('go.sum') }}
           restore-keys: |
-            v1-build-${{ runner.os }}-
+            v1-go-with-tools-${{ runner.os }}-${{ matrix.go }}-${{ hashFiles('tools.go') }}-
+            v1-go-with-tools-${{ runner.os }}-${{ matrix.go }}-
 
       # Add support for more platforms with QEMU (optional)
       # https://github.com/docker/setup-qemu-action

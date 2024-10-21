@@ -2,10 +2,10 @@ name: Generate TOC
 
 on:
   push:
-    branches: master
+    branches: [master]
   pull_request:
-    branches: master
-    types: [ opened, synchronize, reopened, closed ]
+    branches: [master]
+    types: [opened, synchronize, reopened, closed]
 
 jobs:
 
