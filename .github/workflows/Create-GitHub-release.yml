@@ -1,8 +1,8 @@
-name: Create GitHub Release
+name: Create GitHub release
 
 on:
   push:
-    tags: v*
+    tags: [v*]
 
 jobs:
 
@@ -15,11 +15,11 @@ jobs:
 
       - name: Generate changelog
         id: changelog
-        uses: metcalfc/changelog-generator@v4.3.1
+        uses: metcalfc/changelog-generator@v4
         with:
           myToken: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create Release
+      - name: Create release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

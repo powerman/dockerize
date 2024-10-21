@@ -2,8 +2,8 @@ name: Lint PR name
 
 on:
   pull_request:
-    branches: master
-    types: [ opened, edited, synchronize, reopened ]
+    branches: [master]
+    types: [opened, edited, synchronize, reopened]
 
 jobs:
 
@@ -14,20 +14,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: npm install @commitlint/config-conventional
+        run: npm install @commitlint/config-conventional@16.0.0
 
-      # https://github.com/JulienKode/pull-request-name-linter-action/issues/224#issuecomment-1672053886
-
-      #- uses: JulienKode/pull-request-name-linter-action@v0.5.0
-      #  with:
-      #    configuration-path: '.github/commitlint.config.js'
-
-      - name: Set configuration
-        run: |
-          echo "module.exports = {extends: ['@commitlint/config-conventional'], rules: { 'subject-case': [0,'always',['sentence-case']],'header-max-length': [2, 'always', 120], 'body-max-line-length': [0, 'always', 120] }};" > commitlint.config.js
-
-      - name: Lint the PR title
-        run: |
-          echo "${PR_TITLE}" | npx --yes commitlint
-        env:
-          PR_TITLE: '${{ github.event.pull_request.title }}'
+      - uses: JulienKode/pull-request-name-linter-action@v0.5.0
+        with:
+          configuration-path: '.github/commitlint.config.js'
