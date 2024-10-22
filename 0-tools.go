@@ -1,5 +1,7 @@
 //go:build generate
 
+// NOTE: Prefix 0- in this file's name ensures that `go generate ./...` processes it first.
+
 //go:generate mkdir -p .buildcache/bin
 //go:generate -command GOINSTALL env "GOBIN=$PWD/.buildcache/bin" go install
 //go:generate -command INSTALL-HADOLINT sh -c ".buildcache/bin/hadolint --version 2>/dev/null | grep -wq \"$DOLLAR{DOLLAR}{1}\" || curl -sSfL https://github.com/hadolint/hadolint/releases/download/v\"$DOLLAR{DOLLAR}{1}\"/hadolint-\"$(uname)\"-x86_64 --output ./.buildcache/bin/hadolint && chmod +x .buildcache/bin/hadolint" -sh
