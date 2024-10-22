@@ -31,10 +31,10 @@ jobs:
             ~/.cache/go-build
             ~/.cache/golangci-lint
             .buildcache
-          key: v1-go-with-tools-${{ runner.os }}-${{ matrix.go }}-${{ hashFiles('tools.go') }}-${{ hashFiles('go.sum') }}
+          key: v1-go-with-tools-${{ runner.os }}-${{ env.GO_VERSION }}-${{ hashFiles('0-tools.go') }}-${{ hashFiles('go.sum') }}
           restore-keys: |
-            v1-go-with-tools-${{ runner.os }}-${{ matrix.go }}-${{ hashFiles('tools.go') }}-
-            v1-go-with-tools-${{ runner.os }}-${{ matrix.go }}-
+            v1-go-with-tools-${{ runner.os }}-${{ env.GO_VERSION }}-${{ hashFiles('0-tools.go') }}-
+            v1-go-with-tools-${{ runner.os }}-${{ env.GO_VERSION }}-
 
       - run: scripts/test
 
@@ -74,10 +74,10 @@ jobs:
             ~/.cache/go-build
             ~/.cache/golangci-lint
             .buildcache
-          key: v1-go-with-tools-${{ runner.os }}-${{ matrix.go }}-${{ hashFiles('tools.go') }}-${{ hashFiles('go.sum') }}
+          key: v1-go-with-tools-${{ runner.os }}-${{ env.GO_VERSION }}-${{ hashFiles('0-tools.go') }}-${{ hashFiles('go.sum') }}
           restore-keys: |
-            v1-go-with-tools-${{ runner.os }}-${{ matrix.go }}-${{ hashFiles('tools.go') }}-
-            v1-go-with-tools-${{ runner.os }}-${{ matrix.go }}-
+            v1-go-with-tools-${{ runner.os }}-${{ env.GO_VERSION }}-${{ hashFiles('0-tools.go') }}-
+            v1-go-with-tools-${{ runner.os }}-${{ env.GO_VERSION }}-
 
       # Add support for more platforms with QEMU (optional)
       # https://github.com/docker/setup-qemu-action
