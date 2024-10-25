@@ -7,7 +7,7 @@ toolchain go1.23.2
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/jwilder/gojq v0.0.0-20161018055142-c550732d4a52
-	github.com/powerman/check v1.7.0
+	github.com/powerman/check v1.8.0
 	github.com/powerman/gotest v0.3.0
 	github.com/powerman/tail v0.1.0
 	github.com/smartystreets/goconvey v1.8.1
@@ -39,5 +39,5 @@ require (
 	golang.org/x/sys v0.26.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240610135401-a8a62080eff3 // indirect
 	google.golang.org/grpc v1.65.0 // indirect
-	google.golang.org/protobuf v1.34.1 // indirect
+	google.golang.org/protobuf v1.34.2 // indirect
 )
