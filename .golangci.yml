@@ -138,52 +138,83 @@ linters-settings:
       - .* # Check all global variables.
   revive:
     rules:
-      - name: context-keys-type
-      - name: time-naming
-      - name: var-declaration
-      - name: unexported-return
-      - name: errorf
-      - name: blank-imports
-      - name: context-as-argument
-      - name: dot-imports
-      - name: error-return
-      - name: error-strings
-      - name: error-naming
-      - name: increment-decrement
-      - name: var-naming
-      - name: package-comments
-      - name: range
-      - name: receiver-naming
-      - name: indent-error-flow
+      - name: add-constant
+        disabled: true # Duplicates goconst and mnd linters.
+      - name: argument-limit
+        disabled: true # Questionable.
       - name: atomic
+      - name: banned-characters
+        arguments: [] # [ "Ω","Σ","σ", "7" ]
+      - name: bare-return
+        disabled: true # Questionable (in some cases bare return improves readability).
+      - name: blank-imports
       - name: bool-literal-in-expr
       - name: call-to-gc
+      - name: cognitive-complexity
+        disabled: true # Duplicates gocognit linter.
       - name: comment-spacings
         arguments:
           - nolint # Allow //nolint without a space.
+      - name: comments-density
+        disabled: true # Questionable.
+      - name: confusing-naming
+        disabled: true # Questionable (valid use case: Method() as a thin wrapper for method()).
       - name: confusing-results
       - name: constant-logical-expr
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: cyclomatic
+        disabled: true # Duplicates cyclop and gocyclo linters.
       - name: datarace
       - name: deep-exit
       - name: defer
+      - name: dot-imports
       - name: duplicated-imports
       - name: early-return
+      - name: empty-block
+        disabled: true # https://github.com/mgechev/revive/issues/386
       - name: empty-lines
       - name: enforce-map-style
         arguments:
           - make # Use `make(map[A]B)` instead of literal `map[A]B{}`.
+      - name: enforce-repeated-arg-type-style
+        disabled: true # Questionable (short form for similar args and full otherwise may improve readability).
+      - name: enforce-slice-style
+        disabled: true # Questionable (sometimes we need a nil slice, sometimes not nil).
+      - name: error-naming
+      - name: error-return
+      - name: error-strings
+      - name: errorf
+      - name: exported
+      - name: file-header
       - name: flag-parameter
+      - name: function-length
+        disabled: true # Duplicates funlen linter.
+      - name: function-result-limit
+        disabled: true # Questionable.
       - name: get-return
       - name: identical-branches
       - name: if-return
       - name: import-alias-naming
+      - name: import-shadowing
       - name: imports-blocklist
+      - name: increment-decrement
+      - name: indent-error-flow
+      - name: line-length-limit
+        disabled: true # Duplicates lll linter.
       - name: max-control-nesting
+      - name: max-public-structs
+        disabled: true # Questionable.
       - name: modifies-parameter
       - name: modifies-value-receiver
+      - name: nested-structs
+        disabled: true # Questionable (useful in tests, may worth enabling for non-tests).
       - name: optimize-operands-order
+      - name: package-comments
+      - name: range
       - name: range-val-address
       - name: range-val-in-closure
+      - name: receiver-naming
       - name: redefines-builtin-id
       - name: redundant-import-alias
       - name: string-format
@@ -198,14 +229,22 @@ linters-settings:
       - name: struct-tag
       - name: superfluous-else
       - name: time-equal
+      - name: time-naming
+      - name: unchecked-type-assertion
+        disabled: true # Duplicates errcheck and forcetypeassert linters.
       - name: unconditional-recursion
       - name: unexported-naming
+      - name: unexported-return
+      - name: unhandled-error
+        disabled: true # Duplicates errcheck linter.
       - name: unnecessary-stmt
       - name: unreachable-code
       - name: unused-parameter
       - name: unused-receiver
       - name: use-any
       - name: useless-break
+      - name: var-declaration
+      - name: var-naming
       - name: waitgroup-by-value
   rowserrcheck:
     packages:

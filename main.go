@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/url"
+	urlpkg "net/url"
 	"os"
 	"os/exec"
 	"path"
@@ -87,14 +87,14 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 	}
 
 	var iniURL, iniHTTP, templatePathBad, waitBadScheme, waitHTTP, waitAMQPS bool
-	if u, err := url.Parse(cfg.ini.source); err == nil && u.IsAbs() {
+	if u, err := urlpkg.Parse(cfg.ini.source); err == nil && u.IsAbs() {
 		iniURL = true
 		iniHTTP = u.Scheme == schemeHTTP || u.Scheme == schemeHTTPS
 	}
-	for _, path := range cfg.templatePaths {
+	for _, tmplPath := range cfg.templatePaths {
 		const maxParts = 2
-		parts := strings.Split(path, ":")
-		templatePathBad = templatePathBad || path == "" || parts[0] == "" || len(parts) > maxParts
+		parts := strings.Split(tmplPath, ":")
+		templatePathBad = templatePathBad || tmplPath == "" || parts[0] == "" || len(parts) > maxParts
 	}
 
 	waitListParts := strings.Fields(cfg.waitList)
@@ -182,11 +182,11 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 		fatalf("Failed to wait: %s.", err)
 	}
 
-	for _, path := range cfg.tailStdout {
-		tailFile(path, os.Stdout)
+	for _, tailPath := range cfg.tailStdout {
+		tailFile(tailPath, os.Stdout)
 	}
-	for _, path := range cfg.tailStderr {
-		tailFile(path, os.Stderr)
+	for _, tailPath := range cfg.tailStderr {
+		tailFile(tailPath, os.Stderr)
 	}
 
 	switch {
