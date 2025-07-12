@@ -11,7 +11,7 @@ ENV BINARY_PATH="/usr/local/bin/${BINARY_NAME}"
 LABEL org.opencontainers.image.source="https://github.com/${GITHUB_REPOSITORY}"
 
 # Copy the appropriate binary
-COPY "dist/${BINARY_NAME}-${VERSION}-linux-${TARGETARCH}${TARGETVARIANT:+-${TARGETVARIANT}}" "${BINARY_PATH}"
+COPY "dist/${BINARY_NAME}-${VERSION}-linux-${TARGETARCH}${TARGETVARIANT}" "${BINARY_PATH}"
 
 # Make sure the binary is executable
 RUN chmod +x "${BINARY_PATH}"
