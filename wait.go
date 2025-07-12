@@ -113,7 +113,7 @@ func waitForSocket(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<
 	readyc <- u
 }
 
-func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- *url.URL) { //nolint:interfacer // False positive.
+func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- *url.URL) {
 	waitStatusCode := make(map[int]bool)
 	if len(cfg.statusCodes) == 0 {
 		for statusCode := http.StatusOK; statusCode < http.StatusMultipleChoices; statusCode++ {
@@ -168,7 +168,7 @@ func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 	readyc <- u
 }
 
-func waitForAMQP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- *url.URL) { //nolint:interfacer // False positive.
+func waitForAMQP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- *url.URL) {
 	amqpCfg := amqp.Config{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: cfg.skipTLSVerify, //nolint:gosec // TLS InsecureSkipVerify may be true.
