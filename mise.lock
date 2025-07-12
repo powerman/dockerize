@@ -1,0 +1,30 @@
+[tools.actionlint]
+version = "1.7.7"
+backend = "aqua:rhysd/actionlint"
+
+[tools.gh]
+version = "2.75.0"
+backend = "aqua:cli/cli"
+
+[tools.git-cliff]
+version = "2.9.1"
+backend = "aqua:orhun/git-cliff"
+
+[tools.go]
+version = "1.24.5"
+backend = "core:go"
+
+[tools.golangci-lint]
+version = "2.2.1"
+backend = "aqua:golangci/golangci-lint"
+
+[tools.hadolint]
+version = "2.12.0"
+backend = "aqua:hadolint/hadolint"
+
+[tools.hadolint.checksums]
+hadolint-Linux-x86_64 = "sha256:56de6d5e5ec427e17b74fa48d51271c7fc0d61244bf5c90e828aab8362d55010"
+
+[tools."ubi:gotestyourself/gotestsum"]
+version = "1.12.3"
+backend = "ubi:gotestyourself/gotestsum"

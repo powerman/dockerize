@@ -1,0 +1,36 @@
+name: Test
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel testing of a previous commit for the same branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write # To update gh-badges branch.
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v2
+
+      - uses: powerman/.github/.github/actions/cache-go-and-tools@main
+
+      - run: mise run test
+
+      - uses: powerman/.github/.github/actions/coverage-badge@main
+        if: github.ref_name == 'main'
+        with:
+          total_cmd: "mise run -q cover:go:total | tail -n 1 | sed -e 's/.*)//'"

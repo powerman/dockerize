@@ -4,7 +4,7 @@
 [![Docker Automated Build](https://img.shields.io/docker/automated/powerman/dockerize.svg)](https://hub.docker.com/r/powerman/dockerize/tags)
 [![CI/CD](https://github.com/powerman/dockerize/actions/workflows/CI&CD.yml/badge.svg)](https://github.com/powerman/dockerize/actions/workflows/CI&CD.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/powerman/dockerize)](https://goreportcard.com/report/github.com/powerman/dockerize)
-[![Coverage Status](https://coveralls.io/repos/github/powerman/dockerize/badge.svg?branch=master)](https://coveralls.io/github/powerman/dockerize?branch=master)
+[![Coverage Status](https://raw.githubusercontent.com/powerman/dockerize/gh-badges/coverage.svg)](https://github.com/powerman/dockerize/actions/workflows/test.yml)
 
 Utility to simplify running applications in docker containers.
 
