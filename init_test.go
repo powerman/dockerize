@@ -19,7 +19,8 @@ var (
 )
 
 func floatGetenv(name string, def float64) float64 {
-	if v, err := strconv.ParseFloat(os.Getenv(name), 64); err == nil {
+	v, err := strconv.ParseFloat(os.Getenv(name), 64)
+	if err == nil {
 		return v
 	}
 	return def

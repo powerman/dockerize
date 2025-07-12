@@ -8,7 +8,8 @@ import (
 func setDefaultEnv(defaultEnv map[string]string) {
 	for k, v := range defaultEnv {
 		if _, ok := os.LookupEnv(k); !ok {
-			if err := os.Setenv(k, v); err != nil {
+			err := os.Setenv(k, v)
+			if err != nil {
 				fatalf("Failed to set environment: %s.", err)
 			}
 		}

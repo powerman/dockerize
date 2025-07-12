@@ -168,7 +168,7 @@ func TestTail(tt *testing.T) {
 	var logn [4]string
 	if os.Getenv("GO_WANT_HELPER_PROCESS") == "" { // don't do this again in subprocess
 		for i := range logf {
-			logf[i] = t.NoErrFile(os.CreateTemp("", "gotest"))
+			logf[i] = t.NoErrFile(os.CreateTemp(t.TempDir(), "gotest"))
 			logn[i] = logf[i].Name()
 			defer os.Remove(logn[i]) //nolint:gocritic,revive // By design.
 			defer logf[i].Close()    //nolint:gocritic,revive // By design.
@@ -205,7 +205,7 @@ func TestWaitList(tt *testing.T) {
 
 	var logn, filen, unixn string
 	if os.Getenv("GO_WANT_HELPER_PROCESS") == "" { // don't do this again in subprocess
-		logf := t.NoErrFile(os.CreateTemp("", "gotest"))
+		logf := t.NoErrFile(os.CreateTemp(t.TempDir(), "gotest"))
 		logn = logf.Name()
 		defer os.Remove(logn)
 		defer logf.Close()
@@ -270,7 +270,7 @@ func TestSmoke1(tt *testing.T) {
 
 	var logn, filen, unixn string
 	if os.Getenv("GO_WANT_HELPER_PROCESS") == "" { // don't do this again in subprocess
-		logf := t.NoErrFile(os.CreateTemp("", "gotest"))
+		logf := t.NoErrFile(os.CreateTemp(t.TempDir(), "gotest"))
 		logn = logf.Name()
 		defer os.Remove(logn)
 		defer logf.Close()

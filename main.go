@@ -81,13 +81,15 @@ func init() { //nolint:gochecknoinits // By design.
 	flag.Usage = usage //nolint:reassign // By design.
 }
 
-func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
+func main() { //nolint:gocyclo,gocognit,funlen,maintidx // TODO Refactor?
 	if !flag.Parsed() { // flags may be already parsed by tests
 		flag.Parse()
 	}
 
 	var iniURL, iniHTTP, templatePathBad, waitBadScheme, waitHTTP, waitAMQPS bool
-	if u, err := urlpkg.Parse(cfg.ini.source); err == nil && u.IsAbs() {
+	var parseErr error
+	u, parseErr := urlpkg.Parse(cfg.ini.source)
+	if parseErr == nil && u.IsAbs() {
 		iniURL = true
 		iniHTTP = u.Scheme == schemeHTTP || u.Scheme == schemeHTTPS
 	}
@@ -99,7 +101,8 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 
 	waitListParts := strings.Fields(cfg.waitList)
 	for _, url := range waitListParts {
-		if err := cfg.waitURLs.Set(url); err != nil {
+		err := cfg.waitURLs.Set(url)
+		if err != nil {
 			fatalFlagValue("unable to parse URLs list", "wait-list", url)
 		}
 	}
@@ -210,7 +213,8 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 }
 
 func warnIfFail(f func() error) {
-	if err := f(); err != nil {
+	err := f()
+	if err != nil {
 		log.Printf("Warning: %s.", err)
 	}
 }

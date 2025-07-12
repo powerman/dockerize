@@ -1,8 +1,8 @@
 module github.com/powerman/dockerize
 
-go 1.23
+go 1.24
 
-toolchain go1.23.2
+toolchain go1.24.5
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0

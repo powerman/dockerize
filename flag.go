@@ -24,8 +24,8 @@ func (f *stringsFlag) Set(value string) error {
 	return nil
 }
 
-func (f stringsFlag) String() string {
-	return strings.Join(f, ",")
+func (f *stringsFlag) String() string {
+	return strings.Join(*f, ",")
 }
 
 type urlsFlag []*url.URL
@@ -39,10 +39,10 @@ func (f *urlsFlag) Set(value string) error {
 	return nil
 }
 
-func (f urlsFlag) String() string {
-	urls := make([]string, len(f))
-	for i := range f {
-		urls[i] = f[i].String()
+func (f *urlsFlag) String() string {
+	urls := make([]string, len(*f))
+	for i := range *f {
+		urls[i] = (*f)[i].String()
 	}
 	return strings.Join(urls, " ")
 }
@@ -78,10 +78,10 @@ func (f *httpHeadersFlag) Set(value string) error {
 	return nil
 }
 
-func (f httpHeadersFlag) String() string {
-	hs := make([]string, len(f))
-	for i := range f {
-		hs[i] = f[i].name + ":" + f[i].value
+func (f *httpHeadersFlag) String() string {
+	hs := make([]string, len(*f))
+	for i := range *f {
+		hs[i] = (*f)[i].name + ":" + (*f)[i].value
 	}
 	return strings.Join(hs, ", ")
 }
@@ -100,10 +100,10 @@ func (f *statusCodesFlag) Set(value string) error {
 	return nil
 }
 
-func (f statusCodesFlag) String() string {
-	ns := make([]string, len(f))
-	for i := range f {
-		ns[i] = strconv.Itoa(f[i])
+func (f *statusCodesFlag) String() string {
+	ns := make([]string, len(*f))
+	for i := range *f {
+		ns[i] = strconv.Itoa((*f)[i])
 	}
 	return strings.Join(ns, ", ")
 }
@@ -120,7 +120,7 @@ func (f *delimsFlag) Set(value string) error {
 	return nil
 }
 
-func (f delimsFlag) String() string {
+func (f *delimsFlag) String() string {
 	return f[0] + ":" + f[1]
 }
 
