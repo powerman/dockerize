@@ -7,7 +7,7 @@ toolchain go1.24.5
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/jwilder/gojq v0.0.0-20161018055142-c550732d4a52
-	github.com/powerman/check v1.7.0
+	github.com/powerman/check v1.8.0
 	github.com/powerman/gotest v0.3.0
 	github.com/powerman/tail v0.1.0
 	github.com/smartystreets/goconvey v1.8.1
@@ -16,9 +16,9 @@ require (
 )
 
 require (
-	dario.cat/mergo v1.0.1 // indirect
+	dario.cat/mergo v1.0.2 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Masterminds/semver/v3 v3.3.0 // indirect
+	github.com/Masterminds/semver/v3 v3.4.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/elgs/gosplitargs v0.0.0-20161028071935-a491c5eeb3c8 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -33,11 +33,10 @@ require (
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/smarty/assertions v1.16.0 // indirect
-	github.com/spf13/cast v1.7.0 // indirect
-	github.com/stretchr/testify v1.9.0 // indirect
-	golang.org/x/crypto v0.28.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240610135401-a8a62080eff3 // indirect
-	google.golang.org/grpc v1.65.0 // indirect
-	google.golang.org/protobuf v1.34.1 // indirect
+	github.com/spf13/cast v1.9.2 // indirect
+	golang.org/x/crypto v0.40.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
+	google.golang.org/grpc v1.73.0 // indirect
+	google.golang.org/protobuf v1.36.6 // indirect
 )
