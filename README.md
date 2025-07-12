@@ -94,14 +94,6 @@ wget -O - $(wget -O - https://api.github.com/repos/powerman/dockerize/releases/l
 wget -O - https://github.com/powerman/dockerize/releases/download/v0.11.5/dockerize-`uname -s`-`uname -m` | install /dev/stdin /usr/local/bin/dockerize
 ```
 
-PGP public key for verifying signed binaries: https://powerman.name/about/Powerman.asc
-
-```
-curl -sfL https://powerman.name/about/Powerman.asc | gpg --import
-curl -sfL https://github.com/powerman/dockerize/releases/download/v0.11.5/dockerize-`uname -s`-`uname -m`.asc >dockerize.asc
-gpg --verify dockerize.asc /usr/local/bin/dockerize
-```
-
 ### Docker Base Image
 
 The `powerman/dockerize` image is a base image based on `alpine linux`.  `dockerize` is installed in the `$PATH` and can be used directly.
