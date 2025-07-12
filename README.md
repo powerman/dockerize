@@ -1,10 +1,10 @@
 # dockerize
 
-[![Release](https://img.shields.io/github/v/release/powerman/dockerize.svg)](https://github.com/powerman/dockerize/releases/latest)
-[![Docker Automated Build](https://img.shields.io/docker/automated/powerman/dockerize.svg)](https://hub.docker.com/r/powerman/dockerize/tags)
-[![CI/CD](https://github.com/powerman/dockerize/actions/workflows/CI&CD.yml/badge.svg)](https://github.com/powerman/dockerize/actions/workflows/CI&CD.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/powerman/dockerize)](https://goreportcard.com/report/github.com/powerman/dockerize)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/powerman/dockerize/test.yml?logo=github&label=build)](https://github.com/powerman/dockerize/actions/workflows/test.yml)
 [![Coverage Status](https://raw.githubusercontent.com/powerman/dockerize/gh-badges/coverage.svg)](https://github.com/powerman/dockerize/actions/workflows/test.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/powerman/dockerize)](https://goreportcard.com/report/github.com/powerman/dockerize)
+[![Docker Automated Build](https://img.shields.io/docker/automated/powerman/dockerize.svg)](https://hub.docker.com/r/powerman/dockerize/tags)
+[![Release](https://img.shields.io/github/v/release/powerman/dockerize.svg)](https://github.com/powerman/dockerize/releases/latest)
 
 Utility to simplify running applications in docker containers.
 
