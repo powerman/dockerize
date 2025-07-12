@@ -1,28 +1,20 @@
-# syntax=docker/dockerfile:1
-
-# Go version is also in .github/workflows/CI&CD.yml.
-FROM golang:1.24.5-alpine3.22 AS builder
-SHELL ["/bin/ash","-e","-o","pipefail","-x","-c"]
-
-LABEL org.opencontainers.image.source="https://github.com/powerman/dockerize"
-
-# hadolint ignore=DL3019
-RUN apk update; \
-    apk add openssl=~3 git=~2; \
-    apk add upx=~4 || :; \
-    rm -f /var/cache/apk/*
-
-COPY . /src
-WORKDIR /src
-
-RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg/mod \
-    CGO_ENABLED=0 go install -ldflags "-s -w -X 'main.ver=$(git describe --match='v*' --exact-match)'" && \
-    ! which upx >/dev/null || upx /go/bin/dockerize && \
-    dockerize --version
-
 FROM alpine:3.22.0
 
-COPY --from=builder /go/bin/dockerize /usr/local/bin
+ARG TARGETARCH
+ARG TARGETVARIANT
+ARG GITHUB_REPOSITORY
+ARG BINARY_NAME
+ARG VERSION
 
-ENTRYPOINT ["dockerize"]
+ENV BINARY_PATH="/usr/local/bin/${BINARY_NAME}"
+
+LABEL org.opencontainers.image.source="https://github.com/${GITHUB_REPOSITORY}"
+
+# Copy the appropriate binary
+COPY "dist/${BINARY_NAME}-${VERSION}-linux-${TARGETARCH}${TARGETVARIANT:+-${TARGETVARIANT}}" "${BINARY_PATH}"
+
+# Make sure the binary is executable
+RUN chmod +x "${BINARY_PATH}"
+
+ENTRYPOINT ["${BINARY_PATH}"]
 CMD ["--help"]
