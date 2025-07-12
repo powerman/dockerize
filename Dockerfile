@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Go version is also in .github/workflows/CI&CD.yml.
-FROM golang:1.23.2-alpine3.20 AS builder
+FROM golang:1.24.5-alpine3.22 AS builder
 SHELL ["/bin/ash","-e","-o","pipefail","-x","-c"]
 
 LABEL org.opencontainers.image.source="https://github.com/powerman/dockerize"
@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/g
     ! which upx >/dev/null || upx /go/bin/dockerize && \
     dockerize --version
 
-FROM alpine:3.20.3
+FROM alpine:3.22.0
 
 COPY --from=builder /go/bin/dockerize /usr/local/bin
 
