@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.1] - 2025-07-12
+
+### 🐛 Fixed
+
+- **(docker)** Entrypoint by @powerman in [aa6cc55]
+
+[0.22.1]: https://github.com/powerman/dockerize/compare/v0.22.0..v0.22.1
+[aa6cc55]: https://github.com/powerman/dockerize/commit/aa6cc55d1d49a5515e8c15d344f45129053461a5
+
 ## [0.22.0] - 2025-07-12
 
 ### 🔔 Changed
