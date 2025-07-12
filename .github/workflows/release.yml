@@ -42,6 +42,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ env.GITHUB_TOKEN }}
+          ref: ${{ needs.release-pr.outputs.version }}
 
       - name: Build binary
         id: build
@@ -86,13 +87,13 @@ jobs:
       - name: Upload files to the release
         uses: softprops/action-gh-release@v2
         with:
+          token: ${{ env.GITHUB_TOKEN }}
           tag_name: ${{ needs.release-pr.outputs.version }}
           body: ${{ needs.release-pr.outputs.changelog }}
           files: ${{ steps.build.outputs.release_asset_dir }}/*
           draft: true
           prerelease: ${{ needs.release-pr.outputs.prerelease }}
           make_latest: false
-          token: ${{ env.GITHUB_TOKEN }}
 
   docker:
     needs: [release-pr, build-and-upload]
@@ -100,6 +101,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ env.GITHUB_TOKEN }}
 
       - name: Download release assets
         env:
@@ -162,9 +165,9 @@ jobs:
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
+          token: ${{ env.GITHUB_TOKEN }}
           tag_name: ${{ needs.release-pr.outputs.version }}
           body: ${{ needs.release-pr.outputs.changelog }}
           draft: false
           prerelease: ${{ needs.release-pr.outputs.prerelease }}
           make_latest: true
-          token: ${{ env.GITHUB_TOKEN }}
