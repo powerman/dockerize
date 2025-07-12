@@ -53,7 +53,9 @@ jobs:
           goarm: ${{ matrix.goarm }}
           project_path: '.'
           binary_name: ${{ github.event.repository.name }}
-          ldflags: '-s -w -X main.ver=${{ needs.release-pr.outputs.version }}'
+          pre_command: 'export CGO_ENABLED=0'
+          build_flags: '-trimpath' # Reproducible build (also needs -buildid= in ldflags).
+          ldflags: '-s -w -buildid= -X main.ver=${{ needs.release-pr.outputs.version }}'
           executable_compression: upx
           md5sum: false
           compress_assets: 'OFF'
@@ -136,8 +138,8 @@ jobs:
             PLATFORMS+=("$platform")
           done
 
-          echo "Building for platforms: ${PLATFORMS[*]}"
-
+          SOURCE_DATE_EPOCH="$(git log -1 --pretty=%ct)" # Reproducible build.
+          export SOURCE_DATE_EPOCH
           docker buildx build \
             --platform "$(IFS=, ; echo "${PLATFORMS[*]}")" \
             --build-arg GITHUB_REPOSITORY="${GITHUB_REPOSITORY}" \
