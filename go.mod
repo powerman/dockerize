@@ -10,8 +10,8 @@ require (
 	github.com/powerman/check v1.8.0
 	github.com/powerman/gotest v0.3.0
 	github.com/powerman/tail v0.1.0
+	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/smartystreets/goconvey v1.8.1
-	github.com/streadway/amqp v1.1.0
 	gopkg.in/ini.v1 v1.67.0
 )
 
