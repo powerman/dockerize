@@ -105,9 +105,9 @@ jobs:
         env:
           VERSION: ${{ needs.release-pr.outputs.version }}
         run: |
-          mkdir -p dist
-          gh release download "${VERSION}" --dir dist
-          rm -f dist/*.sig  # Remove signature files
+          mkdir -p .cache/dist
+          gh release download "${VERSION}" --dir .cache/dist
+          rm -f .cache/dist/*.sig  # Remove signature files
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -131,7 +131,7 @@ jobs:
 
           # Get platforms from release assets
           PLATFORMS=()
-          for f in dist/*-linux-*; do
+          for f in .cache/dist/*-linux-*; do
             platform="${f#*-linux-}"
             platform="linux/${platform//-//}"
             platform="${platform//armv/arm/v}"
@@ -142,8 +142,6 @@ jobs:
           export SOURCE_DATE_EPOCH
           docker buildx build \
             --platform "$(IFS=, ; echo "${PLATFORMS[*]}")" \
-            --build-arg GITHUB_REPOSITORY="${GITHUB_REPOSITORY}" \
-            --build-arg BINARY_NAME="${BINARY_NAME}" \
             --build-arg VERSION="${VERSION}" \
             --tag "${IMAGE_NAME}:latest" \
             --tag "${IMAGE_NAME}:${PATCH_VERSION}" \
