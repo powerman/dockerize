@@ -14,9 +14,7 @@ Utility to simplify running applications in docker containers.
 contributed to the project may become a collaborator - just ask for it
 in PR comments after your PR has being merged.
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**
+## Table of Contents
 
 - [Overview](#overview)
 - [Installation](#installation)
@@ -33,20 +31,19 @@ in PR comments after your PR has being merged.
 - [Using Templates](#using-templates)
   - [jsonQuery](#jsonquery)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 ## Overview
 
-dockerize is a utility to simplify running applications in docker containers.  It allows you to:
-* generate application configuration files at container startup time from templates and container environment variables
-* Tail multiple log files to stdout and/or stderr
-* Wait for other services to be available using TCP, HTTP(S), unix before starting the main process.
+dockerize is a utility to simplify running applications in docker containers. It allows you to:
+
+- generate application configuration files at container startup time from templates and container environment variables
+- Tail multiple log files to stdout and/or stderr
+- Wait for other services to be available using TCP, HTTP(S), unix before starting the main process.
 
 The typical use case for dockerize is when you have an application that has one or more configuration files and you would like to control some of the values using environment variables.
 
 For example, a Python application using Sqlalchemy might not be able to use environment variables directly.
 It may require that the database URL be read from a python settings file with a variable named
-`SQLALCHEMY_DATABASE_URI`.  dockerize allows you to set an environment variable such as
+`SQLALCHEMY_DATABASE_URI`. dockerize allows you to set an environment variable such as
 `DATABASE_URL` and update the python file when the container starts.
 In addition, it can also delay the starting of the python application until the database container is running and listening on the TCP port.
 
@@ -56,7 +53,6 @@ For example, nginx will log to `/var/log/nginx/access.log` and
 `/var/log/nginx/error.log` by default. While you can sometimes work around this, it's tedious to find a solution for every application. dockerize allows you to specify which logs files should be tailed and where they should be sent.
 
 See [A Simple Way To Dockerize Applications](http://jasonwilder.com/blog/2014/10/13/a-simple-way-to-dockerize-applications/)
-
 
 ## Installation
 
@@ -81,7 +77,7 @@ curl -sfL $(curl -s https://api.github.com/repos/powerman/dockerize/releases/lat
 or specific version:
 
 ```sh
-curl -sfL https://github.com/powerman/dockerize/releases/download/v0.11.5/dockerize-`uname -s`-`uname -m` | install /dev/stdin /usr/local/bin/dockerize
+curl -sfL https://github.com/powerman/dockerize/releases/download/v0.11.5/dockerize-$(uname -s)-$(uname -m) | install /dev/stdin /usr/local/bin/dockerize
 ```
 
 If `curl` is not available (e.g. busybox base image) then you can use `wget`:
@@ -96,7 +92,7 @@ wget -O - https://github.com/powerman/dockerize/releases/download/v0.11.5/docker
 
 ### Docker Base Image
 
-The `powerman/dockerize` image is a base image based on `alpine linux`.  `dockerize` is installed in the `$PATH` and can be used directly.
+The `powerman/dockerize` image is a base image based on `alpine linux`. `dockerize` is installed in the `$PATH` and can be used directly.
 
 ```
 FROM powerman/dockerize
@@ -125,7 +121,7 @@ This would generate `/etc/nginx/nginx.conf` from the template located at `/etc/n
 send `/var/log/nginx/access.log` to `STDOUT` and `/var/log/nginx/error.log` to `STDERR` after running
 `nginx`, only after waiting for the `web` host to respond on `tcp 8000`:
 
-``` Dockerfile
+```Dockerfile
 CMD dockerize -template /etc/nginx/nginx.tmpl:/etc/nginx/nginx.conf -stdout /var/log/nginx/access.log -stderr /var/log/nginx/error.log -wait tcp://web:8000 nginx
 ```
 
@@ -227,7 +223,7 @@ $ dockerize -wait-list "tcp://db:5432 http://web:80 file:///tmp/generated-file"
 
 ### Timeout
 
-You can optionally specify how long to wait for the services to become available by using the `-timeout #` argument (Default: 10 seconds).  If the timeout is reached and the service is still not available, the process exits with status code 123.
+You can optionally specify how long to wait for the services to become available by using the `-timeout #` argument (Default: 10 seconds). If the timeout is reached and the service is still not available, the process exits with status code 123.
 
 ```
 $ dockerize -wait tcp://db:5432 -wait http://web:80 -timeout 10s
@@ -281,22 +277,22 @@ variables within a template with `.Env`.
 In template you can use a lot of [functions provided by
 Sprig](http://masterminds.github.io/sprig/) plus a few built in functions as well:
 
-  * `exists $path` - Determines if a file path exists or not. `{{ if exists "/etc/default/myapp" }}`
-  * `parseUrl $url` - Parses a URL into it's [protocol, scheme, host, etc. parts](https://golang.org/pkg/net/url/#URL). Alias for [`url.Parse`](https://golang.org/pkg/net/url/#Parse)
-  * `isTrue $value` - Parses a string $value to a boolean value. `{{ if isTrue .Env.ENABLED }}`
-  * `jsonQuery $json $query` - Returns the result of a selection query against a json document.
-  * `readFile $fileName` - Returns the content of the named file or empty string if file not exists.
+- `exists $path` - Determines if a file path exists or not. `{{ if exists "/etc/default/myapp" }}`
+- `parseUrl $url` - Parses a URL into it's [protocol, scheme, host, etc. parts](https://golang.org/pkg/net/url/#URL). Alias for [`url.Parse`](https://golang.org/pkg/net/url/#Parse)
+- `isTrue $value` - Parses a string $value to a boolean value. `{{ if isTrue .Env.ENABLED }}`
+- `jsonQuery $json $query` - Returns the result of a selection query against a json document.
+- `readFile $fileName` - Returns the content of the named file or empty string if file not exists.
 
 **WARNING! Incompatibility with [original dockerize
 v0.6.1](https://github.com/jwilder/dockerize)!** These template functions
 was changed because of adding Sprig functions, so carefully review your
 templates before upgrading:
 
-* `default` - order of params has changed.
-* `contains` - now it works on string instead of map, use `hasKey` instead.
-* `split` - now it split into map instead of list, use `splitList` instead.
-* `replace` - order and amount of params has changed.
-* `loop` - removed, use `untilStep` instead.
+- `default` - order of params has changed.
+- `contains` - now it works on string instead of map, use `hasKey` instead.
+- `split` - now it split into map instead of list, use `splitList` instead.
+- `replace` - order and amount of params has changed.
+- `loop` - removed, use `untilStep` instead.
 
 ### jsonQuery
 
