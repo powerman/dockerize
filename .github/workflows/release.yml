@@ -16,6 +16,12 @@ env:
 jobs:
   release-pr:
     uses: powerman/workflows/.github/workflows/release-pr.yml@v0.4.1
+    with:
+      version_cmd: |
+        echo "$RELEASE_PR_VERSION" | grep -q '[+-]' || {
+          sed -i -E 's#(/dockerize/releases/download/)(v[0-9.]+)/#\1'"$RELEASE_PR_VERSION"'/#g' README.md
+          sed -i -E 's#(powerman/dockerize:)([0-9.]+)#\1'"${RELEASE_PR_VERSION#v}"'#g' README.md
+        }
     secrets:
       TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
