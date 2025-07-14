@@ -62,7 +62,7 @@ jobs:
           binary_name: ${{ github.event.repository.name }}
           pre_command: 'export CGO_ENABLED=0'
           build_flags: '-trimpath' # Reproducible build (also needs -buildid= in ldflags).
-          ldflags: '-s -w -buildid= -X main.ver=${{ needs.release-pr.outputs.version }}'
+          ldflags: '-s -w -buildid='
           executable_compression: upx
           md5sum: false
           compress_assets: 'OFF'

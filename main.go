@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path"
 	"runtime"
+	"runtime/debug"
 	"strings"
 	"syscall"
 	"time"
@@ -29,6 +30,7 @@ const (
 	defWaitRetryInterval = time.Second
 	exitCodeUsage        = 2
 	exitCodeFatal        = 123
+	versionUnknown       = "unknown"
 )
 
 // Read-only globals for use only within init() and main().
@@ -36,7 +38,6 @@ const (
 //nolint:gochecknoglobals // By design.
 var (
 	app = strings.TrimSuffix(path.Base(os.Args[0]), ".test")
-	ver = "unknown" // set by ./release
 	cfg struct {
 		version       bool
 		ini           iniConfig
@@ -79,6 +80,29 @@ func init() { //nolint:gochecknoinits // By design.
 	flag.BoolVar(&cfg.exec, "exec", false, "replace dockerize process with given command")
 
 	flag.Usage = usage //nolint:reassign // By design.
+}
+
+// getVersionFromBuildInfo returns version information from VCS data embedded in the binary.
+func getVersionFromBuildInfo(buildInfo *debug.BuildInfo) string {
+	if buildInfo == nil {
+		return versionUnknown
+	}
+
+	// Try to get version from module version (works with go install)
+	if buildInfo.Main.Version != "" && buildInfo.Main.Version != "(devel)" {
+		return buildInfo.Main.Version
+	}
+
+	return versionUnknown
+}
+
+// getVersion returns version information from VCS data embedded in the binary.
+func getVersion() string {
+	buildInfo, ok := debug.ReadBuildInfo()
+	if !ok {
+		return versionUnknown
+	}
+	return getVersionFromBuildInfo(buildInfo)
 }
 
 func main() { //nolint:gocyclo,gocognit,funlen,maintidx // TODO Refactor?
@@ -152,7 +176,7 @@ func main() { //nolint:gocyclo,gocognit,funlen,maintidx // TODO Refactor?
 	case cfg.exec && flag.NArg() == 0:
 		fatalFlagValue("require command to exec", "exec", cfg.exec)
 	case cfg.version:
-		fmt.Println(app, ver, runtime.Version())
+		fmt.Println(app, getVersion(), runtime.Version())
 		os.Exit(0)
 	}
 

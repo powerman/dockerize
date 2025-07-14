@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"syscall"
@@ -26,12 +27,61 @@ func TestFlagHelp(tt *testing.T) {
 	t.Match(out, "Usage:")
 }
 
+func TestGetVersionFromBuildInfo(tt *testing.T) {
+	t := check.T(tt)
+	t.Parallel()
+
+	// Test with nil buildInfo
+	version := getVersionFromBuildInfo(nil)
+	t.Equal(version, versionUnknown)
+
+	// Table-driven tests for different version scenarios
+	tests := []struct {
+		name     string
+		version  string
+		expected string
+	}{
+		{
+			name:     "empty version",
+			version:  "",
+			expected: versionUnknown,
+		},
+		{
+			name:     "devel version",
+			version:  "(devel)",
+			expected: versionUnknown,
+		},
+		{
+			name:     "valid version",
+			version:  "v1.2.3",
+			expected: "v1.2.3",
+		},
+		{
+			name:     "version without v prefix",
+			version:  "1.2.3",
+			expected: "1.2.3",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(tt *testing.T) {
+			t := check.T(tt)
+			t.Parallel()
+			buildInfo := &debug.BuildInfo{
+				Main: debug.Module{Version: tc.version},
+			}
+			result := getVersionFromBuildInfo(buildInfo)
+			t.Equal(result, tc.expected)
+		})
+	}
+}
+
 func TestFlagVersion(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
 	out, err := testexec.Func(testCtx, t, main, "-version").CombinedOutput()
 	t.Nil(err)
-	t.Match(out, ver)
+	t.Match(out, getVersion())
 }
 
 func TestFlag(tt *testing.T) {
@@ -111,7 +161,7 @@ func TestFlag(tt *testing.T) {
 			out, err := testexec.Func(testCtx, t, main, flags...).CombinedOutput()
 			if v.want == "" {
 				t.Nil(err)
-				t.Match(out, ver)
+				t.Match(out, getVersion())
 			} else {
 				t.Match(err, "exit status 2")
 				t.Match(out, `invalid value .* `+v.flags[0]+`:.*`+v.want)

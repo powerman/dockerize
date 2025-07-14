@@ -20,6 +20,7 @@ just ask for it in PR comments after your PR has being merged.
 - [Overview](#overview)
 - [Installation](#installation)
   - [Docker Installation](#docker-installation)
+  - [Go Install](#go-install)
 - [Usage](#usage)
   - [Command-line Options](#command-line-options)
   - [Waiting for other dependencies](#waiting-for-other-dependencies)
@@ -137,6 +138,14 @@ there are two recommended approaches:
 
 Both approaches will automatically use correct binary for your platform
 without any manual platform detection.
+
+### Go Install
+
+If you have Go installed, you can install dockerize using `go install`:
+
+```sh
+go install github.com/powerman/dockerize@latest
+```
 
 ## Usage
 
