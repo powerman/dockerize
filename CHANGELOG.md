@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.0] - 2025-07-14
+
+### 🔔 Changed
+
+- Use version from VCS info by @powerman in [61d1e7d]
+
+### 📚 Documentation
+
+- Update by @powerman in [a33d4ad]
+
+[0.23.0]: https://github.com/powerman/dockerize/compare/v0.22.2..v0.23.0
+[a33d4ad]: https://github.com/powerman/dockerize/commit/a33d4ad47d4bd85664d8166aa99a77a26bf6abda
+[61d1e7d]: https://github.com/powerman/dockerize/commit/61d1e7dedb380bc8e51da0985bb3c26648849053
+
 ## [0.22.2] - 2025-07-12
 
 [0.22.2]: https://github.com/powerman/dockerize/compare/v0.22.1..v0.22.2
