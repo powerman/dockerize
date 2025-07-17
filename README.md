@@ -98,14 +98,14 @@ and then install
 (replace `linux-amd64` with your platform from the table above):
 
 ```sh
-curl -sfL https://github.com/powerman/dockerize/releases/download/v0.23.0/dockerize-v0.22.2-linux-amd64 | install /dev/stdin /usr/local/bin/dockerize
+curl -sfL https://github.com/powerman/dockerize/releases/download/v0.23.1/dockerize-v0.22.2-linux-amd64 | install /dev/stdin /usr/local/bin/dockerize
 ```
 
 If `curl` is not available (e.g. busybox base image)
 then you can use `wget`:
 
 ```sh
-wget -O - https://github.com/powerman/dockerize/releases/download/v0.23.0/dockerize-v0.22.2-linux-amd64 | install /dev/stdin /usr/local/bin/dockerize
+wget -O - https://github.com/powerman/dockerize/releases/download/v0.23.1/dockerize-v0.22.2-linux-amd64 | install /dev/stdin /usr/local/bin/dockerize
 ```
 
 ### Docker Installation
@@ -119,7 +119,7 @@ there are two recommended approaches:
    and available for all supported platforms:
 
    ```dockerfile
-   FROM powerman/dockerize:0.23.0
+   FROM powerman/dockerize:0.23.1
    ...
    ENTRYPOINT dockerize ...
    ```
@@ -128,7 +128,7 @@ there are two recommended approaches:
    using multi-stage build:
 
    ```dockerfile
-   FROM powerman/dockerize:0.23.0 AS dockerize
+   FROM powerman/dockerize:0.23.1 AS dockerize
    FROM node:18-slim
    ...
    COPY --from=dockerize /usr/local/bin/dockerize /usr/local/bin/
