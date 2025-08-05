@@ -25,6 +25,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: jdx/mise-action@v2
+      - run: git reset --hard # Work around https://github.com/jdx/mise/discussions/5910.
 
       - uses: powerman/.github/.github/actions/cache-go-and-tools@main
 
