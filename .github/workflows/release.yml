@@ -15,7 +15,7 @@ env:
 
 jobs:
   release-pr:
-    uses: powerman/workflows/.github/workflows/release-pr.yml@v0.4.1
+    uses: powerman/workflows/.github/workflows/release-pr.yml@v0.4.2
     with:
       version_cmd: |
         echo "$RELEASE_PR_VERSION" | grep -q '[+-]' || {
