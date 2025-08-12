@@ -45,7 +45,7 @@ jobs:
           - {goos: darwin, goarch: amd64}
           - {goos: darwin, goarch: arm64}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           token: ${{ env.GITHUB_TOKEN }}
           ref: ${{ needs.release-pr.outputs.version }}
@@ -106,7 +106,7 @@ jobs:
     if: ${{ needs.release-pr.outputs.result == 'released' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           token: ${{ env.GITHUB_TOKEN }}
 
