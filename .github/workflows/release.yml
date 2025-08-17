@@ -41,8 +41,6 @@ jobs:
           - {goos: linux, goarch: arm, goarm: 7}
           - {goos: darwin, goarch: amd64}
           - {goos: darwin, goarch: arm64}
-          - {goos: windows, goarch: amd64}
-          - {goos: windows, goarch: arm64}
     steps:
       - uses: actions/checkout@v5
         with:
