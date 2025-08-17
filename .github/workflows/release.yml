@@ -37,15 +37,14 @@ jobs:
       matrix:
         include:
           - {goos: linux, goarch: amd64}
-          - {goos: linux, goarch: 386}
-          - {goos: linux, goarch: arm, goarm: 6}
-          - {goos: linux, goarch: arm, goarm: 7}
           - {goos: linux, goarch: arm64}
-          - {goos: linux, goarch: ppc64le}
+          - {goos: linux, goarch: arm, goarm: 7}
           - {goos: darwin, goarch: amd64}
           - {goos: darwin, goarch: arm64}
+          - {goos: windows, goarch: amd64}
+          - {goos: windows, goarch: arm64}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           token: ${{ env.GITHUB_TOKEN }}
           ref: ${{ needs.release-pr.outputs.version }}
@@ -63,7 +62,7 @@ jobs:
           pre_command: 'export CGO_ENABLED=0'
           build_flags: '-trimpath' # Reproducible build (also needs -buildid= in ldflags).
           ldflags: '-s -w -buildid='
-          executable_compression: upx
+          executable_compression: ${{ matrix.goos != 'windows' && 'upx' || '' }}
           md5sum: false
           compress_assets: 'OFF'
           release_tag: ${{ needs.release-pr.outputs.version }}
@@ -106,9 +105,10 @@ jobs:
     if: ${{ needs.release-pr.outputs.result == 'released' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           token: ${{ env.GITHUB_TOKEN }}
+          ref: ${{ needs.release-pr.outputs.version }}
 
       - name: Download release assets
         env:
@@ -176,4 +176,4 @@ jobs:
           body: ${{ needs.release-pr.outputs.changelog }}
           draft: false
           prerelease: ${{ needs.release-pr.outputs.prerelease }}
-          make_latest: true
+          make_latest: ${{ needs.release-pr.outputs.prerelease != 'true' }}

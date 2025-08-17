@@ -20,3 +20,6 @@ indent_size = 2
 [{*.go,go.mod,go.work}]
 indent_style = tab
 indent_size = unset
+
+[*.proto]
+indent_size = 2

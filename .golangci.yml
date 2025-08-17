@@ -1,4 +1,4 @@
-# Origin: https://github.com/powerman/golangci-lint-strict version 2.2.1
+# Origin: https://github.com/powerman/golangci-lint-strict version 2.4.0
 version: "2"
 linters:
   default: all
@@ -199,6 +199,9 @@ linters:
           disabled: true # Questionable (short form for similar args and full otherwise may improve readability).
         - name: enforce-slice-style
           disabled: true # Questionable (sometimes we need a nil slice, sometimes not nil).
+        - name: enforce-switch-style
+          arguments:
+            - allowNoDefault
         - name: error-naming
         - name: error-return
         - name: error-strings
@@ -347,7 +350,7 @@ linters:
           - gosec
           - maintidx
           - reassign
-      - source: const # Define global const-vars like: var SomeGlobal = []int{42} // Const.
+      - source: '[Cc]onst' # Define global const-vars like: var SomeGlobal = []int{42} // Const.
         linters:
           - gochecknoglobals
       - path: _test\.go|testing(_.*)?\.go

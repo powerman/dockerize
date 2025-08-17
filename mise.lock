@@ -2,47 +2,58 @@
 version = "1.7.7"
 backend = "aqua:rhysd/actionlint"
 
-[tools.actionlint.checksums]
-"actionlint_1.7.7_linux_amd64.tar.gz" = "sha256:023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757"
-
 [tools.gh]
-version = "2.75.0"
+version = "2.76.2"
 backend = "aqua:cli/cli"
 
-[tools.gh.checksums]
-"gh_2.75.0_linux_amd64.tar.gz" = "sha256:98f910f4cde42a345e241f867f42b2229dda60267d7f87a56d283842519a4cb7"
+[tools.gh.platforms.linux-x64]
+checksum = "sha256:62544b0f3759bbf1155c0ac3d75838b5fe23d66dfb75cf8368f84fff8f82b93e"
+size = 17878637
+url = "https://github.com/cli/cli/releases/download/v2.76.2/gh_2.76.2_linux_amd64.tar.gz"
 
 [tools.git-cliff]
-version = "2.9.1"
+version = "2.10.0"
 backend = "aqua:orhun/git-cliff"
 
-[tools.git-cliff.checksums]
-"git-cliff-2.9.1-x86_64-unknown-linux-musl.tar.gz" = "sha512:edbe32578c2160cdf8e93b7b00eefc11bcbe5cf17ac6fc77e7b2d29a3532bdb7a33825d8c364a1237956c4311b8bab2b9c8c44cdda700e276b7cde32bb791771"
+[tools.git-cliff.platforms.linux-x64]
+checksum = "sha512:1fa2b3409add2e8f576d5a9520ae4e513edf1b8dafb477f65fa65f0a51d2efeb476cb1c86b58f277d5705a9cfc0392dee93f80a253806675379a785410f04038"
+size = 7239814
+url = "https://github.com/orhun/git-cliff/releases/download/v2.10.0/git-cliff-2.10.0-x86_64-unknown-linux-musl.tar.gz"
 
 [tools.go]
-version = "1.24.5"
+version = "1.25.0"
 backend = "core:go"
 
-[tools.go.checksums]
-"go1.24.5.linux-amd64.tar.gz" = "sha256:10ad9e86233e74c0f6590fe5426895de6bf388964210eac34a6d83f38918ecdc"
+[tools.go.platforms.linux-x64]
+checksum = "sha256:2852af0cb20a13139b3448992e69b868e50ed0f8a1e5940ee1de9e19a123b613"
+size = 59659213
+url = "https://dl.google.com/go/go1.25.0.linux-amd64.tar.gz"
+
+[tools."go:github.com/daixiang0/gci"]
+version = "0.13.7"
+backend = "go:github.com/daixiang0/gci"
+
+[tools."go:golang.org/x/tools/cmd/goimports"]
+version = "0.36.0"
+backend = "go:golang.org/x/tools/cmd/goimports"
+
+[tools.gofumpt]
+version = "0.8.0"
+backend = "aqua:mvdan/gofumpt"
 
 [tools.golangci-lint]
-version = "2.2.2"
+version = "2.4.0"
 backend = "aqua:golangci/golangci-lint"
 
-[tools.golangci-lint.checksums]
-"golangci-lint-2.2.2-linux-amd64.tar.gz" = "sha256:c27fbde948a87d326feacd21df2f61a9c54dbd2e3bfa185c0a1cd6917a6f964f"
+[tools.golangci-lint.platforms.linux-x64]
+checksum = "sha256:fae792524c04424c0ac369f5b8076f04b45cf29fc945a370e55d369a8dc11840"
+size = 14126779
+url = "https://github.com/golangci/golangci-lint/releases/download/v2.4.0/golangci-lint-2.4.0-linux-amd64.tar.gz"
+
+[tools.gotestsum]
+version = "1.12.3"
+backend = "aqua:gotestyourself/gotestsum"
 
 [tools.hadolint]
 version = "2.12.0"
 backend = "aqua:hadolint/hadolint"
-
-[tools.hadolint.checksums]
-hadolint-Linux-x86_64 = "sha256:56de6d5e5ec427e17b74fa48d51271c7fc0d61244bf5c90e828aab8362d55010"
-
-[tools."ubi:gotestyourself/gotestsum"]
-version = "1.12.3"
-backend = "ubi:gotestyourself/gotestsum"
-
-[tools."ubi:gotestyourself/gotestsum".checksums]
-gotestsum-linux-x86_64 = "sha256:2e505a9368568aa7422e0a90ef77acc8807c0d3272ab81c7a69e3e8688d1cf65"

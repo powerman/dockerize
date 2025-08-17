@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"net"
 	"os"
 	"strconv"
@@ -15,7 +14,6 @@ import (
 var (
 	testTimeFactor = floatGetenv("GO_TEST_TIME_FACTOR", 1.0)
 	testSecond     = time.Duration(testTimeFactor) * time.Second //nolint:revive // By design.
-	testCtx        = context.Background()
 )
 
 func floatGetenv(name string, def float64) float64 {

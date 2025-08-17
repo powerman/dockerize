@@ -2,7 +2,6 @@ name: Test
 
 on:
   workflow_dispatch:
-  workflow_call:
   push:
     branches: [main]
   pull_request:
@@ -22,14 +21,14 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: jdx/mise-action@v2
       - run: git reset --hard # Work around https://github.com/jdx/mise/discussions/5910.
 
       - uses: powerman/.github/.github/actions/cache-go-and-tools@main
 
-      - run: mise run test
+      - run: mise run ci
 
       - uses: powerman/.github/.github/actions/coverage-badge@main
         if: github.ref_name == 'main'

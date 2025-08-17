@@ -1,10 +1,14 @@
 # dockerize
 
-[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/powerman/dockerize/test.yml?logo=github&label=build)](https://github.com/powerman/dockerize/actions/workflows/test.yml)
+[![License MIT](https://img.shields.io/badge/license-MIT-royalblue.svg)](LICENSE)
+[![Go version](https://img.shields.io/github/go-mod/go-version/powerman/dockerize?color=blue)](https://go.dev/)
+[![Test](https://img.shields.io/github/actions/workflow/status/powerman/dockerize/test.yml?label=test)](https://github.com/powerman/dockerize/actions/workflows/test.yml)
 [![Coverage Status](https://raw.githubusercontent.com/powerman/dockerize/gh-badges/coverage.svg)](https://github.com/powerman/dockerize/actions/workflows/test.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/powerman/dockerize)](https://goreportcard.com/report/github.com/powerman/dockerize)
-[![Docker Automated Build](https://img.shields.io/docker/automated/powerman/dockerize.svg)](https://hub.docker.com/r/powerman/dockerize/tags)
-[![Release](https://img.shields.io/github/v/release/powerman/dockerize.svg)](https://github.com/powerman/dockerize/releases/latest)
+[![Release](https://img.shields.io/github/v/release/powerman/dockerize?color=blue)](https://github.com/powerman/dockerize/releases/latest)
+[![Docker Automated Build](https://img.shields.io/docker/automated/powerman/dockerize.svg?color=blue&logo=docker&logoColor=white)](https://hub.docker.com/r/powerman/dockerize/tags)
+![GitHub Downloads](https://img.shields.io/github/downloads/powerman/dockerize/total?color=blue&logo=github&logoColor=white)
+![Docker Pulls](https://img.shields.io/docker/pulls/powerman/dockerize?color=blue&logo=docker&logoColor=white)
 
 Utility to simplify running applications in docker containers.
 

@@ -6,15 +6,25 @@ lockfile = true     # DO NOT FORGET TO `touch mise.lock` if mise.lock does not e
 [tools]
 go = 'latest'
 
-#--- Test & Lint
+#--- Format
+# Command goimports updates your Go import lines, adding missing ones and removing unreferenced ones.
+"go:golang.org/x/tools/cmd/goimports" = "latest"
+# GCI, a tool that control golang package import order and make it always deterministic.
+"go:github.com/daixiang0/gci" = "latest"
+# A stricter gofmt.
+gofumpt = "latest"
+
+#--- Lint
 # Static checker for GitHub Actions workflow files.
 actionlint = 'latest'
 # Dockerfile linter, validate inline bash, written in Haskell.
 hadolint = "latest"
-# 'go test' runner with output optimized for humans.
-'ubi:gotestyourself/gotestsum' = 'latest'
 # Fast linters runner for Go.
 golangci-lint = 'latest'
+
+#--- Test
+# 'go test' runner with output optimized for humans.
+gotestsum = 'latest'
 
 #--- Release
 # A highly customizable Changelog Generator that follows Conventional Commit specifications.
@@ -27,22 +37,35 @@ gh = 'latest'
 cover = '.cache/cover.out'
 
 
+[tasks.'changelog:skip-commit']
+description = 'Add commit hash to .cliffignore to exclude from CHANGELOG'
+usage = 'arg "<commit>" help="Git revision (e.g. HEAD or a1b2c4d)"'
+run = 'git rev-parse --verify "${usage_commit}" >> .cliffignore'
+
 [tasks.fmt]
-description = 'Format all code'
+description = 'Format all files'
 depends = ['fmt:*']
-
-[tasks.'fmt:go']
-description = 'Format Go code'
-run = 'goimports -w . && gci write -s standard -s default -s localmodule . && gofumpt -w .'
-
-[tasks.test]
-alias = 'default'
-description = 'Run all linters and tests'
-depends = ['lint:*', 'test:*']
 
 [tasks.lint]
 description = 'Run all linters'
 depends = ['lint:*']
+
+[tasks.test]
+description = 'Run all tests'
+depends = ['test:*']
+
+[tasks.default]
+description = 'Run all linters and tests'
+depends = ['lint', 'test']
+
+[tasks.ci]
+description = 'Run all CI tasks'
+depends = ['fmt', 'lint', 'test']
+run = '! git status --porcelain | tee /dev/stderr | grep -q .' # Is working tree clean after fmt?
+
+[tasks.'fmt:go']
+description = 'Format Go code'
+run = 'goimports -w . && gci write -s standard -s default -s localmodule . && gofumpt -w .'
 
 [tasks.'lint:workflows']
 description = 'Lint GitHub Action workflows'
@@ -58,7 +81,7 @@ run = 'golangci-lint run'
 
 [tasks.'test:go']
 description = 'Run Go tests for a whole project'
-wait_for = 'lint:*'                              # Avoid interleaved output with linters.
+wait_for = ['lint:*']                            # Avoid interleaved output with linters.
 run = 'gotestsum -- -race -timeout=60s ./...'
 
 [tasks.'cover:go:total']
@@ -82,11 +105,6 @@ gotestsum -- \
     -coverprofile {{vars.cover}} \
     ./...
 '''
-
-[tasks.'changelog:skip-commit']
-description = 'Add commit hash to .cliffignore to exclude from CHANGELOG'
-usage = 'arg "<commit>" help="Git revision (e.g. HEAD or a1b2c4d)"'
-run = 'git rev-parse --verify "${usage_commit}" >> .cliffignore'
 
 [tasks.cachedir]
 hide = true

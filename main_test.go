@@ -22,7 +22,7 @@ import (
 func TestFlagHelp(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
-	out, err := testexec.Func(testCtx, t, main, "-h").CombinedOutput()
+	out, err := testexec.Func(t.Context(), t, main, "-h").CombinedOutput()
 	t.Nil(err)
 	t.Match(out, "Usage:")
 }
@@ -79,7 +79,7 @@ func TestGetVersionFromBuildInfo(tt *testing.T) {
 func TestFlagVersion(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
-	out, err := testexec.Func(testCtx, t, main, "-version").CombinedOutput()
+	out, err := testexec.Func(t.Context(), t, main, "-version").CombinedOutput()
 	t.Nil(err)
 	t.Match(out, getVersion())
 }
@@ -158,7 +158,7 @@ func TestFlag(tt *testing.T) {
 			t := check.T(tt)
 			t.Parallel()
 			flags := append(v.flags, "-version") //nolint:gocritic // By design.
-			out, err := testexec.Func(testCtx, t, main, flags...).CombinedOutput()
+			out, err := testexec.Func(t.Context(), t, main, flags...).CombinedOutput()
 			if v.want == "" {
 				t.Nil(err)
 				t.Match(out, getVersion())
@@ -173,7 +173,7 @@ func TestFlag(tt *testing.T) {
 func TestFailedINI(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
-	out, err := testexec.Func(testCtx, t, main, "-exit-code", "42", "-env", "nosuch.ini").CombinedOutput()
+	out, err := testexec.Func(t.Context(), t, main, "-exit-code", "42", "-env", "nosuch.ini").CombinedOutput()
 	t.Match(err, "exit status 42")
 	t.Match(out, `nosuch.ini: no such file`)
 }
@@ -181,7 +181,7 @@ func TestFailedINI(tt *testing.T) {
 func TestFailedTemplate(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
-	out, err := testexec.Func(testCtx, t, main, "-template", "nosuch.tmpl").CombinedOutput()
+	out, err := testexec.Func(t.Context(), t, main, "-template", "nosuch.tmpl").CombinedOutput()
 	t.Match(err, "exit status 123")
 	t.Match(out, `nosuch.tmpl: no such file`)
 }
@@ -189,7 +189,7 @@ func TestFailedTemplate(tt *testing.T) {
 func TestFailedStrictTemplate(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
-	out, err := testexec.Func(testCtx, t, main, "-template", "testdata/src1.tmpl", "-template-strict").CombinedOutput()
+	out, err := testexec.Func(t.Context(), t, main, "-template", "testdata/src1.tmpl", "-template-strict").CombinedOutput()
 	t.Match(err, "exit status 123")
 	t.Match(out, `no entry for key "C"`)
 }
@@ -197,7 +197,7 @@ func TestFailedStrictTemplate(tt *testing.T) {
 func TestFailedWait(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
-	out, err := testexec.Func(testCtx, t, main, "-wait", "file:///nosuch", "-timeout", "0.1s").CombinedOutput()
+	out, err := testexec.Func(t.Context(), t, main, "-wait", "file:///nosuch", "-timeout", "0.1s").CombinedOutput()
 	t.Match(err, "exit status 123")
 	t.Match(out, `/nosuch: no such file`)
 }
@@ -205,7 +205,7 @@ func TestFailedWait(tt *testing.T) {
 func TestNothing(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
-	out, err := testexec.Func(testCtx, t, main).CombinedOutput()
+	out, err := testexec.Func(t.Context(), t, main).CombinedOutput()
 	t.Nil(err)
 	t.Match(out, `^$`)
 }
@@ -225,7 +225,7 @@ func TestTail(tt *testing.T) {
 		}
 	}
 
-	cmd := testexec.Func(testCtx, t, main,
+	cmd := testexec.Func(t.Context(), t, main,
 		"-stdout", logn[0], "-stdout", logn[1],
 		"-stderr", logn[2], "-stderr", logn[3],
 	)
@@ -263,15 +263,15 @@ func TestWaitList(tt *testing.T) {
 		unixn = t.TempPath()
 	}
 
-	lnTCP := t.NoErrListen(net.Listen("tcp", "127.0.0.1:0"))
+	lnTCP := t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "tcp", "127.0.0.1:0"))
 	t.Nil(lnTCP.Close())
-	lnTCP4 := t.NoErrListen(net.Listen("tcp4", "127.0.0.1:0"))
+	lnTCP4 := t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "tcp4", "127.0.0.1:0"))
 	t.Nil(lnTCP4.Close())
 	mux := http.NewServeMux()
 	ts := httptest.NewUnstartedServer(mux)
 	defer ts.Close()
 
-	cmd := testexec.Func(testCtx, t, main,
+	cmd := testexec.Func(t.Context(), t, main,
 		"-env", "testdata/env1.ini",
 		"-template", "testdata/src1.tmpl",
 		"-no-overwrite",
@@ -290,11 +290,11 @@ func TestWaitList(tt *testing.T) {
 	time.Sleep(testSecond / 2)
 	t.Nil(t.NoErrFile(os.Create(filen)).Close())
 	defer os.Remove(filen)
-	lnUnix := t.NoErrListen(net.Listen("unix", unixn))
+	lnUnix := t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "unix", unixn))
 	defer lnUnix.Close()
-	lnTCP = t.NoErrListen(net.Listen("tcp", lnTCP.Addr().String()))
+	lnTCP = t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "tcp", lnTCP.Addr().String()))
 	defer lnTCP.Close()
-	lnTCP4 = t.NoErrListen(net.Listen("tcp4", lnTCP4.Addr().String()))
+	lnTCP4 = t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "tcp4", lnTCP4.Addr().String()))
 	defer lnTCP4.Close()
 	var callOK bool
 	mux.HandleFunc("/redirect", func(w http.ResponseWriter, r *http.Request) {
@@ -328,15 +328,15 @@ func TestSmoke1(tt *testing.T) {
 		unixn = t.TempPath()
 	}
 
-	lnTCP := t.NoErrListen(net.Listen("tcp", "127.0.0.1:0"))
+	lnTCP := t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "tcp", "127.0.0.1:0"))
 	t.Nil(lnTCP.Close())
-	lnTCP4 := t.NoErrListen(net.Listen("tcp4", "127.0.0.1:0"))
+	lnTCP4 := t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "tcp4", "127.0.0.1:0"))
 	t.Nil(lnTCP4.Close())
 	mux := http.NewServeMux()
 	ts := httptest.NewUnstartedServer(mux)
 	defer ts.Close()
 
-	cmd := testexec.Func(testCtx, t, main,
+	cmd := testexec.Func(t.Context(), t, main,
 		"-env", "testdata/env1.ini",
 		"-template", "testdata/src1.tmpl",
 		"-no-overwrite",
@@ -357,11 +357,11 @@ func TestSmoke1(tt *testing.T) {
 	time.Sleep(testSecond / 2)
 	t.Nil(t.NoErrFile(os.Create(filen)).Close())
 	defer os.Remove(filen)
-	lnUnix := t.NoErrListen(net.Listen("unix", unixn))
+	lnUnix := t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "unix", unixn))
 	defer lnUnix.Close()
-	lnTCP = t.NoErrListen(net.Listen("tcp", lnTCP.Addr().String()))
+	lnTCP = t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "tcp", lnTCP.Addr().String()))
 	defer lnTCP.Close()
-	lnTCP4 = t.NoErrListen(net.Listen("tcp4", lnTCP4.Addr().String()))
+	lnTCP4 = t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "tcp4", lnTCP4.Addr().String()))
 	defer lnTCP4.Close()
 	var callOK bool
 	mux.HandleFunc("/redirect", func(w http.ResponseWriter, r *http.Request) {
@@ -393,7 +393,7 @@ func TestSmoke2(tt *testing.T) {
 	ts := httptest.NewUnstartedServer(mux)
 	defer ts.Close()
 
-	cmd := testexec.Func(testCtx, t, main,
+	cmd := testexec.Func(t.Context(), t, main,
 		"-env", "https://"+ts.Listener.Addr().String()+"/ini",
 		"-multiline",
 		"-env-section", "Vars",
