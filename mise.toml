@@ -61,7 +61,9 @@ depends = ['lint', 'test']
 [tasks.ci]
 description = 'Run all CI tasks'
 depends = ['fmt', 'lint', 'test']
-run = '! git status --porcelain | tee /dev/stderr | grep -q .' # Is working tree clean after fmt?
+# Is working tree clean after fmt?
+run = '! git status --porcelain | tee /dev/stderr | grep -q .'
+run_windows = 'powershell -c "$status = git status --porcelain; if ($status) { $status; exit 1 }"'
 
 [tasks.'fmt:go']
 description = 'Format Go code'
