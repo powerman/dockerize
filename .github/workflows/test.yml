@@ -16,8 +16,15 @@ permissions:
   contents: write # To update gh-badges branch.
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  # Testing on available native platforms.
+  test-native:
+    strategy:
+      matrix:
+        include:
+          - {os: ubuntu-latest} # Linux AMD64
+          - {os: macos-13} # macOS Intel - too costly for private repo
+          - {os: macos-latest} # macOS ARM64 - too costly for private repo
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
 
     steps:
@@ -27,10 +34,63 @@ jobs:
       - run: git reset --hard # Work around https://github.com/jdx/mise/discussions/5910.
 
       - uses: powerman/.github/.github/actions/cache-go-and-tools@main
+        with:
+          key: native-${{ matrix.os }}
 
       - run: mise run ci
+        if: matrix.os == 'ubuntu-latest'
+      - run: mise run test
+        if: matrix.os != 'ubuntu-latest'
 
       - uses: powerman/.github/.github/actions/coverage-badge@main
-        if: github.ref_name == 'main'
+        if: github.ref_name == 'main' && matrix.os == 'ubuntu-latest'
         with:
           total_cmd: "mise run -q cover:go:total | tail -n 1 | sed -e 's/.*)//'"
+
+  # Testing on available docker QEMU platforms (Linux only).
+  test-qemu:
+    strategy:
+      matrix:
+        include:
+          - {arch: arm64}
+          - {arch: arm, v: v7}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: ${{ matrix.arch }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - uses: powerman/.github/.github/actions/cache-go-and-tools@main
+        with:
+          key: qemu-${{ matrix.arch }}${{ matrix.v && format('-{0}', matrix.v) || '' }}
+
+      - name: Run tests
+        env:
+          PLATFORM: linux/${{ matrix.arch }}${{ matrix.v && format('/{0}', matrix.v) || '' }}
+        run: |
+          mkdir -p ~/go ~/.cache/go-build
+          V=$(awk '$1=="toolchain"{v=$2}$1=="go"&&!v{v=$2}END{sub(/^go/,"",v);print v}' go.mod)
+          docker run -i --rm --platform "$PLATFORM" \
+            -w /workspace \
+            -v "$PWD:/workspace" \
+            -v "$HOME/.cache/go-build:/root/.cache/go-build" \
+            -v "$HOME/go:/go" \
+            "golang:$V" go test ./...
+
+  # Aggregate job for branch protection.
+  test:
+    needs: [test-native, test-qemu]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Fail if any dependency failed, cancelled or skipped
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
+        run: exit 1
