@@ -5,7 +5,7 @@ go 1.25
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/jwilder/gojq v0.0.0-20161018055142-c550732d4a52
-	github.com/powerman/check v1.8.0
+	github.com/powerman/check v1.9.0
 	github.com/powerman/gotest v0.3.0
 	github.com/powerman/tail v0.1.0
 	github.com/rabbitmq/amqp091-go v1.10.0
@@ -33,8 +33,8 @@ require (
 	github.com/smarty/assertions v1.16.0 // indirect
 	github.com/spf13/cast v1.9.2 // indirect
 	golang.org/x/crypto v0.40.0 // indirect
-	golang.org/x/sys v0.34.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
-	google.golang.org/grpc v1.73.0 // indirect
-	google.golang.org/protobuf v1.36.6 // indirect
+	golang.org/x/sys v0.35.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250811230008-5f3141c8851a // indirect
+	google.golang.org/grpc v1.74.2 // indirect
+	google.golang.org/protobuf v1.36.7 // indirect
 )
