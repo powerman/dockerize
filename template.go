@@ -12,7 +12,7 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
-	"github.com/jwilder/gojq"
+	"github.com/elgs/gojq"
 )
 
 var errNotADirectory = errors.New("not a directory")

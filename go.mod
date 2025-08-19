@@ -4,7 +4,7 @@ go 1.25
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/jwilder/gojq v0.0.0-20161018055142-c550732d4a52
+	github.com/elgs/gojq v0.0.0-20230628214826-df5c4045598e
 	github.com/powerman/check v1.9.0
 	github.com/powerman/gotest v0.3.0
 	github.com/powerman/tail v0.1.0
@@ -18,7 +18,7 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/elgs/gosplitargs v0.0.0-20161028071935-a491c5eeb3c8 // indirect
+	github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
