@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"runtime"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -157,6 +158,14 @@ func TestFlag(tt *testing.T) {
 		t.Run(strings.Join(v.flags, " "), func(tt *testing.T) {
 			t := check.T(tt)
 			t.Parallel()
+			// Skip tests with invalid Windows filenames
+			if runtime.GOOS == "windows" {
+				for _, flag := range v.flags {
+					if flag == ":" || flag == " : " || flag == " name : " || flag == " : value " {
+						t.Skip("Skipping test with Windows-incompatible filename")
+					}
+				}
+			}
 			flags := append(v.flags, "-version") //nolint:gocritic // By design.
 			out, err := testexec.Func(t.Context(), t, main, flags...).CombinedOutput()
 			if v.want == "" {
@@ -175,7 +184,7 @@ func TestFailedINI(tt *testing.T) {
 	t.Parallel()
 	out, err := testexec.Func(t.Context(), t, main, "-exit-code", "42", "-env", "nosuch.ini").CombinedOutput()
 	t.Match(err, "exit status 42")
-	t.Match(out, `nosuch.ini: no such file`)
+	t.Match(out, `nosuch.ini:.*(no such file|cannot find the file)`)
 }
 
 func TestFailedTemplate(tt *testing.T) {
@@ -183,7 +192,7 @@ func TestFailedTemplate(tt *testing.T) {
 	t.Parallel()
 	out, err := testexec.Func(t.Context(), t, main, "-template", "nosuch.tmpl").CombinedOutput()
 	t.Match(err, "exit status 123")
-	t.Match(out, `nosuch.tmpl: no such file`)
+	t.Match(out, `nosuch.tmpl:.*(no such file|cannot find the file)`)
 }
 
 func TestFailedStrictTemplate(tt *testing.T) {
@@ -197,9 +206,9 @@ func TestFailedStrictTemplate(tt *testing.T) {
 func TestFailedWait(tt *testing.T) {
 	t := check.T(tt)
 	t.Parallel()
-	out, err := testexec.Func(t.Context(), t, main, "-wait", "file:///nosuch", "-timeout", "0.1s").CombinedOutput()
+	out, err := testexec.Func(t.Context(), t, main, "-wait", fileURL("/nosuch"), "-timeout", "0.1s").CombinedOutput()
 	t.Match(err, "exit status 123")
-	t.Match(out, `/nosuch: no such file`)
+	t.Match(out, `/nosuch:.*(no such file|cannot find the file)`)
 }
 
 func TestNothing(tt *testing.T) {
@@ -213,6 +222,10 @@ func TestNothing(tt *testing.T) {
 func TestTail(tt *testing.T) {
 	t := checkT(tt)
 	t.Parallel()
+
+	if runtime.GOOS == "windows" {
+		t.Skip("TestTail uses Unix-specific process signaling not supported on Windows")
+	}
 
 	var logf [4]*os.File
 	var logn [4]string
@@ -271,18 +284,26 @@ func TestWaitList(tt *testing.T) {
 	ts := httptest.NewUnstartedServer(mux)
 	defer ts.Close()
 
-	cmd := testexec.Func(t.Context(), t, main,
+	var waitListStr string
+	if hasUnixSocketSupport() {
+		waitListStr = "tcp://" + lnTCP.Addr().String() + " tcp4://" + lnTCP4.Addr().String() + " unix://" + unixn
+	} else {
+		waitListStr = "tcp://" + lnTCP.Addr().String() + " tcp4://" + lnTCP4.Addr().String()
+	}
+	args := []string{
 		"-env", "testdata/env1.ini",
 		"-template", "testdata/src1.tmpl",
 		"-no-overwrite",
-		"-wait", "file://"+filen,
-		"-wait-list", "tcp://"+lnTCP.Addr().String()+" tcp4://"+lnTCP4.Addr().String()+" unix://"+unixn,
-		"-wait", "http://"+ts.Listener.Addr().String()+"/redirect",
+		"-wait", fileURL(filen),
+		"-wait-list", waitListStr,
+		"-wait", "http://" + ts.Listener.Addr().String() + "/redirect",
 		"-timeout", testSecond.String(),
 		"-wait-retry-interval", (testSecond / 10).String(),
 		"-stderr", logn,
-		"sh", "-c", "sleep 1; exit 42",
-	)
+	}
+	shellCmd := getTestShellCmd()
+	args = append(args, shellCmd...)
+	cmd := testexec.Func(t.Context(), t, main, args...)
 	cmd.Stdout = &bytes.Buffer{}
 	cmd.Stderr = &bytes.Buffer{}
 	t.Nil(cmd.Start())
@@ -290,8 +311,10 @@ func TestWaitList(tt *testing.T) {
 	time.Sleep(testSecond / 2)
 	t.Nil(t.NoErrFile(os.Create(filen)).Close())
 	defer os.Remove(filen)
-	lnUnix := t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "unix", unixn))
-	defer lnUnix.Close()
+	if hasUnixSocketSupport() {
+		lnUnix := t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "unix", unixn))
+		defer lnUnix.Close()
+	}
 	lnTCP = t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "tcp", lnTCP.Addr().String()))
 	defer lnTCP.Close()
 	lnTCP4 = t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "tcp4", lnTCP4.Addr().String()))
@@ -308,7 +331,7 @@ func TestWaitList(tt *testing.T) {
 	t.Match(cmd.Wait(), `exit status 42`)
 	stdout := cmd.Stdout.(*bytes.Buffer).String()
 	stderr := cmd.Stderr.(*bytes.Buffer).String()
-	t.Equal(stdout, "A=10 B=20 C=31\n")
+	t.Equal(strings.TrimSpace(stdout), "A=10 B=20 C=31")
 	t.Contains(stderr, "Ready:")
 
 	t.True(callOK)
@@ -336,20 +359,26 @@ func TestSmoke1(tt *testing.T) {
 	ts := httptest.NewUnstartedServer(mux)
 	defer ts.Close()
 
-	cmd := testexec.Func(t.Context(), t, main,
+	args := []string{
 		"-env", "testdata/env1.ini",
 		"-template", "testdata/src1.tmpl",
 		"-no-overwrite",
-		"-wait", "file://"+filen,
-		"-wait", "tcp://"+lnTCP.Addr().String(),
-		"-wait", "tcp4://"+lnTCP4.Addr().String(),
-		"-wait", "unix://"+unixn,
+		"-wait", fileURL(filen),
+		"-wait", "tcp://" + lnTCP.Addr().String(),
+		"-wait", "tcp4://" + lnTCP4.Addr().String(),
+	}
+	if hasUnixSocketSupport() {
+		args = append(args, "-wait", "unix://"+unixn)
+	}
+	args = append(args,
 		"-wait", "http://"+ts.Listener.Addr().String()+"/redirect",
 		"-timeout", testSecond.String(),
 		"-wait-retry-interval", (testSecond / 10).String(),
 		"-stderr", logn,
-		"sh", "-c", "sleep 1; exit 42",
 	)
+	shellCmd := getTestShellCmd()
+	args = append(args, shellCmd...)
+	cmd := testexec.Func(t.Context(), t, main, args...)
 	cmd.Stdout = &bytes.Buffer{}
 	cmd.Stderr = &bytes.Buffer{}
 	t.Nil(cmd.Start())
@@ -357,8 +386,10 @@ func TestSmoke1(tt *testing.T) {
 	time.Sleep(testSecond / 2)
 	t.Nil(t.NoErrFile(os.Create(filen)).Close())
 	defer os.Remove(filen)
-	lnUnix := t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "unix", unixn))
-	defer lnUnix.Close()
+	if hasUnixSocketSupport() {
+		lnUnix := t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "unix", unixn))
+		defer lnUnix.Close()
+	}
 	lnTCP = t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "tcp", lnTCP.Addr().String()))
 	defer lnTCP.Close()
 	lnTCP4 = t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "tcp4", lnTCP4.Addr().String()))
@@ -375,7 +406,7 @@ func TestSmoke1(tt *testing.T) {
 	t.Match(cmd.Wait(), `exit status 42`)
 	stdout := cmd.Stdout.(*bytes.Buffer).String()
 	stderr := cmd.Stderr.(*bytes.Buffer).String()
-	t.Equal(stdout, "A=10 B=20 C=31\n")
+	t.Equal(strings.TrimSpace(stdout), "A=10 B=20 C=31")
 	t.Contains(stderr, "Ready:")
 
 	t.True(callOK)
@@ -384,6 +415,10 @@ func TestSmoke1(tt *testing.T) {
 func TestSmoke2(tt *testing.T) {
 	t := checkT(tt)
 	t.Parallel()
+
+	if runtime.GOOS == "windows" {
+		t.Skip("TestSmoke2 uses Unix-specific features not supported on Windows")
+	}
 
 	dstDir := t.TempPath()
 	if strings.Contains(dstDir, "/gotest") { // protect in case of bug in TempPath
@@ -413,8 +448,8 @@ func TestSmoke2(tt *testing.T) {
 		"sh", "-c", `
 			exec </dev/null 2>/dev/null
 			echo $$
-			trap ''                          HUP INT QUIT ABRT ALRM TERM
-			trap 'echo USR; exec >/dev/null' USR1 USR2
+			trap ''                          HUP QUIT ABRT ALRM TERM
+			trap 'echo INT; exec >/dev/null' INT
 			sleep 10 >/dev/null &
 			while ! wait; do :; done
 			exit 42
@@ -444,7 +479,7 @@ func TestSmoke2(tt *testing.T) {
 	ts.StartTLS()
 
 	time.Sleep(testSecond)
-	t.Nil(cmd.Process.Signal(syscall.SIGUSR1))
+	t.Nil(cmd.Process.Signal(syscall.SIGINT))
 	t.Nil(cmd.Process.Signal(syscall.SIGTERM))
 	time.Sleep(testSecond)
 	t.Nil(cmd.Process.Kill())
@@ -466,7 +501,7 @@ func TestSmoke2(tt *testing.T) {
 	}
 	t.Nil(child.Release())
 
-	t.Equal(parts[1], "USR\n")
+	t.Equal(parts[1], "INT\n")
 
 	t.True(callINI)
 	t.True(callRedirect)

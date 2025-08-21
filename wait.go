@@ -73,8 +73,9 @@ func waitForURLs(cfg waitConfig, urls []*url.URL) error {
 }
 
 func waitForPath(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- *url.URL) {
+	filePath := getFilePathFromURL(u)
 	for {
-		_, err := os.Stat(u.Path)
+		_, err := os.Stat(filePath)
 		if err == nil {
 			break
 		}

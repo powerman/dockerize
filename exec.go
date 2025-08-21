@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
-	"syscall"
 )
 
 func runCmd(name string, args ...string) (int, error) {
@@ -22,16 +21,7 @@ func runCmd(name string, args ...string) (int, error) {
 
 	const sigcSize = 8
 	sigc := make(chan os.Signal, sigcSize)
-	signal.Notify(sigc,
-		syscall.SIGHUP,
-		syscall.SIGINT,
-		syscall.SIGQUIT,
-		syscall.SIGABRT,
-		syscall.SIGUSR1,
-		syscall.SIGUSR2,
-		syscall.SIGALRM,
-		syscall.SIGTERM,
-	)
+	signal.Notify(sigc, notifySignals...)
 	go func() {
 		for sig := range sigc {
 			// This will duplicate some signals if they're
@@ -46,5 +36,8 @@ func runCmd(name string, args ...string) (int, error) {
 	signal.Stop(sigc)
 	close(sigc)
 
-	return cmd.ProcessState.Sys().(syscall.WaitStatus).ExitStatus(), nil
+	if cmd.ProcessState != nil {
+		return getExitStatus(cmd.ProcessState), nil
+	}
+	return 0, nil
 }

@@ -31,7 +31,7 @@ func (f *stringsFlag) String() string {
 type urlsFlag []*url.URL
 
 func (f *urlsFlag) Set(value string) error {
-	u, err := url.Parse(value)
+	u, err := parseFileURL(value)
 	if err != nil {
 		return err
 	}
