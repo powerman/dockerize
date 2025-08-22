@@ -50,8 +50,8 @@ github.com/powerman/deepequal v0.1.0 h1:sVwtyTsBuYIvdbLR1O2wzRY63YgPqdGZmk/o80l+
 github.com/powerman/deepequal v0.1.0/go.mod h1:3k7aG/slufBhUANdN67o/UPg8i5YaiJ6FmibWX0cn04=
 github.com/powerman/gotest v0.3.0 h1:3HdlkyT8XoTIw220BvCP+yy7OhB1AxZ11Qfzn00l3YQ=
 github.com/powerman/gotest v0.3.0/go.mod h1:vR8gUJorGFev+TucLyhbbx566IelaJFxCSAcDYD4fdY=
-github.com/powerman/tail v0.1.0 h1:EznVt+S27fLfHlf8oFV55azSWx24i7inhTvVT+z4dtM=
-github.com/powerman/tail v0.1.0/go.mod h1:1UwnzK89DQ07dUa3H2MY8SoOhY5krVwHqkxRkuSZBlY=
+github.com/powerman/tail v0.2.4 h1:JA9KhYd5j581kIoOXMiq8ydGjWAhacCgB8LyOsX/jsk=
+github.com/powerman/tail v0.2.4/go.mod h1:pXbUTwK0c03DJo/wxRwUXqRd2wKBDVN06mRHYjdegYQ=
 github.com/rabbitmq/amqp091-go v1.10.0 h1:STpn5XsHlHGcecLmMFCtg7mqq0RnD+zFr4uzukfVhBw=
 github.com/rabbitmq/amqp091-go v1.10.0/go.mod h1:Hy4jKW5kQART1u+JkDTF9YYOQUHXqMuhrgxOEeS7G4o=
 github.com/rogpeppe/go-internal v1.12.0 h1:exVL4IDcn6na9z1rAb56Vxr+CgyK3nn3O+epU5NdKM8=
