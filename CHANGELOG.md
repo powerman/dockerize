@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.0] - 2025-08-24
+
+### 🚀 Added
+
+- Add Windows compatibility by @powerman in [#360]
+
+### 📦️ Dependencies
+
+- **(deps)** Upgrade by @powerman in [#357]
+- **(deps)** Upgrade by @powerman in [0ddb7a7]
+
+[0.24.0]: https://github.com/powerman/dockerize/compare/v0.23.2..v0.24.0
+[#357]: https://github.com/powerman/dockerize/pull/357
+[0ddb7a7]: https://github.com/powerman/dockerize/commit/0ddb7a7308532649691acc26a9b24051780fc9d9
+[#360]: https://github.com/powerman/dockerize/pull/360
+
 ## [0.23.2] - 2025-08-17
 
 [0.23.2]: https://github.com/powerman/dockerize/compare/v0.23.1..v0.23.2
