@@ -73,6 +73,10 @@ run = 'hadolint Dockerfile'
 description = 'Lint Go files'
 run = 'golangci-lint run'
 
+[tasks.'lint:go-compile-windows']
+description = 'Check Go test compiles on Windows'
+run = 'GOOS=windows go test -c -o /dev/null ./...'
+
 [tasks.'test:go']
 description = 'Run Go tests for a whole project'
 wait_for = ['lint:*']                            # Avoid interleaved output with linters.

@@ -7,12 +7,10 @@ import (
 	"log"
 	urlpkg "net/url"
 	"os"
-	"os/exec"
 	"path"
 	"runtime"
 	"runtime/debug"
 	"strings"
-	"syscall"
 	"time"
 )
 
@@ -105,7 +103,7 @@ func getVersion() string {
 	return getVersionFromBuildInfo(buildInfo)
 }
 
-func main() { //nolint:gocyclo,gocognit,funlen,maintidx // TODO Refactor?
+func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 	if !flag.Parsed() { // flags may be already parsed by tests
 		flag.Parse()
 	}
@@ -117,10 +115,9 @@ func main() { //nolint:gocyclo,gocognit,funlen,maintidx // TODO Refactor?
 		iniURL = true
 		iniHTTP = u.Scheme == schemeHTTP || u.Scheme == schemeHTTPS
 	}
-	for _, tmplPath := range cfg.templatePaths {
-		const maxParts = 2
-		parts := strings.Split(tmplPath, ":")
-		templatePathBad = templatePathBad || tmplPath == "" || parts[0] == "" || len(parts) > maxParts
+	for _, tmplPaths := range cfg.templatePaths {
+		src, _ := parseTemplatePaths(tmplPaths)
+		templatePathBad = templatePathBad || src == ""
 	}
 
 	waitListParts := strings.Fields(cfg.waitList)
@@ -218,10 +215,7 @@ func main() { //nolint:gocyclo,gocognit,funlen,maintidx // TODO Refactor?
 
 	switch {
 	case cfg.exec:
-		arg0, err := exec.LookPath(flag.Arg(0))
-		if err == nil {
-			err = syscall.Exec(arg0, flag.Args(), os.Environ()) //nolint:gosec // False positive.
-		}
+		err := osExecCmd(flag.Args(), os.Environ())
 		if err != nil {
 			fatalf("Failed to run command: %s.", err)
 		}

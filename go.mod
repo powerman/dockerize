@@ -6,8 +6,10 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/elgs/gojq v0.0.0-20230628214826-df5c4045598e
 	github.com/powerman/check v1.9.0
+	github.com/powerman/fileuri v0.2.0
 	github.com/powerman/gotest v0.3.0
 	github.com/powerman/tail v0.2.4
+	github.com/powerman/winfilepath v0.1.0
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/smartystreets/goconvey v1.8.1
 	gopkg.in/ini.v1 v1.67.0

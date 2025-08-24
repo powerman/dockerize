@@ -14,6 +14,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/powerman/fileuri"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -44,7 +45,11 @@ func waitForURLs(cfg waitConfig, urls []*url.URL) error {
 			waiting[u] = true
 			switch u.Scheme {
 			case schemeFile:
-				go waitForPath(ctx, cfg, u, readyc)
+				path, err := fileuri.ToFilePath(u)
+				if err != nil {
+					return err
+				}
+				go waitForPath(ctx, cfg, u, path, readyc)
 			case schemeTCP, schemeTCP4, schemeTCP6, schemeUnix:
 				go waitForSocket(ctx, cfg, u, readyc)
 			case schemeHTTP, schemeHTTPS:
@@ -72,9 +77,9 @@ func waitForURLs(cfg waitConfig, urls []*url.URL) error {
 	return nil
 }
 
-func waitForPath(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- *url.URL) {
+func waitForPath(ctx context.Context, cfg waitConfig, u *url.URL, path string, readyc chan<- *url.URL) {
 	for {
-		_, err := os.Stat(u.Path)
+		_, err := os.Stat(path)
 		if err == nil {
 			break
 		}

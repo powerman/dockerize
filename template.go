@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"syscall"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
@@ -61,7 +60,7 @@ func readFile(fileName string) (string, error) {
 
 func processTemplatePaths(cfg templateConfig, paths []string) error {
 	for _, srcdst := range paths {
-		src, dst, _ := strings.Cut(srcdst, ":")
+		src, dst := parseTemplatePaths(srcdst)
 		fi, err := os.Stat(src)
 		if err == nil {
 			if fi.IsDir() {
@@ -145,7 +144,6 @@ func createDestFile(src, dst string, noOverwrite bool) (*os.File, error) { //nol
 	if err != nil {
 		return nil, err
 	}
-	likeSys, ok := like.Sys().(*syscall.Stat_t)
 
 	openFlags := os.O_RDWR | os.O_CREATE | os.O_TRUNC
 	if noOverwrite {
@@ -156,12 +154,11 @@ func createDestFile(src, dst string, noOverwrite bool) (*os.File, error) { //nol
 	if err != nil {
 		return nil, err
 	}
-	if ok {
-		err = file.Chown(int(likeSys.Uid), int(likeSys.Gid))
-		if err != nil && !os.IsPermission(err) {
-			warnIfFail(file.Close)
-			return nil, err
-		}
+
+	err = osChownFrom(dst, like)
+	if err != nil {
+		warnIfFail(file.Close)
+		return nil, err
 	}
 	return file, nil
 }
@@ -174,7 +171,6 @@ func ensureDestDir(src, dst string) error {
 	if !like.IsDir() {
 		return fmt.Errorf("%w: %s", errNotADirectory, src)
 	}
-	likeSys, ok := like.Sys().(*syscall.Stat_t)
 
 	fi, err := os.Stat(dst)
 	switch {
@@ -187,11 +183,8 @@ func ensureDestDir(src, dst string) error {
 	}
 
 	err = os.Mkdir(dst, like.Mode())
-	if err == nil && ok {
-		err = os.Chown(dst, int(likeSys.Uid), int(likeSys.Gid))
-		if os.IsPermission(err) {
-			err = nil
-		}
+	if err != nil {
+		return err
 	}
-	return err
+	return osChownFrom(dst, like)
 }
