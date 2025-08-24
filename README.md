@@ -7,12 +7,13 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/powerman/dockerize)](https://goreportcard.com/report/github.com/powerman/dockerize)
 [![Release](https://img.shields.io/github/v/release/powerman/dockerize?color=blue)](https://github.com/powerman/dockerize/releases/latest)
 [![Docker Automated Build](https://img.shields.io/docker/automated/powerman/dockerize.svg?color=blue&logo=docker&logoColor=white)](https://hub.docker.com/r/powerman/dockerize/tags)
-![GitHub Downloads](https://img.shields.io/github/downloads/powerman/dockerize/total?color=blue&logo=github&logoColor=white)
-![Docker Pulls](https://img.shields.io/docker/pulls/powerman/dockerize?color=blue&logo=docker&logoColor=white)
 
 ![Linux | amd64 arm64 armv7 ppc64le s390x riscv64](https://img.shields.io/badge/Linux-amd64%20arm64%20armv7%20ppc64le%20s390x%20riscv64-royalblue)
 ![macOS | amd64 arm64](https://img.shields.io/badge/macOS-amd64%20arm64-royalblue)
 ![Windows | amd64 arm64](https://img.shields.io/badge/Windows-amd64%20arm64-royalblue)
+
+![GitHub Downloads](https://img.shields.io/github/downloads/powerman/dockerize/total?color=blue&logo=github&logoColor=white)
+![Docker Pulls](https://img.shields.io/docker/pulls/powerman/dockerize?color=blue&logo=docker&logoColor=white)
 
 Utility to simplify running applications in docker containers.
 
