@@ -7,6 +7,6 @@ import (
 	"syscall"
 )
 
-func setSysProcAttr(cmd *exec.Cmd) {
+func osSetSysProcAttr(cmd *exec.Cmd) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{Pdeathsig: syscall.SIGKILL}
 }

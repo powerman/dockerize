@@ -3,17 +3,27 @@ package main
 import (
 	"net"
 	"os"
+	"runtime"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/powerman/check"
+	"github.com/powerman/fileuri"
 	_ "github.com/smartystreets/goconvey/convey"
 )
 
 var (
 	testTimeFactor = floatGetenv("GO_TEST_TIME_FACTOR", 1.0)
 	testSecond     = time.Duration(testTimeFactor) * time.Second //nolint:revive // By design.
+
+	isWindows = runtime.GOOS == "windows"
+	shellCmd  = func() []string {
+		if isWindows {
+			return []string{"powershell", "-NoProfile", "-Command", "Start-Sleep -Seconds 1; exit 42"}
+		}
+		return []string{"sh", "-c", "sleep 1; exit 42"}
+	}()
 )
 
 func floatGetenv(name string, def float64) float64 {
@@ -35,6 +45,13 @@ func (c *checkC) NoErrListen(v net.Listener, err error) net.Listener {
 	c.Helper()
 	c.Must(c.Nil(err))
 	return v
+}
+
+func (c *checkC) FileURI(path string) string {
+	c.Helper()
+	u, err := fileuri.FromFilePath(path)
+	c.Must(c.Nil(err))
+	return u.String()
 }
 
 func (c *checkC) TempPath() string {
