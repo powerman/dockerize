@@ -12,7 +12,7 @@ require (
 	github.com/powerman/winfilepath v0.1.0
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/smartystreets/goconvey v1.8.1
-	gopkg.in/ini.v1 v1.67.0
+	gopkg.in/ini.v1 v1.67.1
 )
 
 require (
