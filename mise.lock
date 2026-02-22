@@ -1,59 +1,70 @@
-[tools.actionlint]
-version = "1.7.7"
+[[tools.actionlint]]
+version = "1.7.11"
 backend = "aqua:rhysd/actionlint"
+"platforms.linux-x64" = { checksum = "sha256:900919a84f2229bac68ca9cd4103ea297abc35e9689ebb842c6e34a3d1b01b0a", url = "https://github.com/rhysd/actionlint/releases/download/v1.7.11/actionlint_1.7.11_linux_amd64.tar.gz"}
 
-[tools.gh]
-version = "2.76.2"
+[[tools.gh]]
+version = "2.82.0"
 backend = "aqua:cli/cli"
+"platforms.linux-arm64" = { checksum = "sha256:b67206677153562deaa45382227123b1313bd0b304ac8e3239923dd5a671d4c1", url = "https://github.com/cli/cli/releases/download/v2.82.0/gh_2.82.0_linux_arm64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:aba32dd552112101464941c7b5ee5f097896e1e234eb99581ff1652f44c4009a", url = "https://github.com/cli/cli/releases/download/v2.82.0/gh_2.82.0_linux_amd64.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:c52d24f92858743e7142c0ddbea7ba3679e116062a48f364be8fe6aa6b24e42c", url = "https://github.com/cli/cli/releases/download/v2.82.0/gh_2.82.0_macOS_arm64.zip"}
+"platforms.macos-x64" = { checksum = "sha256:c5dd3ebea62a7363226026acf0493eda93a66273f8fbf24014a73fb33330ab14", url = "https://github.com/cli/cli/releases/download/v2.82.0/gh_2.82.0_macOS_amd64.zip"}
+"platforms.windows-x64" = { checksum = "sha256:8cc6f294d0a0b956505695143931e152b5534f1b878f916a72512a051528f9a9", url = "https://github.com/cli/cli/releases/download/v2.82.0/gh_2.82.0_windows_amd64.zip"}
 
-[tools.gh.platforms.linux-x64]
-checksum = "sha256:62544b0f3759bbf1155c0ac3d75838b5fe23d66dfb75cf8368f84fff8f82b93e"
-size = 17878637
-url = "https://github.com/cli/cli/releases/download/v2.76.2/gh_2.76.2_linux_amd64.tar.gz"
-
-[tools.git-cliff]
-version = "2.10.0"
+[[tools.git-cliff]]
+version = "2.10.1"
 backend = "aqua:orhun/git-cliff"
+"platforms.linux-arm64" = { checksum = "sha256:218a25c728df98337541013218660eeb571a464daea7612b35bb4e97b22b97db", url = "https://github.com/orhun/git-cliff/releases/download/v2.10.1/git-cliff-2.10.1-aarch64-unknown-linux-musl.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:55ed8495e8c18e51e42182e17772013d6d2a7156a462d6b30f1adf17e54b465e", url = "https://github.com/orhun/git-cliff/releases/download/v2.10.1/git-cliff-2.10.1-x86_64-unknown-linux-musl.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:98cf636ca6a66d84e0ba6202a990028ac45cf0dde331d18169397ae59cc6e41b", url = "https://github.com/orhun/git-cliff/releases/download/v2.10.1/git-cliff-2.10.1-aarch64-apple-darwin.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:c3111dddaf866a986085f22ff22fa3003645fc69a3b9302c4e1352c4676c398a", url = "https://github.com/orhun/git-cliff/releases/download/v2.10.1/git-cliff-2.10.1-x86_64-apple-darwin.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:073c8027da2e055ec83c3609c4195284bd10b2771fcbd806ff0f94e48c310c77", url = "https://github.com/orhun/git-cliff/releases/download/v2.10.1/git-cliff-2.10.1-x86_64-pc-windows-msvc.zip"}
 
-[tools.git-cliff.platforms.linux-x64]
-checksum = "sha512:1fa2b3409add2e8f576d5a9520ae4e513edf1b8dafb477f65fa65f0a51d2efeb476cb1c86b58f277d5705a9cfc0392dee93f80a253806675379a785410f04038"
-size = 7239814
-url = "https://github.com/orhun/git-cliff/releases/download/v2.10.0/git-cliff-2.10.0-x86_64-unknown-linux-musl.tar.gz"
-
-[tools.go]
-version = "1.25.0"
+[[tools.go]]
+version = "1.25.1"
 backend = "core:go"
+"platforms.linux-arm64" = { checksum = "sha256:65a3e34fb2126f55b34e1edfc709121660e1be2dee6bdf405fc399a63a95a87d", url = "https://dl.google.com/go/go1.25.1.linux-arm64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:7716a0d940a0f6ae8e1f3b3f4f36299dc53e31b16840dbd171254312c41ca12e", url = "https://dl.google.com/go/go1.25.1.linux-amd64.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:68deebb214f39d542e518ebb0598a406ab1b5a22bba8ec9ade9f55fb4dd94a6c", url = "https://dl.google.com/go/go1.25.1.darwin-arm64.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:1d622468f767a1b9fe1e1e67bd6ce6744d04e0c68712adc689748bbeccb126bb", url = "https://dl.google.com/go/go1.25.1.darwin-amd64.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:4a974de310e7ee1d523d2fcedb114ba5fa75408c98eb3652023e55ccf3fa7cab", url = "https://dl.google.com/go/go1.25.1.windows-amd64.zip"}
 
-[tools.go.platforms.linux-x64]
-checksum = "sha256:2852af0cb20a13139b3448992e69b868e50ed0f8a1e5940ee1de9e19a123b613"
-size = 59659213
-url = "https://dl.google.com/go/go1.25.0.linux-amd64.tar.gz"
-
-[tools."go:github.com/daixiang0/gci"]
+[[tools."go:github.com/daixiang0/gci"]]
 version = "0.13.7"
 backend = "go:github.com/daixiang0/gci"
 
-[tools."go:golang.org/x/tools/cmd/goimports"]
+[[tools."go:golang.org/x/tools/cmd/goimports"]]
 version = "0.36.0"
 backend = "go:golang.org/x/tools/cmd/goimports"
 
-[tools.gofumpt]
+[[tools.gofumpt]]
 version = "0.8.0"
 backend = "aqua:mvdan/gofumpt"
 
-[tools.golangci-lint]
-version = "2.4.0"
+[[tools.golangci-lint]]
+version = "2.5.0"
 backend = "aqua:golangci/golangci-lint"
+"platforms.linux-arm64" = { checksum = "sha256:48693a98a7f4556d1117300aae240d0fe483df8d6f36dfaba56504626101a66e", url = "https://github.com/golangci/golangci-lint/releases/download/v2.5.0/golangci-lint-2.5.0-linux-arm64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:c77313a77e19b06123962c411d9943cc0d092bbec76b956104d18964e274902e", url = "https://github.com/golangci/golangci-lint/releases/download/v2.5.0/golangci-lint-2.5.0-linux-amd64.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:0b3cbdc2a2472f60b538ebccb1b2e1ae5d938a051c010591aa68c6efd3706672", url = "https://github.com/golangci/golangci-lint/releases/download/v2.5.0/golangci-lint-2.5.0-darwin-arm64.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:a7e684872b00637d642d088dde783c1b871161a92678fcf13d07abe6b5c32e36", url = "https://github.com/golangci/golangci-lint/releases/download/v2.5.0/golangci-lint-2.5.0-darwin-amd64.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:8d37563c2549e38135eac46e778164d2c5b1e96b9211f2087814d74ca0f358a8", url = "https://github.com/golangci/golangci-lint/releases/download/v2.5.0/golangci-lint-2.5.0-windows-amd64.zip"}
 
-[tools.golangci-lint.platforms.linux-x64]
-checksum = "sha256:fae792524c04424c0ac369f5b8076f04b45cf29fc945a370e55d369a8dc11840"
-size = 14126779
-url = "https://github.com/golangci/golangci-lint/releases/download/v2.4.0/golangci-lint-2.4.0-linux-amd64.tar.gz"
-
-[tools.gotestsum]
-version = "1.12.3"
+[[tools.gotestsum]]
+version = "1.13.0"
 backend = "aqua:gotestyourself/gotestsum"
+"platforms.linux-arm64" = { checksum = "sha256:7644a4c5cd1bb978d56245aeab25a586ac5ac62adebed20a399548867c13499d", url = "https://github.com/gotestyourself/gotestsum/releases/download/v1.13.0/gotestsum_1.13.0_linux_arm64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:11ccddeaf708ef228889f9fe2f68291a75b27013ddfc3b18156e094f5f40e8ee", url = "https://github.com/gotestyourself/gotestsum/releases/download/v1.13.0/gotestsum_1.13.0_linux_amd64.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:509cb27aef747f48faf9bce424f59dcf79572c905204b990ee935bbfcc7fa0e9", url = "https://github.com/gotestyourself/gotestsum/releases/download/v1.13.0/gotestsum_1.13.0_darwin_arm64.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:99529350f4c7b780b1efc543ca0d9721b09f0a4228f0efa9281261f58fefa05a", url = "https://github.com/gotestyourself/gotestsum/releases/download/v1.13.0/gotestsum_1.13.0_darwin_amd64.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:fd5a6dc69e46a0970593e70d85a7e75f16714e9c61d6d72ccc324eb82df5bb8a", url = "https://github.com/gotestyourself/gotestsum/releases/download/v1.13.0/gotestsum_1.13.0_windows_amd64.tar.gz"}
 
-[tools.hadolint]
+[[tools.hadolint]]
 version = "2.12.0"
 backend = "aqua:hadolint/hadolint"
+"platforms.linux-arm64" = { checksum = "sha256:5798551bf19f33951881f15eb238f90aef023f11e7ec7e9f4c37961cb87c5df6", url = "https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-arm64"}
+"platforms.linux-x64" = { checksum = "sha256:56de6d5e5ec427e17b74fa48d51271c7fc0d61244bf5c90e828aab8362d55010", url = "https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64"}
+"platforms.macos-arm64" = { checksum = "sha256:2a5b7afcab91645c39a7cebefcd835b865f7488e69be24567f433dfc3d41cd27", url = "https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Darwin-x86_64"}
+"platforms.macos-x64" = { checksum = "sha256:2a5b7afcab91645c39a7cebefcd835b865f7488e69be24567f433dfc3d41cd27", url = "https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Darwin-x86_64"}
+"platforms.windows-x64" = { checksum = "sha256:ed89a156290e15452276b2b4c84efa688a5183d3b578bfaec7cfdf986f0632a8", url = "https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Windows-x86_64.exe"}
