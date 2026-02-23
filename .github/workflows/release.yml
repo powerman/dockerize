@@ -47,7 +47,7 @@ jobs:
           - {goos: windows, goarch: amd64}
           - {goos: windows, goarch: arm64}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           token: ${{ env.GITHUB_TOKEN }}
           ref: ${{ needs.release-pr.outputs.version }}
@@ -113,7 +113,7 @@ jobs:
     if: ${{ needs.release-pr.outputs.result == 'released' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           token: ${{ env.GITHUB_TOKEN }}
           ref: ${{ needs.release-pr.outputs.version }}
