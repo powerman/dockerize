@@ -124,7 +124,7 @@ func (f *delimsFlag) String() string {
 	return f[0] + ":" + f[1]
 }
 
-// fatalFlagValue report invalid flag values in same way as flag.Parse().
+// fatalFlagValue report invalid flag values in same way as [flag.Parse].
 func fatalFlagValue(msg, name string, val any) {
 	fmt.Fprintf(os.Stderr, "invalid value %v for flag -%s: %s\n", val, name, msg)
 	flag.Usage()

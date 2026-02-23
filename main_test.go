@@ -234,8 +234,8 @@ func TestTail(tt *testing.T) {
 		for i := range logf {
 			logf[i] = t.NoErrFile(os.CreateTemp(t.TempDir(), "gotest"))
 			logn[i] = logf[i].Name()
-			defer os.Remove(logn[i]) //nolint:gocritic,revive // By design.
-			defer logf[i].Close()    //nolint:gocritic,revive // By design.
+			defer os.Remove(logn[i]) //nolint:gocritic,revive,nolintlint // By design.
+			defer logf[i].Close()    //nolint:gocritic,revive,nolintlint // By design.
 		}
 	}
 
@@ -294,7 +294,7 @@ func TestWaitList(tt *testing.T) {
 	if !isWindows {
 		waitListStr += " unix://" + unixn
 	}
-	args := []string{
+	args := []string{ //nolint:prealloc // False positive.
 		"-env", "testdata/env1.ini",
 		"-template", "testdata/src1.tmpl",
 		"-no-overwrite",

@@ -120,8 +120,8 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 		templatePathBad = templatePathBad || src == ""
 	}
 
-	waitListParts := strings.Fields(cfg.waitList)
-	for _, url := range waitListParts {
+	waitListParts := strings.FieldsSeq(cfg.waitList)
+	for url := range waitListParts {
 		err := cfg.waitURLs.Set(url)
 		if err != nil {
 			fatalFlagValue("unable to parse URLs list", "wait-list", url)
@@ -130,10 +130,10 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 
 	for _, u := range cfg.waitURLs {
 		switch u.Scheme {
-		case schemeFile, schemeTCP, schemeTCP4, schemeTCP6, schemeUnix:
+		case schemeFile, schemeTCP, schemeTCP4, schemeTCP6, schemeUnix,
+			schemeAMQP:
 		case schemeHTTP, schemeHTTPS:
 			waitHTTP = true
-		case schemeAMQP:
 		case schemeAMQPS:
 			waitAMQPS = true
 		default:

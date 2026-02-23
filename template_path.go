@@ -40,7 +40,7 @@ func splitWindowsPaths(s string) []string {
 		return []string{}
 	}
 
-	var paths []string //nolint:prealloc // Premature optimization.
+	var paths []string
 	start := 0
 
 	for i := range len(s) {
