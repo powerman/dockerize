@@ -139,7 +139,7 @@ func processTemplateDir(cfg templateConfig, src, dst string) error {
 	return nil
 }
 
-func createDestFile(src, dst string, noOverwrite bool) (*os.File, error) { //nolint:revive // TODO.
+func createDestFile(src, dst string, noOverwrite bool) (*os.File, error) { //nolint:revive,nolintlint // TODO.
 	like, err := os.Stat(src)
 	if err != nil {
 		return nil, err

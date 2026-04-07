@@ -73,7 +73,7 @@ func fetchINI(cfg iniConfig) (data []byte, err error) {
 		req.Header.Add(h.name, h.value)
 	}
 
-	resp, err := client.Do(req) //nolint:bodyclose,gosec // False positive.
+	resp, err := client.Do(req) //nolint:bodyclose // False positive.
 	if err != nil {
 		return nil, err
 	}

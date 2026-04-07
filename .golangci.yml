@@ -1,4 +1,4 @@
-# Origin: https://github.com/powerman/golangci-lint-strict version 2.10.1
+# Origin: https://github.com/powerman/golangci-lint-strict version 2.11.4
 version: "2"
 linters:
   default: all
@@ -248,6 +248,7 @@ linters:
         - name: optimize-operands-order
         - name: package-comments
         - name: package-directory-mismatch
+        - name: package-naming
         - name: range
         - name: range-val-address
         - name: range-val-in-closure
@@ -288,6 +289,7 @@ linters:
         - name: use-any
         - name: use-errors-new
         - name: use-fmt-print
+        - name: use-slices-sort
         - name: use-waitgroup-go
         - name: useless-break
         - name: useless-fallthrough

@@ -79,7 +79,7 @@ func waitForURLs(cfg waitConfig, urls []*url.URL) error {
 
 func waitForPath(ctx context.Context, cfg waitConfig, u *url.URL, path string, readyc chan<- *url.URL) {
 	for {
-		_, err := os.Stat(path) //nolint:gosec // By design.
+		_, err := os.Stat(path)
 		if err == nil {
 			break
 		}
@@ -152,7 +152,7 @@ func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 			for _, h := range cfg.headers {
 				req.Header.Add(h.name, h.value)
 			}
-			resp, err = client.Do(req.WithContext(ctx)) //nolint:gosec // By design.
+			resp, err = client.Do(req.WithContext(ctx))
 		}
 		if err == nil {
 			_, _ = io.Copy(io.Discard, resp.Body)
