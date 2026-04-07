@@ -5,11 +5,11 @@ go 1.26.0
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/elgs/gojq v0.0.0-20230628214826-df5c4045598e
-	github.com/powerman/check v1.9.0
-	github.com/powerman/fileuri v0.2.0
+	github.com/powerman/check v1.9.1
+	github.com/powerman/fileuri v0.3.0
 	github.com/powerman/gotest v0.3.0
-	github.com/powerman/tail v0.2.4
-	github.com/powerman/winfilepath v0.1.0
+	github.com/powerman/tail v0.2.5
+	github.com/powerman/winfilepath v0.1.1
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/smartystreets/goconvey v1.8.1
 	gopkg.in/ini.v1 v1.67.1
@@ -34,9 +34,9 @@ require (
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/smarty/assertions v1.16.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
-	golang.org/x/crypto v0.48.0 // indirect
-	golang.org/x/sys v0.41.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260217215200-42d3e9bedb6d // indirect
-	google.golang.org/grpc v1.79.1 // indirect
+	golang.org/x/crypto v0.49.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260406210006-6f92a3bedf2d // indirect
+	google.golang.org/grpc v1.80.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )
