@@ -53,8 +53,8 @@ github.com/powerman/fileuri v0.3.0 h1:UEVuRiel+Ob4Z+j1lnaHTnvu4hq8O5ljRaw4zOCQUh
 github.com/powerman/fileuri v0.3.0/go.mod h1:rrWmyDVgMdJIZwWbacUG8a+FmS/MQEmpjimnq3i4xAg=
 github.com/powerman/gotest v0.3.0 h1:3HdlkyT8XoTIw220BvCP+yy7OhB1AxZ11Qfzn00l3YQ=
 github.com/powerman/gotest v0.3.0/go.mod h1:vR8gUJorGFev+TucLyhbbx566IelaJFxCSAcDYD4fdY=
-github.com/powerman/tail v0.2.5 h1:KhgDdZ2Cp9gjggJJy3F1Q4h2mtMF04HdUlTaQxOrBSw=
-github.com/powerman/tail v0.2.5/go.mod h1:q7opOajZOjrngnoP9uAg5HDUFiYQs6nOOiOh071kHOo=
+github.com/powerman/tail v0.2.6 h1:jllemlG183j5lJ/Pcf6khvF/MFppvhQuwbpw8ONYI4M=
+github.com/powerman/tail v0.2.6/go.mod h1:zfBhlf6TwapDLoZuayE01zJaw/0iZOjWozNJ2Qm011M=
 github.com/powerman/winfilepath v0.1.1 h1:kK/tLVzMNytzB2XCWEkeG7M3YWqHjXx79tYwdQcwFaM=
 github.com/powerman/winfilepath v0.1.1/go.mod h1:UCKBPoAqL649m8ZyAlQyz1vfsgY6iEB1F7QT1uKn12k=
 github.com/rabbitmq/amqp091-go v1.10.0 h1:STpn5XsHlHGcecLmMFCtg7mqq0RnD+zFr4uzukfVhBw=
@@ -88,8 +88,8 @@ golang.org/x/crypto v0.49.0/go.mod h1:ErX4dUh2UM+CFYiXZRTcMpEcN8b/1gxEuv3nODoYtC
 golang.org/x/net v0.51.0 h1:94R/GTO7mt3/4wIKpcR5gkGmRLOuE/2hNGeWq/GBIFo=
 golang.org/x/net v0.51.0/go.mod h1:aamm+2QF5ogm02fjy5Bb7CQ0WMt1/WVM7FtyaTLlA9Y=
 golang.org/x/sys v0.0.0-20181107165924-66b7b1311ac8/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
-golang.org/x/sys v0.42.0 h1:omrd2nAlyT5ESRdCLYdm3+fMfNFE/+Rf4bDIQImRJeo=
-golang.org/x/sys v0.42.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
+golang.org/x/sys v0.43.0 h1:Rlag2XtaFTxp19wS8MXlJwTvoh8ArU6ezoyFsMyCTNI=
+golang.org/x/sys v0.43.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
 golang.org/x/text v0.35.0 h1:JOVx6vVDFokkpaq1AEptVzLTpDe9KGpj5tR4/X+ybL8=
 golang.org/x/text v0.35.0/go.mod h1:khi/HExzZJ2pGnjenulevKNX1W67CUy0AsXcNubPGCA=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20260406210006-6f92a3bedf2d h1:wT2n40TBqFY6wiwazVK9/iTWbsQrgk5ZfCSVFLO9LQA=

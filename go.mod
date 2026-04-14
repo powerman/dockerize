@@ -8,7 +8,7 @@ require (
 	github.com/powerman/check v1.9.1
 	github.com/powerman/fileuri v0.3.0
 	github.com/powerman/gotest v0.3.0
-	github.com/powerman/tail v0.2.5
+	github.com/powerman/tail v0.2.6
 	github.com/powerman/winfilepath v0.1.1
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/smartystreets/goconvey v1.8.1
@@ -35,7 +35,7 @@ require (
 	github.com/smarty/assertions v1.16.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
 	golang.org/x/crypto v0.49.0 // indirect
-	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260406210006-6f92a3bedf2d // indirect
 	google.golang.org/grpc v1.80.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
