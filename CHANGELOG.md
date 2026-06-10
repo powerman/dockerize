@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.0] - 2026-06-10
+
+### 🚀 Added
+
+- Add mysql wait support by @powerman in [c28a556]
+
+### 📚 Documentation
+
+- Add mysql to list of supported protocols in README by @powerman in [1c9e632]
+- Add mysql wait usage example in README by @powerman in [f19b924]
+
+### 📦️ Dependencies
+
+- **(deps)** Upgrade dependencies by @powerman in [82f6e16]
+
+[0.25.0]: https://github.com/powerman/dockerize/compare/v0.24.3..v0.25.0
+[82f6e16]: https://github.com/powerman/dockerize/commit/82f6e161c2c1ecf7e0597cb8ef2a1ac2d5c79537
+[c28a556]: https://github.com/powerman/dockerize/commit/c28a556c1088f51971f6f0254171419b75e9ac55
+[1c9e632]: https://github.com/powerman/dockerize/commit/1c9e632c7997766eeba658bbc29231e439648bc9
+[f19b924]: https://github.com/powerman/dockerize/commit/f19b924fb826d5db4bf0c13fda750c5e84b637f1
+
 ## [0.24.3] - 2026-04-07
 
 ### 📦️ Dependencies
@@ -792,7 +813,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Will now exit with status 0 when sub command finishes, even if tailing logs. Will also exit with the same exit status as sub process. See #4 by @ianneub in [8cde798]
 - Added support for handling signals. If the subprocess does not terminate within 10 seconds of receiving the signal, it will be killed. The program will now exit cleanly on subcommand success (instead of forcing an os.Exit(0). by @ianneub in [6909d0e]
 - Provide arm builds by @aegypius in [4e53efc]
-- Fix go fmt by @jwilder in [1e45a4b]
+- Fix go fmt by Jason Wilder in [1e45a4b]
 - Fix tail Cleanup by @sebest in [4f79876]
 - Update tail dependency by @jwilder in [d229938]
 - Update for v0.0.3 by @jwilder in [7570247]
@@ -810,10 +831,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔔 Changed
 
-- Blog posts by @jwilder in [8ac2108]
+- Blog posts by Jason Wilder in [8ac2108]
 - Deadlock fix by @jaycyb in [a4dbf30]
-- Move wg.Done() to top of func by @jwilder in [91ee9fc]
-- Update v0.0.2 links by @jwilder in [bbd8428]
+- Move wg.Done() to top of func by Jason Wilder in [91ee9fc]
+- Update v0.0.2 links by Jason Wilder in [bbd8428]
 
 [0.0.2]: https://github.com/powerman/dockerize/compare/v0.0.1..v0.0.2
 [8ac2108]: https://github.com/powerman/dockerize/commit/8ac210809b81af308636b759289f6c26da6478e9
@@ -825,7 +846,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔔 Changed
 
-- Initial commit by @jwilder in [482f216]
+- Initial commit by Jason Wilder in [482f216]
 
 [0.0.1]: https://github.com/powerman/dockerize/compare/%40%7B10year%7D..v0.0.1
 [482f216]: https://github.com/powerman/dockerize/commit/482f216c924848f418d4d51e30b3123038e86bb5
