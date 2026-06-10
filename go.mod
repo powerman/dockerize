@@ -8,21 +8,21 @@ require (
 	github.com/powerman/check v1.9.1
 	github.com/powerman/fileuri v0.3.0
 	github.com/powerman/gotest v0.3.0
-	github.com/powerman/tail v0.2.5
+	github.com/powerman/tail v0.2.6
 	github.com/powerman/winfilepath v0.1.1
-	github.com/rabbitmq/amqp091-go v1.10.0
+	github.com/rabbitmq/amqp091-go v1.11.0
 	github.com/smartystreets/goconvey v1.8.1
-	gopkg.in/ini.v1 v1.67.1
+	gopkg.in/ini.v1 v1.67.3
 )
 
 require (
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Masterminds/semver/v3 v3.4.0 // indirect
+	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/gopherjs/gopherjs v1.20.1 // indirect
+	github.com/gopherjs/gopherjs v1.20.2 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
@@ -34,9 +34,9 @@ require (
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/smarty/assertions v1.16.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
-	golang.org/x/crypto v0.49.0 // indirect
-	golang.org/x/sys v0.42.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260406210006-6f92a3bedf2d // indirect
-	google.golang.org/grpc v1.80.0 // indirect
+	golang.org/x/crypto v0.53.0 // indirect
+	golang.org/x/sys v0.46.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260608224507-4308a22a1bab // indirect
+	google.golang.org/grpc v1.81.1 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )
