@@ -279,6 +279,7 @@ before starting your application:
 ```sh
 dockerize -wait tcp://db:5432 \
     -wait http://web:80 \
+    -wait mysql://user:pass@db:3306/mydb \
     -wait file:///tmp/generated-file
 ```
 
@@ -290,7 +291,7 @@ The two flags can be combined.
 This command is equivalent to the one above:
 
 ```sh
-dockerize -wait-list "tcp://db:5432 http://web:80 file:///tmp/generated-file"
+dockerize -wait-list "tcp://db:5432 http://web:80 mysql://user:pass@db:3306/mydb file:///tmp/generated-file"
 ```
 
 ### Timeout
