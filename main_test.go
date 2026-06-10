@@ -20,16 +20,16 @@ import (
 )
 
 func TestFlagHelp(tt *testing.T) {
+	tt.Parallel()
 	t := check.T(tt)
-	t.Parallel()
 	out, err := testexec.Func(t.Context(), t, main, "-h").CombinedOutput()
 	t.Nil(err)
 	t.Match(out, "Usage:")
 }
 
 func TestGetVersionFromBuildInfo(tt *testing.T) {
+	tt.Parallel()
 	t := check.T(tt)
-	t.Parallel()
 
 	// Test with nil buildInfo
 	version := getVersionFromBuildInfo(nil)
@@ -65,8 +65,8 @@ func TestGetVersionFromBuildInfo(tt *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(tt *testing.T) {
+			tt.Parallel()
 			t := check.T(tt)
-			t.Parallel()
 			buildInfo := &debug.BuildInfo{
 				Main: debug.Module{Version: tc.version},
 			}
@@ -77,16 +77,16 @@ func TestGetVersionFromBuildInfo(tt *testing.T) {
 }
 
 func TestFlagVersion(tt *testing.T) {
+	tt.Parallel()
 	t := check.T(tt)
-	t.Parallel()
 	out, err := testexec.Func(t.Context(), t, main, "-version").CombinedOutput()
 	t.Nil(err)
 	t.Match(out, getVersion())
 }
 
 func TestFlag(tt *testing.T) {
+	tt.Parallel()
 	t := check.T(tt)
-	t.Parallel()
 	cases := []struct {
 		flags []string
 		want  string
@@ -155,8 +155,8 @@ func TestFlag(tt *testing.T) {
 	}
 	for _, v := range cases {
 		t.Run(strings.Join(v.flags, " "), func(tt *testing.T) {
+			tt.Parallel()
 			t := check.T(tt)
-			t.Parallel()
 			// Skip tests with invalid Windows filenames because they return
 			// different error messages than Unix-like systems not handled
 			// by os.IsNotExist() used in flag.go.
@@ -181,32 +181,32 @@ func TestFlag(tt *testing.T) {
 }
 
 func TestFailedINI(tt *testing.T) {
+	tt.Parallel()
 	t := check.T(tt)
-	t.Parallel()
 	out, err := testexec.Func(t.Context(), t, main, "-exit-code", "42", "-env", "nosuch.ini").CombinedOutput()
 	t.Match(err, "exit status 42")
 	t.Match(out, `nosuch.ini:.*(no such file|cannot find the file)`)
 }
 
 func TestFailedTemplate(tt *testing.T) {
+	tt.Parallel()
 	t := check.T(tt)
-	t.Parallel()
 	out, err := testexec.Func(t.Context(), t, main, "-template", "nosuch.tmpl").CombinedOutput()
 	t.Match(err, "exit status 123")
 	t.Match(out, `nosuch.tmpl:.*(no such file|cannot find the file)`)
 }
 
 func TestFailedStrictTemplate(tt *testing.T) {
+	tt.Parallel()
 	t := check.T(tt)
-	t.Parallel()
 	out, err := testexec.Func(t.Context(), t, main, "-template", "testdata/src1.tmpl", "-template-strict").CombinedOutput()
 	t.Match(err, "exit status 123")
 	t.Match(out, `no entry for key "C"`)
 }
 
 func TestFailedWait(tt *testing.T) {
+	tt.Parallel()
 	t := checkT(tt)
-	t.Parallel()
 	badPath := `/nosuch`
 	if isWindows {
 		badPath = `C:\nosuch`
@@ -217,16 +217,16 @@ func TestFailedWait(tt *testing.T) {
 }
 
 func TestNothing(tt *testing.T) {
+	tt.Parallel()
 	t := check.T(tt)
-	t.Parallel()
 	out, err := testexec.Func(t.Context(), t, main).CombinedOutput()
 	t.Nil(err)
 	t.Match(out, `^$`)
 }
 
 func TestTail(tt *testing.T) {
+	tt.Parallel()
 	t := checkT(tt)
-	t.Parallel()
 
 	var logf [4]*os.File
 	var logn [4]string
@@ -268,8 +268,8 @@ func TestTail(tt *testing.T) {
 }
 
 func TestWaitList(tt *testing.T) {
+	tt.Parallel()
 	t := checkT(tt)
-	t.Parallel()
 
 	var logn, filen, fileURI, unixn string
 	if os.Getenv("GO_WANT_HELPER_PROCESS") == "" { // don't do this again in subprocess
@@ -288,7 +288,7 @@ func TestWaitList(tt *testing.T) {
 	t.Nil(lnTCP4.Close())
 	mux := http.NewServeMux()
 	ts := httptest.NewUnstartedServer(mux)
-	defer ts.Close()
+	t.Cleanup(ts.Close)
 
 	waitListStr := "tcp://" + lnTCP.Addr().String() + " tcp4://" + lnTCP4.Addr().String()
 	if !isWindows {
@@ -313,15 +313,15 @@ func TestWaitList(tt *testing.T) {
 
 	time.Sleep(testSecond / 2)
 	t.Nil(t.NoErrFile(os.Create(filen)).Close())
-	defer os.Remove(filen)
+	t.Cleanup(func() { os.Remove(filen) })
 	if !isWindows {
 		lnUnix := t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "unix", unixn))
 		defer lnUnix.Close()
 	}
 	lnTCP = t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "tcp", lnTCP.Addr().String()))
-	defer lnTCP.Close()
+	t.Cleanup(func() { lnTCP.Close() })
 	lnTCP4 = t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "tcp4", lnTCP4.Addr().String()))
-	defer lnTCP4.Close()
+	t.Cleanup(func() { lnTCP4.Close() })
 	var callOK bool
 	mux.HandleFunc("/redirect", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/ok", http.StatusFound)
@@ -341,8 +341,8 @@ func TestWaitList(tt *testing.T) {
 }
 
 func TestSmoke1(tt *testing.T) {
+	tt.Parallel()
 	t := checkT(tt)
-	t.Parallel()
 
 	var logn, filen, fileURI, unixn string
 	if os.Getenv("GO_WANT_HELPER_PROCESS") == "" { // don't do this again in subprocess
@@ -361,7 +361,7 @@ func TestSmoke1(tt *testing.T) {
 	t.Nil(lnTCP4.Close())
 	mux := http.NewServeMux()
 	ts := httptest.NewUnstartedServer(mux)
-	defer ts.Close()
+	t.Cleanup(ts.Close)
 
 	args := []string{
 		"-env", "testdata/env1.ini",
@@ -386,15 +386,15 @@ func TestSmoke1(tt *testing.T) {
 
 	time.Sleep(testSecond / 2)
 	t.Nil(t.NoErrFile(os.Create(filen)).Close())
-	defer os.Remove(filen)
+	t.Cleanup(func() { os.Remove(filen) })
 	if !isWindows {
 		lnUnix := t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "unix", unixn))
 		defer lnUnix.Close()
 	}
 	lnTCP = t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "tcp", lnTCP.Addr().String()))
-	defer lnTCP.Close()
+	t.Cleanup(func() { lnTCP.Close() })
 	lnTCP4 = t.NoErrListen((&net.ListenConfig{}).Listen(t.Context(), "tcp4", lnTCP4.Addr().String()))
-	defer lnTCP4.Close()
+	t.Cleanup(func() { lnTCP4.Close() })
 	var callOK bool
 	mux.HandleFunc("/redirect", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/ok", http.StatusFound)
@@ -414,8 +414,8 @@ func TestSmoke1(tt *testing.T) {
 }
 
 func TestSmoke2(tt *testing.T) {
+	tt.Parallel()
 	t := checkT(tt)
-	t.Parallel()
 
 	if isWindows {
 		t.Skip("TestSmoke2 uses Unix-specific features not supported on Windows")
@@ -427,7 +427,7 @@ func TestSmoke2(tt *testing.T) {
 	}
 	mux := http.NewServeMux()
 	ts := httptest.NewUnstartedServer(mux)
-	defer ts.Close()
+	t.Cleanup(ts.Close)
 
 	cmd := testexec.Func(t.Context(), t, main,
 		"-env", "https://"+ts.Listener.Addr().String()+"/ini",

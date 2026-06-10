@@ -7,8 +7,8 @@ import (
 )
 
 func TestParseTemplatePath(tt *testing.T) {
+	tt.Parallel()
 	t := check.T(tt)
-	t.Parallel()
 
 	testCasesUnix := []struct {
 		input       string
@@ -70,8 +70,8 @@ func TestParseTemplatePath(tt *testing.T) {
 }
 
 func TestSplitWindowsPaths_Basic(tt *testing.T) {
+	tt.Parallel()
 	t := check.T(tt)
-	t.Parallel()
 
 	testCases := []struct {
 		input    string
@@ -98,8 +98,8 @@ func TestSplitWindowsPaths_Basic(tt *testing.T) {
 }
 
 func TestSplitWindowsPaths_Extensive(tt *testing.T) {
+	tt.Parallel()
 	t := check.T(tt)
-	t.Parallel()
 
 	paths := []string{
 		`rel_dir_drive.txt`,
@@ -124,8 +124,8 @@ func TestSplitWindowsPaths_Extensive(tt *testing.T) {
 
 	for _, path1 := range paths {
 		t.Run("Path1="+path1, func(tt *testing.T) {
+			tt.Parallel()
 			t := check.T(tt)
-			t.Parallel()
 
 			// Test single paths.
 			res := splitWindowsPaths(path1)
