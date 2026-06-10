@@ -1,3 +1,0 @@
-self-hosted-runner:
-  labels:
-    - windows-11-arm # https://github.com/rhysd/actionlint/issues/533
