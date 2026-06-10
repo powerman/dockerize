@@ -273,7 +273,7 @@ the _service(s)_ within it may not yet be ready -
 resulting in shell script hacks to work around race conditions.
 
 Dockerize gives you the ability to wait for services on a specified protocol
-(`file`, `tcp`, `tcp4`, `tcp6`, `http`, `https`, `amqp`, `amqps` and `unix`)
+(`file`, `tcp`, `tcp4`, `tcp6`, `http`, `https`, `amqp`, `amqps`, `mysql` and `unix`)
 before starting your application:
 
 ```sh
