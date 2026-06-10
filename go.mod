@@ -5,6 +5,7 @@ go 1.26.0
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/elgs/gojq v0.0.0-20230628214826-df5c4045598e
+	github.com/go-sql-driver/mysql v1.10.0
 	github.com/powerman/check v1.9.1
 	github.com/powerman/fileuri v0.3.0
 	github.com/powerman/gotest v0.3.0
@@ -17,6 +18,7 @@ require (
 
 require (
 	dario.cat/mergo v1.0.2 // indirect
+	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect

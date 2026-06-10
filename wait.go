@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"database/sql"
 	"errors"
 	"fmt"
 	"io"
@@ -12,8 +13,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/powerman/fileuri"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -56,6 +59,8 @@ func waitForURLs(cfg waitConfig, urls []*url.URL) error {
 				go waitForHTTP(ctx, cfg, u, readyc)
 			case schemeAMQP, schemeAMQPS:
 				go waitForAMQP(ctx, cfg, u, readyc)
+			case schemeMySQL:
+				go waitForMySQL(ctx, cfg, u, readyc)
 			default:
 				return fmt.Errorf("%w: %s", errSchemeNotSupported, u)
 			}
@@ -203,4 +208,34 @@ func waitForAMQP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 	}
 
 	readyc <- u
+}
+
+func waitForMySQL(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- *url.URL) {
+	dsn := mysqlDSN(u)
+	for {
+		db, err := sql.Open("mysql", dsn)
+		if err == nil {
+			err = db.PingContext(ctx)
+			_ = db.Close()
+		}
+		if err == nil {
+			break
+		}
+
+		log.Printf("Waiting for %s: %s.", u, err)
+		select {
+		case <-time.After(cfg.delay):
+		case <-ctx.Done():
+			return
+		}
+	}
+
+	readyc <- u
+}
+
+func mysqlDSN(u *url.URL) string {
+	dsn := &url.URL{}
+	*dsn = *u
+	dsn.Host = "tcp(" + dsn.Host + ")"
+	return strings.TrimPrefix(dsn.String(), "mysql://")
 }

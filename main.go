@@ -24,6 +24,7 @@ const (
 	schemeHTTPS          = "https"
 	schemeAMQP           = "amqp"
 	schemeAMQPS          = "amqps"
+	schemeMySQL          = "mysql"
 	defWaitTimeout       = 10 * time.Second
 	defWaitRetryInterval = time.Second
 	exitCodeUsage        = 2
@@ -63,7 +64,7 @@ func init() { //nolint:gochecknoinits // By design.
 	flag.BoolVar(&cfg.template.noOverwrite, "no-overwrite", false, "do not overwrite existing destination file from template")
 	flag.BoolVar(&cfg.template.strict, "template-strict", false, "fail if template mention unset environment variable")
 	flag.Var(&cfg.template.delims, "delims", "action delimiters in templates")
-	flag.Var(&cfg.waitURLs, "wait", "wait for `url` (file/tcp/tcp4/tcp6/unix/http/https/amqp/amqps)\ncan be passed multiple times")
+	flag.Var(&cfg.waitURLs, "wait", "wait for `url` (file/tcp/tcp4/tcp6/unix/http/https/amqp/amqps/mysql)\ncan be passed multiple times")
 	flag.Var(&cfg.wait.headers, "wait-http-header", "`name:value` for HTTP header to send\n(if -wait use HTTP)\ncan be passed multiple times")
 	flag.BoolVar(&cfg.wait.skipTLSVerify, "skip-tls-verify", false, "skip TLS verification for HTTPS/AMQPS -wait and -env urls")
 	flag.StringVar(&cfg.caCert, "cacert", "", "path to CA certificate for HTTPS/AMQPS -wait and -env urls")
@@ -131,7 +132,7 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 	for _, u := range cfg.waitURLs {
 		switch u.Scheme {
 		case schemeFile, schemeTCP, schemeTCP4, schemeTCP6, schemeUnix,
-			schemeAMQP:
+			schemeAMQP, schemeMySQL:
 		case schemeHTTP, schemeHTTPS:
 			waitHTTP = true
 		case schemeAMQPS:
@@ -157,7 +158,7 @@ func main() { //nolint:gocyclo,gocognit,funlen // TODO Refactor?
 	case cfg.template.delims[0] != "" && len(cfg.templatePaths) == 0:
 		fatalFlagValue("require -template", "delims", cfg.template.delims)
 	case waitBadScheme:
-		fatalFlagValue("scheme must be file/tcp/tcp4/tcp6/unix/http/https/amqp/amqps", "wait", cfg.waitURLs)
+		fatalFlagValue("scheme must be file/tcp/tcp4/tcp6/unix/http/https/amqp/amqps/mysql", "wait", cfg.waitURLs)
 	case len(cfg.wait.headers) > 0 && !waitHTTP:
 		fatalFlagValue("require -wait with HTTP url", "wait-http-header", cfg.wait.headers)
 	case len(cfg.wait.statusCodes) > 0 && !waitHTTP:

@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"runtime/debug"
 	"strconv"
@@ -511,4 +512,49 @@ func TestSmoke2(tt *testing.T) {
 	t.Equal(string(buf), "A=10 B=20 C=32\n    777\n")
 	buf = t.NoErrBuf(os.ReadFile(dstDir + "/subdir/func"))
 	t.Equal(string(buf), "abc exists\nexample.com\nTrue!False!\nJSON value\n0369\n")
+}
+
+func TestMySQLDSN(tt *testing.T) {
+	tt.Parallel()
+	t := checkT(tt)
+
+	u := &url.URL{
+		Scheme: "mysql",
+		User:   url.UserPassword("user", "pass"),
+		Host:   "127.0.0.1:3306",
+		Path:   "/dbname",
+	}
+	dsn := mysqlDSN(u)
+	t.Equal(dsn, "user:pass@tcp(127.0.0.1:3306)/dbname")
+}
+
+func TestFailedWaitMySQL(tt *testing.T) {
+	tt.Parallel()
+	t := checkT(tt)
+
+	out, err := testexec.Func(t.Context(), t, main,
+		"-wait", "mysql://127.0.0.1:1",
+		"-timeout", "0.1s",
+	).CombinedOutput()
+	t.Match(err, "exit status 123")
+	t.Match(out, "timed out")
+}
+
+func TestWaitMySQL(tt *testing.T) {
+	tt.Parallel()
+	t := checkT(tt)
+
+	mysqlURL := os.Getenv("DOCKERIZE_TEST_MYSQL")
+	if mysqlURL == "" {
+		t.Skip("Skipping MySQL integration test: DOCKERIZE_TEST_MYSQL not set")
+	}
+
+	args := make([]string, 0, 4+len(shellCmd))
+	args = append(args, []string{"-wait", mysqlURL, "-timeout", "10s"}...)
+	args = append(args, shellCmd...)
+	cmd := testexec.Func(t.Context(), t, main, args...)
+	cmd.Stdout = &bytes.Buffer{}
+	cmd.Stderr = &bytes.Buffer{}
+	t.Nil(cmd.Start())
+	t.Match(cmd.Wait(), `exit status 42`)
 }
