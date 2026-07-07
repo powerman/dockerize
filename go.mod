@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/elgs/gojq v0.0.0-20230628214826-df5c4045598e
 	github.com/go-sql-driver/mysql v1.10.0
-	github.com/powerman/check v1.9.1
+	github.com/powerman/check v1.10.0
 	github.com/powerman/fileuri v0.3.0
 	github.com/powerman/gotest v0.3.0
 	github.com/powerman/tail v0.2.6
@@ -24,7 +24,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/gopherjs/gopherjs v1.20.2 // indirect
+	github.com/gopherjs/gopherjs v1.21.0 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
@@ -38,7 +38,7 @@ require (
 	github.com/spf13/cast v1.10.0 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260608224507-4308a22a1bab // indirect
-	google.golang.org/grpc v1.81.1 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260706201446-f0a921348800 // indirect
+	google.golang.org/grpc v1.82.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )
