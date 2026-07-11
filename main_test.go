@@ -7,7 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
+	urlpkg "net/url"
 	"os"
 	"runtime/debug"
 	"strconv"
@@ -518,9 +518,9 @@ func TestMySQLDSN(tt *testing.T) {
 	tt.Parallel()
 	t := checkT(tt)
 
-	u := &url.URL{
+	u := &urlpkg.URL{
 		Scheme: "mysql",
-		User:   url.UserPassword("user", "pass"),
+		User:   urlpkg.UserPassword("user", "pass"),
 		Host:   "127.0.0.1:3306",
 		Path:   "/dbname",
 	}

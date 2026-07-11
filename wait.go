@@ -11,7 +11,7 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"net/url"
+	urlpkg "net/url"
 	"os"
 	"strings"
 	"time"
@@ -37,12 +37,12 @@ type waitConfig struct {
 	delay         time.Duration
 }
 
-func waitForURLs(cfg waitConfig, urls []*url.URL) error {
+func waitForURLs(cfg waitConfig, urls []*urlpkg.URL) error {
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.timeout)
 	defer cancel()
 
-	waiting := make(map[*url.URL]bool, len(urls))
-	readyc := make(chan *url.URL, len(urls))
+	waiting := make(map[*urlpkg.URL]bool, len(urls))
+	readyc := make(chan *urlpkg.URL, len(urls))
 	for _, u := range urls {
 		if !waiting[u] { // skip possible duplicates
 			waiting[u] = true
@@ -82,7 +82,7 @@ func waitForURLs(cfg waitConfig, urls []*url.URL) error {
 	return nil
 }
 
-func waitForPath(ctx context.Context, cfg waitConfig, u *url.URL, path string, readyc chan<- *url.URL) {
+func waitForPath(ctx context.Context, cfg waitConfig, u *urlpkg.URL, path string, readyc chan<- *urlpkg.URL) {
 	for {
 		_, err := os.Stat(path)
 		if err == nil {
@@ -99,7 +99,7 @@ func waitForPath(ctx context.Context, cfg waitConfig, u *url.URL, path string, r
 	readyc <- u
 }
 
-func waitForSocket(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- *url.URL) {
+func waitForSocket(ctx context.Context, cfg waitConfig, u *urlpkg.URL, readyc chan<- *urlpkg.URL) {
 	addr := u.Host
 	if u.Scheme == schemeUnix {
 		addr = u.Path
@@ -123,7 +123,7 @@ func waitForSocket(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<
 	readyc <- u
 }
 
-func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- *url.URL) {
+func waitForHTTP(ctx context.Context, cfg waitConfig, u *urlpkg.URL, readyc chan<- *urlpkg.URL) {
 	waitStatusCode := make(map[int]bool)
 	if len(cfg.statusCodes) == 0 {
 		for statusCode := http.StatusOK; statusCode < http.StatusMultipleChoices; statusCode++ {
@@ -178,7 +178,7 @@ func waitForHTTP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 	readyc <- u
 }
 
-func waitForAMQP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- *url.URL) {
+func waitForAMQP(ctx context.Context, cfg waitConfig, u *urlpkg.URL, readyc chan<- *urlpkg.URL) {
 	amqpCfg := amqp.Config{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: cfg.skipTLSVerify, //nolint:gosec // TLS InsecureSkipVerify may be true.
@@ -210,7 +210,7 @@ func waitForAMQP(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- 
 	readyc <- u
 }
 
-func waitForMySQL(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<- *url.URL) {
+func waitForMySQL(ctx context.Context, cfg waitConfig, u *urlpkg.URL, readyc chan<- *urlpkg.URL) {
 	dsn := mysqlDSN(u)
 	for {
 		db, err := sql.Open("mysql", dsn)
@@ -233,8 +233,8 @@ func waitForMySQL(ctx context.Context, cfg waitConfig, u *url.URL, readyc chan<-
 	readyc <- u
 }
 
-func mysqlDSN(u *url.URL) string {
-	dsn := &url.URL{}
+func mysqlDSN(u *urlpkg.URL) string {
+	dsn := &urlpkg.URL{}
 	*dsn = *u
 	dsn.Host = "tcp(" + dsn.Host + ")"
 	return strings.TrimPrefix(dsn.String(), "mysql://")

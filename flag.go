@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"net/url"
+	urlpkg "net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -28,10 +28,10 @@ func (f *stringsFlag) String() string {
 	return strings.Join(*f, ",")
 }
 
-type urlsFlag []*url.URL
+type urlsFlag []*urlpkg.URL
 
 func (f *urlsFlag) Set(value string) error {
-	u, err := url.Parse(value)
+	u, err := urlpkg.Parse(value)
 	if err != nil {
 		return err
 	}

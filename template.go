@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"net/url"
+	urlpkg "net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -85,7 +85,7 @@ func processTemplate(cfg templateConfig, src, dst string) error {
 		Funcs(sprig.TxtFuncMap()).
 		Funcs(template.FuncMap{
 			"exists":    exists,
-			"parseUrl":  url.Parse,
+			"parseUrl":  urlpkg.Parse,
 			"isTrue":    isTrue,
 			"jsonQuery": jsonQuery,
 			"readFile":  readFile,

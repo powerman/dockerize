@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
+	urlpkg "net/url"
 	"os"
 
 	ini "gopkg.in/ini.v1"
@@ -34,7 +34,7 @@ func loadINISection(cfg iniConfig) (map[string]string, error) {
 	}
 
 	var data []byte
-	u, err := url.Parse(cfg.source)
+	u, err := urlpkg.Parse(cfg.source)
 	if err == nil && u.IsAbs() {
 		data, err = fetchINI(cfg)
 	} else {
