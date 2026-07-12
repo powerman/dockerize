@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.1] - 2026-07-12
+
+### 📦️ Dependencies
+
+- **(deps)** Bump github.com/powerman/check v1.9.1→v1.13.0, github.com/rabbitmq/amqp091-go v1.11.0→v1.12.0 by @powerman in [e9847c6]
+- **(deps)** Bump alpine from 3.24.0 to 3.24.1 by @dependabot[bot] in [#387]
+
+[0.25.1]: https://github.com/powerman/dockerize/compare/v0.25.0..v0.25.1
+[e9847c6]: https://github.com/powerman/dockerize/commit/e9847c66d04057d5df43e280324c7497f4476e2e
+[#387]: https://github.com/powerman/dockerize/pull/387
+
 ## [0.25.0] - 2026-06-10
 
 ### 🚀 Added
