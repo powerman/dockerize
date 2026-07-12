@@ -10,7 +10,6 @@ import (
 
 	"github.com/powerman/check"
 	"github.com/powerman/fileuri"
-	_ "github.com/smartystreets/goconvey/convey"
 )
 
 var (

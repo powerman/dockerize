@@ -22,15 +22,15 @@ import (
 
 func TestFlagHelp(tt *testing.T) {
 	tt.Parallel()
-	t := check.T(tt)
-	out, err := testexec.Func(t.Context(), t, main, "-h").CombinedOutput()
+	t := check.Must(tt)
+	out, err := testexec.Func(t, main, "-h").CombinedOutput()
 	t.Nil(err)
 	t.Match(out, "Usage:")
 }
 
 func TestGetVersionFromBuildInfo(tt *testing.T) {
 	tt.Parallel()
-	t := check.T(tt)
+	t := check.Must(tt)
 
 	// Test with nil buildInfo
 	version := getVersionFromBuildInfo(nil)
@@ -65,9 +65,9 @@ func TestGetVersionFromBuildInfo(tt *testing.T) {
 	}
 
 	for _, tc := range tests {
-		t.Run(tc.name, func(tt *testing.T) {
+		tt.Run(tc.name, func(tt *testing.T) {
 			tt.Parallel()
-			t := check.T(tt)
+			t := check.Must(tt)
 			buildInfo := &debug.BuildInfo{
 				Main: debug.Module{Version: tc.version},
 			}
@@ -79,15 +79,15 @@ func TestGetVersionFromBuildInfo(tt *testing.T) {
 
 func TestFlagVersion(tt *testing.T) {
 	tt.Parallel()
-	t := check.T(tt)
-	out, err := testexec.Func(t.Context(), t, main, "-version").CombinedOutput()
+	t := check.Must(tt)
+	out, err := testexec.Func(t, main, "-version").CombinedOutput()
 	t.Nil(err)
 	t.Match(out, getVersion())
 }
 
-func TestFlag(tt *testing.T) {
-	tt.Parallel()
-	t := check.T(tt)
+func TestFlag(t *testing.T) {
+	t.Parallel()
+
 	cases := []struct {
 		flags []string
 		want  string
@@ -157,7 +157,7 @@ func TestFlag(tt *testing.T) {
 	for _, v := range cases {
 		t.Run(strings.Join(v.flags, " "), func(tt *testing.T) {
 			tt.Parallel()
-			t := check.T(tt)
+			t := check.Must(tt)
 			// Skip tests with invalid Windows filenames because they return
 			// different error messages than Unix-like systems not handled
 			// by os.IsNotExist() used in flag.go.
@@ -169,7 +169,7 @@ func TestFlag(tt *testing.T) {
 				}
 			}
 			flags := append(v.flags, "-version") //nolint:gocritic // By design.
-			out, err := testexec.Func(t.Context(), t, main, flags...).CombinedOutput()
+			out, err := testexec.Func(t, main, flags...).CombinedOutput()
 			if v.want == "" {
 				t.Nil(err)
 				t.Match(out, getVersion())
@@ -183,24 +183,24 @@ func TestFlag(tt *testing.T) {
 
 func TestFailedINI(tt *testing.T) {
 	tt.Parallel()
-	t := check.T(tt)
-	out, err := testexec.Func(t.Context(), t, main, "-exit-code", "42", "-env", "nosuch.ini").CombinedOutput()
+	t := check.Must(tt)
+	out, err := testexec.Func(t, main, "-exit-code", "42", "-env", "nosuch.ini").CombinedOutput()
 	t.Match(err, "exit status 42")
 	t.Match(out, `nosuch.ini:.*(no such file|cannot find the file)`)
 }
 
 func TestFailedTemplate(tt *testing.T) {
 	tt.Parallel()
-	t := check.T(tt)
-	out, err := testexec.Func(t.Context(), t, main, "-template", "nosuch.tmpl").CombinedOutput()
+	t := check.Must(tt)
+	out, err := testexec.Func(t, main, "-template", "nosuch.tmpl").CombinedOutput()
 	t.Match(err, "exit status 123")
 	t.Match(out, `nosuch.tmpl:.*(no such file|cannot find the file)`)
 }
 
 func TestFailedStrictTemplate(tt *testing.T) {
 	tt.Parallel()
-	t := check.T(tt)
-	out, err := testexec.Func(t.Context(), t, main, "-template", "testdata/src1.tmpl", "-template-strict").CombinedOutput()
+	t := check.Must(tt)
+	out, err := testexec.Func(t, main, "-template", "testdata/src1.tmpl", "-template-strict").CombinedOutput()
 	t.Match(err, "exit status 123")
 	t.Match(out, `no entry for key "C"`)
 }
@@ -212,15 +212,15 @@ func TestFailedWait(tt *testing.T) {
 	if isWindows {
 		badPath = `C:\nosuch`
 	}
-	out, err := testexec.Func(t.Context(), t, main, "-wait", t.FileURI(badPath), "-timeout", "0.1s").CombinedOutput()
+	out, err := testexec.Func(t, main, "-wait", t.FileURI(badPath), "-timeout", "0.1s").CombinedOutput()
 	t.Match(err, "exit status 123")
 	t.Match(out, `/nosuch:.*(no such file|cannot find the file)`)
 }
 
 func TestNothing(tt *testing.T) {
 	tt.Parallel()
-	t := check.T(tt)
-	out, err := testexec.Func(t.Context(), t, main).CombinedOutput()
+	t := check.Must(tt)
+	out, err := testexec.Func(t, main).CombinedOutput()
 	t.Nil(err)
 	t.Match(out, `^$`)
 }
@@ -240,7 +240,7 @@ func TestTail(tt *testing.T) {
 		}
 	}
 
-	cmd := testexec.Func(t.Context(), t, main,
+	cmd := testexec.Func(t, main,
 		"-stdout", logn[0], "-stdout", logn[1],
 		"-stderr", logn[2], "-stderr", logn[3],
 	)
@@ -307,7 +307,7 @@ func TestWaitList(tt *testing.T) {
 		"-stderr", logn,
 	}
 	args = append(args, shellCmd...)
-	cmd := testexec.Func(t.Context(), t, main, args...)
+	cmd := testexec.Func(t, main, args...)
 	cmd.Stdout = &bytes.Buffer{}
 	cmd.Stderr = &bytes.Buffer{}
 	t.Nil(cmd.Start())
@@ -380,7 +380,7 @@ func TestSmoke1(tt *testing.T) {
 		args = append(args, "-wait", "unix://"+unixn)
 	}
 	args = append(args, shellCmd...)
-	cmd := testexec.Func(t.Context(), t, main, args...)
+	cmd := testexec.Func(t, main, args...)
 	cmd.Stdout = &bytes.Buffer{}
 	cmd.Stderr = &bytes.Buffer{}
 	t.Nil(cmd.Start())
@@ -430,7 +430,7 @@ func TestSmoke2(tt *testing.T) {
 	ts := httptest.NewUnstartedServer(mux)
 	t.Cleanup(ts.Close)
 
-	cmd := testexec.Func(t.Context(), t, main,
+	cmd := testexec.Func(t, main,
 		"-env", "https://"+ts.Listener.Addr().String()+"/ini",
 		"-multiline",
 		"-env-section", "Vars",
@@ -532,7 +532,7 @@ func TestFailedWaitMySQL(tt *testing.T) {
 	tt.Parallel()
 	t := checkT(tt)
 
-	out, err := testexec.Func(t.Context(), t, main,
+	out, err := testexec.Func(t, main,
 		"-wait", "mysql://127.0.0.1:1",
 		"-timeout", "0.1s",
 	).CombinedOutput()
@@ -552,7 +552,7 @@ func TestWaitMySQL(tt *testing.T) {
 	args := make([]string, 0, 4+len(shellCmd))
 	args = append(args, []string{"-wait", mysqlURL, "-timeout", "10s"}...)
 	args = append(args, shellCmd...)
-	cmd := testexec.Func(t.Context(), t, main, args...)
+	cmd := testexec.Func(t, main, args...)
 	cmd.Stdout = &bytes.Buffer{}
 	cmd.Stderr = &bytes.Buffer{}
 	t.Nil(cmd.Start())
