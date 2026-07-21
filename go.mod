@@ -11,7 +11,7 @@ require (
 	github.com/powerman/gotest v0.4.1
 	github.com/powerman/tail v0.2.7
 	github.com/powerman/winfilepath v0.1.1
-	github.com/rabbitmq/amqp091-go v1.12.0
+	github.com/rabbitmq/amqp091-go v1.13.0
 	gopkg.in/ini.v1 v1.67.3
 )
 
