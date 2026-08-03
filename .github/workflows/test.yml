@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: jdx/mise-action@v4
+      - uses: jdx/mise-action@v4.2.3
       - run: git reset --hard # Work around https://github.com/jdx/mise/discussions/8270.
 
       - uses: powerman/.github/.github/actions/cache-go-and-tools@main
