@@ -8,6 +8,7 @@ linters:
     - cyclop # Prefer gocognit.
     - dogsled # Questionable (assignment to how many blank identifiers is not okay?).
     - dupl
+    - exhaustruct # Deprecated.
     - forcetypeassert # Questionable (often we actually want panic).
     - gocyclo # Prefer gocognit.
     - gomodguard # Deprecated.
@@ -77,9 +78,8 @@ linters:
         - switch
         - map
       explicit-exhaustive-map: true # Only check maps with "//exhaustive:enforce" comment.
-    exhaustruct:
-      include:
-        - ^$ # Only check structs which domain.tld/package/name.structname match this regexp.
+    exhaustruct_v5:
+      explicit-mode: true # Only check structs marked with "//exhaustruct:enforce" comment.
     fatcontext:
       check-struct-pointers: true
     forbidigo:
