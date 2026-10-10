@@ -14,7 +14,7 @@ import (
 
 var (
 	testTimeFactor = floatGetenv("GO_TEST_TIME_FACTOR", 1.0)
-	testSecond     = time.Duration(testTimeFactor) * time.Second //nolint:revive // By design.
+	testSecond     = time.Duration(testTimeFactor) * time.Second
 
 	isWindows = runtime.GOOS == "windows"
 	shellCmd  = func() []string {
@@ -35,11 +35,14 @@ func floatGetenv(name string, def float64) float64 {
 
 type checkC struct{ *check.C }
 
-func checkT(t *testing.T) *checkC                          { t.Helper(); return &checkC{C: check.T(t)} }
-func (c *checkC) NoErr(_ any, err error)                   { c.Helper(); c.Must(c.Nil(err)) }
-func (c *checkC) NoErrInt(v int, err error) int            { c.Helper(); c.Must(c.Nil(err)); return v }
-func (c *checkC) NoErrBuf(v []byte, err error) []byte      { c.Helper(); c.Must(c.Nil(err)); return v }
+func checkT(t *testing.T) *checkC               { t.Helper(); return &checkC{C: check.T(t)} }
+func (c *checkC) NoErr(_ any, err error)        { c.Helper(); c.Must(c.Nil(err)) }
+func (c *checkC) NoErrInt(v int, err error) int { c.Helper(); c.Must(c.Nil(err)); return v }
+
+func (c *checkC) NoErrBuf(v []byte, err error) []byte { c.Helper(); c.Must(c.Nil(err)); return v }
+
 func (c *checkC) NoErrFile(v *os.File, err error) *os.File { c.Helper(); c.Must(c.Nil(err)); return v }
+
 func (c *checkC) NoErrListen(v net.Listener, err error) net.Listener {
 	c.Helper()
 	c.Must(c.Nil(err))
