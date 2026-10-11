@@ -37,8 +37,8 @@ github.com/mitchellh/reflectwalk v1.0.2/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRIccs7FGNTlIRMkT8wgtp5eCXdBlqhYGL6U=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/powerman/check v1.13.0 h1:/uNADrvWRzsRKCN00LEN/Ph0XMlUmtOhZTw2Qr60nNQ=
-github.com/powerman/check v1.13.0/go.mod h1:h7WkuVUhfVN1yl/F6zm+zbZLeOUtx34+JpMA8aA2vR0=
+github.com/powerman/check v1.14.0 h1:K8iOOVCMOcIeeGr/SBvVGJbiq5WAUtW7sIoGfE7+Skc=
+github.com/powerman/check v1.14.0/go.mod h1:SLUFjRHJRso/wokJgRvySca9reNPpC0YG1SvE0sifA0=
 github.com/powerman/fileuri v0.3.0 h1:UEVuRiel+Ob4Z+j1lnaHTnvu4hq8O5ljRaw4zOCQUhU=
 github.com/powerman/fileuri v0.3.0/go.mod h1:rrWmyDVgMdJIZwWbacUG8a+FmS/MQEmpjimnq3i4xAg=
 github.com/powerman/gotest v0.4.1 h1:gkh6YX4CefkJuHx9wIR0nyRrvTRAXL2qUiyzl1QbtBw=
