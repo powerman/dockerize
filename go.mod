@@ -5,7 +5,7 @@ go 1.27.2
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/elgs/gojq v0.0.0-20230628214826-df5c4045598e
-	github.com/go-sql-driver/mysql v1.10.0
+	github.com/go-sql-driver/mysql v1.10.1
 	github.com/powerman/check v1.13.0
 	github.com/powerman/fileuri v0.3.0
 	github.com/powerman/gotest v0.4.1
