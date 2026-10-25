@@ -1,0 +1,8 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v3
+_src_path: ~/Templates/copier-go
+codegen: false
+custom_cliff: true
+dockerfile: true
+project_name: dockerize
+type: go-tool-docker
