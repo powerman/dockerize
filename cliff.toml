@@ -174,52 +174,52 @@ split_commits = false
 # parsing/grouping them.
 # https://git-cliff.org/docs/configuration/git#commit_preprocessors
 commit_preprocessors = [
-  # Fix global typos in commit messages.
-  # { pattern = 'teh ', replace = 'the ' },
-  # { pattern = 'recieve', replace = 'receive' },
-  { pattern = 'compatiblity', replace = 'compatibility' },
-  { pattern = ' windows', replace = ' Windows' },
-  # Fix spelling in commits with https://github.com/crate-ci/typos.
-  # { pattern = '.*', replace_command = 'typos --write-changes -' },
-  # Replace multiple spaces with a single space.
-  { pattern = '  +', replace = ' ' },
-  # Remove issue numbers from commits.
-  { pattern = '\((\w+\s)?#([0-9]+)\)', replace = '' },
-  # Escape <key> to ensure it won't be processed as <tag>.
-  { pattern = '(<[^>]+>)$', replace = '`${1}`' },
+    # Fix global typos in commit messages.
+    # { pattern = 'teh ', replace = 'the ' },
+    # { pattern = 'recieve', replace = 'receive' },
+    { pattern = 'compatiblity', replace = 'compatibility' },
+    { pattern = ' windows', replace = ' Windows' },
+    # Fix spelling in commits with https://github.com/crate-ci/typos.
+    # { pattern = '.*', replace_command = 'typos --write-changes -' },
+    # Replace multiple spaces with a single space.
+    { pattern = '  +', replace = ' ' },
+    # Remove issue numbers from commits.
+    { pattern = '\((\w+\s)?#([0-9]+)\)', replace = '' },
+    # Escape <key> to ensure it won't be processed as <tag>.
+    { pattern = '(<[^>]+>)$', replace = '`${1}`' },
 ]
 
 # An array of commit parsers for determining the commit groups by using regex. The entire
 # commit messages are affected wherever the regex is matched.
 # https://git-cliff.org/docs/configuration/git#commit_parsers
 commit_parsers = [
-  { message = '^chore: release', skip = true },
-  { message = '^Merge ', skip = true },
-  { message = '^(feat|fix)\((test|ci|build)\)', group = '<!-- X -->⚙️ Chore' },
-  { message = '^(fix|chore)\(deps\)', group = '<!-- 8 -->📦️ Dependencies' },
-  # { message = '^[^:]*!:', group = '<!-- 0 -->⚠️ Breaking Change!' },
-  { message = '^fix\(security\)', group = '<!-- 0 -->🛡️ Security' },
-  { message = '^fix.* [Vv]ulnerabilit', group = '<!-- 0 -->🛡️ Security' },
-  { message = '^fix.* [Ss]ecur', group = '<!-- 0 -->🛡️ Security' },
-  { message = '^fix.* CVE', group = '<!-- 0 -->🛡️ Security' },
-  { message = '^feat.*: [Rr]emove', group = '<!-- 1 -->➖ Removed' },
-  { message = '^feat.*: [Dd]elete', group = '<!-- 1 -->➖ Removed' },
-  { message = '^feat.*: [Dd]rop', group = '<!-- 1 -->➖ Removed' },
-  { message = '^(Revert|Reapply) "(feat|fix)', group = '<!-- 1 -->◀️ Revert' },
-  { message = '^feat.* [Dd]eprecat', group = '<!-- 2 -->❌ Deprecated' },
-  { message = '^feat.*: [Aa]dd', group = '<!-- 3 -->🚀 Added' },
-  { message = '^feat.*: [Ii]mplement', group = '<!-- 3 -->🚀 Added' },
-  { message = '^feat.*: [Ss]upport', group = '<!-- 3 -->🚀 Added' },
-  { message = '^feat', group = '<!-- 4 -->🔔 Changed' },
-  { message = '^fix', group = '<!-- 5 -->🐛 Fixed' },
-  { message = '^perf', group = '<!-- 6 -->⚡ Performance' },
-  { message = '^docs', group = '<!-- 7 -->📚 Documentation' },
-  { message = '^build', group = '<!-- X -->⚙️ Chore' },
-  { message = '^chore', group = '<!-- X -->⚙️ Chore' },
-  { message = '^ci', group = '<!-- X -->⚙️ Chore' },
-  { message = '^refactor', group = '<!-- X -->⚙️ Chore' },
-  { message = '^test', group = '<!-- Z -->🧪 Testing' },
-  { message = '.', group = '<!-- 4 -->🔔 Changed' },
+    { message = '^chore: release', skip = true },
+    { message = '^Merge ', skip = true },
+    { message = '^(feat|fix)\((test|ci|build)\)', group = '<!-- X -->⚙️ Chore' },
+    { message = '^(fix|chore)\(deps\)', group = '<!-- 8 -->📦️ Dependencies' },
+    # { message = '^[^:]*!:', group = '<!-- 0 -->⚠️ Breaking Change!' },
+    { message = '^fix\(security\)', group = '<!-- 0 -->🛡️ Security' },
+    { message = '^fix.* [Vv]ulnerabilit', group = '<!-- 0 -->🛡️ Security' },
+    { message = '^fix.* [Ss]ecur', group = '<!-- 0 -->🛡️ Security' },
+    { message = '^fix.* CVE', group = '<!-- 0 -->🛡️ Security' },
+    { message = '^feat.*: [Rr]emove', group = '<!-- 1 -->➖ Removed' },
+    { message = '^feat.*: [Dd]elete', group = '<!-- 1 -->➖ Removed' },
+    { message = '^feat.*: [Dd]rop', group = '<!-- 1 -->➖ Removed' },
+    { message = '^(Revert|Reapply) "(feat|fix)', group = '<!-- 1 -->◀️ Revert' },
+    { message = '^feat.* [Dd]eprecat', group = '<!-- 2 -->❌ Deprecated' },
+    { message = '^feat.*: [Aa]dd', group = '<!-- 3 -->🚀 Added' },
+    { message = '^feat.*: [Ii]mplement', group = '<!-- 3 -->🚀 Added' },
+    { message = '^feat.*: [Ss]upport', group = '<!-- 3 -->🚀 Added' },
+    { message = '^feat', group = '<!-- 4 -->🔔 Changed' },
+    { message = '^fix', group = '<!-- 5 -->🐛 Fixed' },
+    { message = '^perf', group = '<!-- 6 -->⚡ Performance' },
+    { message = '^docs', group = '<!-- 7 -->📚 Documentation' },
+    { message = '^build', group = '<!-- X -->⚙️ Chore' },
+    { message = '^chore', group = '<!-- X -->⚙️ Chore' },
+    { message = '^ci', group = '<!-- X -->⚙️ Chore' },
+    { message = '^refactor', group = '<!-- X -->⚙️ Chore' },
+    { message = '^test', group = '<!-- Z -->🧪 Testing' },
+    { message = '.', group = '<!-- 4 -->🔔 Changed' },
 ]
 
 # Any breaking changes is protected against being skipped due to any commit parser.
@@ -249,8 +249,8 @@ sort_commits = 'oldest'
 # Link parsers for extracting external references, and turning them into URLs, using regex.
 # These extracted links can be used in the template with commits.links variable.
 link_parsers = [
-  # { pattern = "#(\\d+)", href = "https://github.com/USER/REPO/issues/$1"},
-  # { pattern = "RFC(\\d+)", text = "ietf-rfc$1", href = "https://datatracker.ietf.org/doc/html/rfc$1"},
+    # { pattern = "#(\\d+)", href = "https://github.com/USER/REPO/issues/$1"},
+    # { pattern = "RFC(\\d+)", text = "ietf-rfc$1", href = "https://datatracker.ietf.org/doc/html/rfc$1"},
 ]
 
 # Limits the number of included commits in the generated changelog.
