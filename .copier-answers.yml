@@ -1,5 +1,5 @@
 # Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
-_commit: v3
+_commit: v7
 _src_path: ~/Templates/copier-go
 codegen: false
 custom_cliff: true
