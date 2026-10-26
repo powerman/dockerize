@@ -1,5 +1,8 @@
+# jdx/mise-action installs only releases older than a day, so a newer one would fail CI.
+min_version = '2026.10.19'
+
 [settings]
-lockfile = true              # DO NOT FORGET TO `touch mise.lock` if mise.lock does not exist!
+lockfile = true # DO NOT FORGET TO `touch mise.lock` if mise.lock does not exist!
 npm.package_manager = 'pnpm' # Avoid .mise/locks/** sidecars required by default aube.
 
 
@@ -11,6 +14,10 @@ go = 'latest'
 #--- Format
 # Opinionated Code Formatter.
 prettier = 'latest'
+# A TOML toolkit written in Rust.
+taplo = 'latest'
+# An extensible command line tool or library to format yaml files.
+yamlfmt = 'latest'
 
 #--- Lint
 # Static checker for GitHub Actions workflow files.
@@ -69,6 +76,18 @@ description = 'Format markdown files'
 sources = ['**/*.md']
 run = 'prettier --write "**/*.md"'
 
+# Taplo doesn't respect .gitignore.
+[tasks.'fmt:toml']
+description = 'Format TOML files'
+sources = ['**/*.toml']
+env.RUST_LOG = 'warn' # Hide INFO logs of taplo.
+run = "git ls-files -z -co --exclude-standard '*.toml' | xargs -0 -r taplo format"
+
+[tasks.'fmt:yaml']
+description = 'Format YAML files'
+sources = ['**/*.yml', '**/*.yaml']
+run = "git ls-files -z -co --exclude-standard '*.yml' '*.yaml' | xargs -0 -r yamlfmt"
+
 [tasks.'fmt:go']
 description = 'Format Go code'
 run = 'golangci-lint fmt'
@@ -82,6 +101,19 @@ description = 'Lint markdown files'
 wait_for = ['fmt:markdown']
 sources = ['**/*.md']
 run = 'prettier --check "**/*.md"'
+
+[tasks.'lint:toml']
+description = 'Check TOML files formatting'
+wait_for = ['fmt:toml']
+sources = ['**/*.toml']
+env.RUST_LOG = 'warn' # Hide INFO logs of taplo.
+run = "git ls-files -z -co --exclude-standard '*.toml' | xargs -0 -r taplo format --check"
+
+[tasks.'lint:yaml']
+description = 'Check YAML files formatting'
+wait_for = ['fmt:yaml']
+sources = ['**/*.yml', '**/*.yaml']
+run = "git ls-files -z -co --exclude-standard '*.yml' '*.yaml' | xargs -0 -r yamlfmt -lint"
 
 [tasks.'lint:dockerfiles']
 description = 'Lint Dockerfiles'
@@ -97,7 +129,7 @@ run = 'GOOS=windows go test -c -o /dev/null ./...'
 
 [tasks.'test:go']
 description = 'Run Go tests for a whole project'
-wait_for = ['lint:*']                            # Avoid interleaved output with linters.
+wait_for = ['lint:*'] # Avoid interleaved output with linters.
 run = 'gotestsum -- -race -timeout=60s ./...'
 
 [tasks.'cover:go:total']
