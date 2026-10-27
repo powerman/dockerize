@@ -48,6 +48,10 @@ description = 'Add commit hash to .cliffignore to exclude from CHANGELOG'
 usage = 'arg "<commit>" help="Git revision (e.g. HEAD or a1b2c4d)"'
 run = 'git rev-parse --verify "${usage_commit}" >> .cliffignore'
 
+[tasks.fix]
+description = 'Apply all automatic fixes'
+depends = ['fix:*']
+
 [tasks.fmt]
 description = 'Format all files'
 depends = ['fmt:*']
@@ -70,6 +74,16 @@ depends = ['fmt', 'lint', 'test']
 # Is working tree clean after fmt?
 run = '! git status --porcelain | tee /dev/stderr | grep -q .'
 run_windows = 'powershell -c "$status = git status --porcelain; if ($status) { $status; exit 1 }"'
+
+[tasks.'fix:go']
+description = 'Modernize Go code by go fix'
+run = 'mise run keep-vendored go fix ./...'
+
+[tasks.'fix:golangci-lint']
+description = 'Fix issues found by golangci-lint'
+wait_for = ['fix:go']
+# Issues without automatic fixes are reported by lint:go.
+run = 'mise run keep-vendored golangci-lint run --fix --issues-exit-code=0'
 
 [tasks.'fmt:markdown']
 description = 'Format markdown files'
@@ -153,6 +167,18 @@ gotestsum -- \
     -coverprofile {{vars.cover}} \
     ./...
 go tool cover -html={{vars.cover}} -o {{vars.cover}}.html
+'''
+
+# Runs a command which changes files, except files with git attribute "vendored"
+# (see .gitattributes): they are restored, so they must have no uncommitted changes.
+[tasks.keep-vendored]
+hide = true
+usage = 'arg "<command>" var=#true double_dash="automatic" help="Command with arguments"'
+run = '''
+git diff --quiet HEAD -- ':(attr:vendored)' || { echo 'vendored files have uncommitted changes' >&2; exit 1; }
+eval "$usage_command" || status=$?
+git ls-files -z ':(attr:vendored)' | xargs -0 -r git restore --
+exit ${status:-0}
 '''
 
 [tasks.cachedir]
