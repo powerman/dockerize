@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.5] - 2026-10-28
+
+### 🐛 Fixed
+
+- Build with Go 1.27.3 by @powerman in [35a8c1f]
+
+### 📦️ Dependencies
+
+- **(deps)** Upgrade go modules by @powerman in [6d59c20]
+- **(deps)** Upgrade go and golangci-lint by @powerman in [6c04df6]
+- **(deps)** Mise up by @powerman in [ad37e1a]
+
+[0.25.5]: https://github.com/powerman/dockerize/compare/v0.25.4..v0.25.5
+[6d59c20]: https://github.com/powerman/dockerize/commit/6d59c20024ee386d3fa4cd12a584a990de5e6947
+[6c04df6]: https://github.com/powerman/dockerize/commit/6c04df6f3203c5b41d2c833d1568ea72e2b9fe6e
+[35a8c1f]: https://github.com/powerman/dockerize/commit/35a8c1f269de556affe57380a27cf0f463b11f8d
+[ad37e1a]: https://github.com/powerman/dockerize/commit/ad37e1a7d6845e16aaa28877e37235498b7ce734
+
 ## [0.25.4] - 2026-10-11
 
 ### 🐛 Fixed
@@ -686,6 +704,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔔 Changed
 
+- Add installation for Alpine images by @mstrzele in [5ec5b8d]
 - Update readme description by @jwilder in [c35e064]
 - Add link to alpine binaries by @jwilder in [bc533cc]
 - Make the image usable as a standalone app by @ArturGajowy in [a19676d]
@@ -701,6 +720,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update v0.5.0 by @jwilder in [0ea82f3]
 
 [0.5.0]: https://github.com/powerman/dockerize/compare/v0.4.0..v0.5.0
+[5ec5b8d]: https://github.com/powerman/dockerize/commit/5ec5b8d52310bed50bd521e7b2ddbc3f30c58c5c
 [c35e064]: https://github.com/powerman/dockerize/commit/c35e0644909d9a7ca0067040e849959e4de600f1
 [bc533cc]: https://github.com/powerman/dockerize/commit/bc533cc7d20f8beae139a1a661a2756bb55d1e51
 [a19676d]: https://github.com/powerman/dockerize/commit/a19676dc43e74c4858f787b879cd7495133bd3d1
@@ -721,7 +741,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add alpine linux support by @jwilder in [5ce77d2]
 - Fix base image instructions by @jwilder in [e5e60a8]
-- Add installation for Alpine images by @mstrzele in [5ec5b8d]
 - Rename dockerize.go to main.go by @jwilder in [f60f2f9]
 - Fix failed http wait not waiting by @jwilder in [3f7d362]
 - Add -wait-retry-interval by @jwilder in [0a48b87]
@@ -735,7 +754,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [5ce77d2]: https://github.com/powerman/dockerize/commit/5ce77d2a8b66dfff1d5c338e6b4f3fda9b21912c
 [e5e60a8]: https://github.com/powerman/dockerize/commit/e5e60a8cbaf70a9a452b332e1d0741752890ae8c
 [9c137ec]: https://github.com/powerman/dockerize/commit/9c137ecec6460fa1ddf0f65ac99f8500f1551a78
-[5ec5b8d]: https://github.com/powerman/dockerize/commit/5ec5b8d52310bed50bd521e7b2ddbc3f30c58c5c
 [f60f2f9]: https://github.com/powerman/dockerize/commit/f60f2f9d705c5bf047be206ed8001fd98b8a1a86
 [3f7d362]: https://github.com/powerman/dockerize/commit/3f7d362e7dc2b5a7b9cf97ef8e1076ad8db3aea5
 [0a48b87]: https://github.com/powerman/dockerize/commit/0a48b87796a9bbe393ddc9fcdf698919d0cce1b2
