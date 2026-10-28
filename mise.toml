@@ -131,7 +131,7 @@ run = "git ls-files -z -co --exclude-standard '*.yml' '*.yaml' | xargs -0 -r yam
 
 [tasks.'lint:dockerfiles']
 description = 'Lint Dockerfiles'
-run = 'hadolint Dockerfile'
+run = 'hadolint --ignore DL3025 Dockerfile'
 
 [tasks.'lint:go']
 description = 'Lint Go files'
